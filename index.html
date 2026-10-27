@@ -143,8 +143,12 @@
             <div class="flex space-x-2"><span class="w-2 h-1 bg-[#FF4655]"></span><span class="w-2 h-1 bg-[#FF4655]"></span></div>
         </div>
         <div class="absolute bottom-[12vh] text-xs font-val tracking-[0.3em] text-[#00F5D4] bg-black/70 px-3 py-1 border border-[#00F5D4]/40">
-            OPERATOR // 2.5X ARES OPTICS
+            <span id="scope-zoom-label">OPERATOR // 2.5X</span>
         </div>
+    </div>
+
+    <div id="stance-hud" class="absolute bottom-40 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex gap-3 text-xs font-bold tracking-widest bg-black/50 border border-white/20 px-3 py-1">
+        <span id="stance-status">站立</span><span id="aim-status" class="text-[#00F5D4]">HIP FIRE</span>
     </div>
 
     <!-- Dynamic Crosshair + Hitmarker -->
@@ -184,6 +188,7 @@
                 <div class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
                     <div class="font-black text-[#00F5D4] tracking-wider" id="hud-mode-label">1v5 擬真戰術攻防</div>
                     <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 掠奪苦無 [Y] 檢視武器</div>
+                    <div class="text-white/80">[Ctrl] 蹲下 [Shift] 靜走 [右鍵] 瞄準／倍率</div>
                     <div class="text-white/80">[C] 煙霧彈 [Q] 閃光/竄升 [E] 衝刺/冰牆 [X] 暴風刃大招</div>
                     <div class="text-[#FF4655] font-bold">[4/F] 裝包/拆包 | [B] 商店與連線大廳 | [TAB] 計分板</div>
                 </div>
@@ -564,8 +569,8 @@
                 <button id="shield-card-light" onclick="buyShield(25)" class="val-card p-3 w-full text-left"><strong>輕型護盾 LIGHT SHIELD</strong><div class="text-xs text-[#00F5D4]">+25 護甲 · ¤ 400</div></button>
                 <div class="val-card p-3 text-xs space-y-2">
                     <div class="font-black text-[#00F5D4]">操作按鍵</div>
-                    <p>WASD 移動 · Shift 靜走 · Space 跳躍</p>
-                    <p>左鍵射擊 · 右鍵瞄準 · R 換彈</p>
+                    <p>WASD 移動 · Shift 靜走 · Ctrl 蹲下 · Space 跳躍</p>
+                    <p>左鍵射擊 · 右鍵瞄準 · R 換彈（Operator：2.5× / 5× / 關閉）</p>
                     <p>1 / 2 / 3 切換武器 · Y 檢視武器</p>
                     <p>C / Q / E 技能 · X 終極技能</p>
                     <p>按住 4 / F 裝包或拆包</p>
@@ -763,6 +768,8 @@
                 headDmg: 160,
                 bodyDmg: 40,
                 fireRate: 102,
+                zoomLevels: [1.25],
+                adsRateMultiplier: 0.9,
                 magSize: 25,
                 reserve: 75,
                 recoilPitch: 0.021,
@@ -780,6 +787,8 @@
                 headDmg: 140,
                 bodyDmg: 39,
                 fireRate: 90,
+                zoomLevels: [1.25],
+                adsRateMultiplier: 0.9,
                 magSize: 30,
                 reserve: 90,
                 recoilPitch: 0.015,
@@ -803,7 +812,7 @@
                 spreadBase: 0.0004,
                 spreadMove: 0.11,
                 auto: false,
-                canScope: true,
+                zoomLevels: [2.5, 5],
                 moveSpeedMult: 0.85,
                 color: 0xFF4655,
                 glowColor: 0xFFBE0B
@@ -906,6 +915,8 @@
             isInspecting: false,
             inspectTimer: 0,
             isScoped: false,
+            scopeLevel: 0,
+            crouchAmount: 0,
             scoreAlly: 0,
             scoreEnemy: 0,
             roundTimeLeft: 100,
@@ -1329,14 +1340,17 @@
                 lens.position.set(0.25, -0.09, -0.229);
                 rig.add(scopeTube, lens);
             } else if (!isPistol) {
-                const holoBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.045, 0.12), gunSteel);
-                holoBase.position.set(0.25, -0.12, -0.38);
+                const holoBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.015, 0.12), gunSteel);
+                holoBase.position.set(0.25, -0.14, -0.38);
                 const holoGlass = new THREE.Mesh(
                     new THREE.PlaneGeometry(0.045, 0.035),
-                    new THREE.MeshBasicMaterial({ color: 0x00F5D4, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+                    new THREE.MeshBasicMaterial({ color: 0x00F5D4, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
                 );
                 holoGlass.position.set(0.25, -0.095, -0.38);
-                rig.add(holoBase, holoGlass);
+                const holoFrame = new THREE.Mesh(new THREE.TorusGeometry(0.025, 0.0025, 6, 24), darkMetal);
+                holoFrame.scale.y = 0.8;
+                holoFrame.position.set(0.25, -0.095, -0.379);
+                rig.add(holoBase, holoGlass, holoFrame);
             }
 
             // Detachable Curved Magazine (Animated during reload!)
@@ -1940,6 +1954,7 @@
                 weapon: state.weaponKey,
                 x: Number(yawObject.position.x.toFixed(2)),
                 y: Number(yawObject.position.y.toFixed(2)),
+                crouching: state.crouchAmount > 0.5,
                 z: Number(yawObject.position.z.toFixed(2)),
                 yaw: Number(yawObject.rotation.y.toFixed(3)),
                 hp: Math.max(0, Math.ceil(state.hp)),
@@ -2181,7 +2196,8 @@
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
-            if (now - state.lastShotTime < wpn.fireRate) return;
+            const shotInterval = wpn.fireRate / (state.isScoped ? (wpn.adsRateMultiplier || 1) : 1);
+            if (now - state.lastShotTime < shotInterval) return;
 
             if (!wpn.isMelee && state.mag <= 0) {
                 reloadWeapon();
@@ -2211,9 +2227,11 @@
 
             // Calculate Accuracy Spread
             const isMoving = Math.hypot(playerVelocity.x, playerVelocity.z) > 0.25;
-            const moveFactor = isMoving ? (moveState.walk ? wpn.spreadMove * 0.28 : wpn.spreadMove) : wpn.spreadBase;
-            const totalSpread = (state.isScoped ? moveFactor * 0.25 : moveFactor)
-                + (!canJump ? 0.06 : 0) + state.recoilAccum * 0.35;
+            const totalSpread = getShotSpread(wpn, {
+                moving: isMoving, walking: moveState.walk,
+                crouched: state.crouchAmount > 0.5, airborne: !canJump,
+                scoped: state.isScoped, recoil: state.recoilAccum
+            });
 
             const spreadX = (Math.random() - 0.5) * totalSpread;
             const spreadY = (Math.random() - 0.5) * totalSpread + state.recoilAccum * 0.4;
@@ -2234,8 +2252,9 @@
             });
 
             const intersects = raycaster.intersectObjects(targets, false);
-            const muzzleWorld = new THREE.Vector3(0.22, -0.15, -0.8);
-            camera.localToWorld(muzzleWorld);
+            const muzzleWorld = muzzleFlashGroup
+                ? muzzleFlashGroup.getWorldPosition(new THREE.Vector3())
+                : camera.localToWorld(new THREE.Vector3(0.22, -0.15, -0.8));
 
             if (intersects.length > 0) {
                 const hit = intersects[0];
@@ -2314,7 +2333,7 @@
             }
 
             // Camera Recoil
-            pitchObject.rotation.x = Math.min(Math.PI / 2.2, pitchObject.rotation.x + wpn.recoilPitch);
+            pitchObject.rotation.x = Math.min(Math.PI / 2.2, pitchObject.rotation.x + wpn.recoilPitch * (moveState.crouch ? 0.85 : 1));
             state.recoilAccum = Math.min(0.12, state.recoilAccum + wpn.recoilPitch * 0.85);
 
             // If Blade Storm runs out of knives, return to primary weapon
@@ -2333,6 +2352,7 @@
         function reloadWeapon() {
             const wpn = WEAPONS[state.weaponKey];
             if (wpn.isMelee || state.weaponKey === 'bladestorm') return;
+            setScope(false);
             if (state.isReloading || state.mag === wpn.magSize || state.reserve <= 0) return;
 
             state.isReloading = true;
@@ -2447,14 +2467,41 @@
             setTimeout(() => row.remove(), 5000);
         }
 
-        function setScope(active) {
+        // Tactical control helpers (also exercised by tests/test_controls.cjs).
+        function getAimFov(baseFov, magnification) {
+            return 2 * Math.atan(Math.tan(baseFov * Math.PI / 360) / magnification) * 180 / Math.PI;
+        }
+
+        function getMovementSpeed(wpn, crouched, walking, scoped) {
+            return (crouched ? 1.8 : walking ? 2.4 : 5.4)
+                * (wpn.moveSpeedMult || 1) * (scoped ? 0.76 : 1);
+        }
+
+        function getShotSpread(wpn, posture) {
+            if (wpn.id === 'bladestorm') return wpn.spreadBase;
+            const movement = posture.moving ? wpn.spreadMove * (posture.walking ? 0.55 : 1) : wpn.spreadBase;
+            const hip = wpn.id === 'operator' && !posture.scoped ? 0.09 : movement;
+            return hip * (posture.scoped ? 0.7 : 1) * (posture.crouched ? 0.75 : 1)
+                + (posture.airborne ? 0.09 : 0) + posture.recoil * 0.35;
+        }
+        // End tactical control helpers.
+
+        function setScope(active, level = 1) {
             const wpn = WEAPONS[state.weaponKey];
-            if (!wpn.canScope) active = false;
-            state.isScoped = active;
-            camera.fov = active ? 26 : 75;
+            const levels = wpn.zoomLevels || [];
+            state.scopeLevel = active && levels.length ? Math.min(level, levels.length) : 0;
+            state.isScoped = state.scopeLevel > 0;
+            const zoom = levels[state.scopeLevel - 1] || 1;
+            camera.fov = getAimFov(75, zoom);
             camera.updateProjectionMatrix();
-            document.getElementById('scope-overlay').classList.toggle('hidden', !active);
-            gunGroup.visible = !active;
+            const sniper = state.isScoped && state.weaponKey === 'operator';
+            document.getElementById('scope-overlay').classList.toggle('hidden', !sniper);
+            document.getElementById('scope-zoom-label').textContent = `OPERATOR // ${zoom}X`;
+            document.getElementById('aim-status').textContent = state.isScoped ? `ADS ${zoom}×` : 'HIP FIRE';
+            gunGroup.visible = !sniper;
+            ['ch-center', 'ch-top', 'ch-bottom', 'ch-left', 'ch-right'].forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', sniper);
+            });
         }
 
         /********************************************************************
@@ -2462,7 +2509,7 @@
          ********************************************************************/
         const moveState = {
             forward: false, backward: false, left: false, right: false,
-            walk: false, holdPlant: false
+            walk: false, crouch: false, holdPlant: false
         };
         const playerVelocity = new THREE.Vector3();
         let canJump = true;
@@ -2556,6 +2603,7 @@
             sfx.playAbilitySound('dash');
 
             if (state.agent === 'jett') {
+                setScope(false);
                 const dashDir = new THREE.Vector3();
                 camera.getWorldDirection(dashDir);
                 dashDir.y = 0;
@@ -2797,6 +2845,9 @@
         function resetRound(syncRoomDoc = true) {
             state.roundEnding = false;
             resetMovementInput();
+            state.crouchAmount = 0;
+            camera.position.y = 0;
+            setScope(false);
             state.hp = 100;
             state.shield = 50;
             state.roundTimeLeft = 100;
@@ -2856,6 +2907,7 @@
 
         function showBuyMenu() {
             resetMovementInput();
+            setScope(false);
             state.isLocked = false;
             state.inBuyMenu = true;
             document.getElementById('buy-menu-modal').classList.remove('hidden');
@@ -2926,7 +2978,8 @@
 
         document.addEventListener('mousemove', (e) => {
             if (!state.isLocked || state.inBuyMenu) return;
-            const sens = state.isScoped ? 0.0008 : 0.0021;
+            const zoom = WEAPONS[state.weaponKey].zoomLevels?.[state.scopeLevel - 1] || 1;
+            const sens = 0.0021 / zoom;
             yawObject.rotation.y -= e.movementX * sens;
             pitchObject.rotation.x -= e.movementY * sens;
             pitchObject.rotation.x = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, pitchObject.rotation.x));
@@ -2948,7 +3001,9 @@
                         setTimeout(() => fireWeapon(), i * 55);
                     }
                 } else {
-                    setScope(!state.isScoped);
+                    const levels = WEAPONS[state.weaponKey].zoomLevels || [];
+                    const nextLevel = (state.scopeLevel + 1) % (levels.length + 1);
+                    setScope(nextLevel > 0, nextLevel);
                 }
             }
         });
@@ -3020,6 +3075,10 @@
             if (code === 'KeyA') moveState.left = true;
             if (code === 'KeyD') moveState.right = true;
             if (code === 'ShiftLeft' || code === 'ShiftRight') moveState.walk = true;
+            if (code === 'ControlLeft' || code === 'ControlRight') {
+                e.preventDefault();
+                moveState.crouch = true;
+            }
             if (code === 'KeyR') reloadWeapon();
             if (code === 'KeyY') triggerWeaponInspect();
             if (code === 'KeyC') triggerAbilityC();
@@ -3047,6 +3106,7 @@
             if (code === 'KeyA') moveState.left = false;
             if (code === 'KeyD') moveState.right = false;
             if (code === 'ShiftLeft' || code === 'ShiftRight') moveState.walk = false;
+            if (code === 'ControlLeft' || code === 'ControlRight') moveState.crouch = false;
             if (code === 'Digit4' || code === 'KeyF') {
                 moveState.holdPlant = false;
                 state.plantingProgress = 0;
@@ -3162,11 +3222,11 @@
          ********************************************************************/
         let prevTime = performance.now();
 
-        function checkPlayerCollision(nextPos) {
+        function checkPlayerCollision(nextPos, crouchAmount = state.crouchAmount) {
             if (Math.abs(nextPos.x) > 30 || Math.abs(nextPos.z) > 34) return true;
             const playerBox = new THREE.Box3(
                 new THREE.Vector3(nextPos.x - 0.6, nextPos.y - 2.0, nextPos.z - 0.6),
-                new THREE.Vector3(nextPos.x + 0.6, nextPos.y + 0.3, nextPos.z + 0.6)
+                new THREE.Vector3(nextPos.x + 0.6, nextPos.y + 0.3 - crouchAmount * 0.75, nextPos.z + 0.6)
             );
             for (let i = 0; i < mapColliders.length; i++) {
                 if (playerBox.intersectsBox(mapColliders[i])) return true;
@@ -3178,12 +3238,12 @@
             // Walk bobbing & breathing sway
             if (isMoving && canJump) {
                 state.walkBobTime += dt * (moveState.walk ? 6 : 11);
-                gunGroup.position.x = Math.cos(state.walkBobTime) * 0.015;
-                gunGroup.position.y = Math.abs(Math.sin(state.walkBobTime)) * -0.018;
+                gunGroup.position.x = (state.isScoped ? -0.25 : 0) + Math.cos(state.walkBobTime) * (state.isScoped ? 0.003 : 0.015);
+                gunGroup.position.y = (state.isScoped ? 0.095 : 0) + Math.abs(Math.sin(state.walkBobTime)) * (state.isScoped ? -0.003 : -0.018);
             } else {
                 state.walkBobTime += dt * 2.2;
-                gunGroup.position.x += (0 - gunGroup.position.x) * 8 * dt;
-                gunGroup.position.y = Math.sin(state.walkBobTime) * 0.004;
+                gunGroup.position.x += ((state.isScoped ? -0.25 : 0) - gunGroup.position.x) * Math.min(1, 12 * dt);
+                gunGroup.position.y = (state.isScoped ? 0.095 : 0) + Math.sin(state.walkBobTime) * (state.isScoped ? 0.001 : 0.004);
             }
 
             // Reload Magazine Drop & Insert Animation
@@ -3319,6 +3379,7 @@
                 const distMove = rp.group.position.distanceTo(rp.targetPos);
                 rp.group.position.lerp(rp.targetPos, Math.min(1, dt * 12));
                 rp.group.rotation.y = rp.targetYaw;
+                rp.group.scale.y += ((rp.data.crouching ? 0.68 : 1) - rp.group.scale.y) * Math.min(1, dt * 18);
                 rp.hpBg.lookAt(playerPos);
                 rp.hpFill.lookAt(playerPos);
 
@@ -3516,12 +3577,18 @@
                 }
             }
 
-            const isMoving = moveState.forward || moveState.backward || moveState.left || moveState.right;
+            const isMoving = Math.hypot(playerVelocity.x, playerVelocity.z) > 0.25;
+            // Keep feet fixed while lowering the eye and collision capsule.
+            const wantsCrouch = moveState.crouch || (state.crouchAmount > 0 && checkPlayerCollision(yawObject.position, 0));
+            const targetCrouch = wantsCrouch ? 1 : 0;
+            state.crouchAmount += (targetCrouch - state.crouchAmount) * (1 - Math.exp(-dt * 18));
+            if (Math.abs(state.crouchAmount - targetCrouch) < 0.001) state.crouchAmount = targetCrouch;
+            camera.position.y = -0.75 * state.crouchAmount;
+            document.getElementById('stance-status').textContent = state.crouchAmount > 0.5 ? '蹲下' : moveState.walk ? '靜走' : isMoving ? '移動' : '站立';
 
             // Player Movement Physics
             if (state.isLocked && state.hp > 0 && !state.roundEnding) {
-                const wpnMult = WEAPONS[state.weaponKey].moveSpeedMult || 1.0;
-                const speed = (moveState.walk ? 2.4 : 5.4) * wpnMult;
+                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped);
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
 
@@ -3556,7 +3623,9 @@
             }
 
             // Dynamic Crosshair Expansion
-            const gap = 7 + (isMoving ? (moveState.walk ? 3.5 : 11) : 0) + state.recoilAccum * 130;
+            const gap = (state.isScoped ? 3 : state.crouchAmount > 0.5 ? 4 : 7)
+                + (isMoving ? (moveState.walk ? 3.5 : 11) : 0)
+                + (!canJump ? 12 : 0) + state.recoilAccum * 130;
             document.getElementById('ch-top').style.transform = `translateY(-${gap}px)`;
             document.getElementById('ch-bottom').style.transform = `translateY(${gap}px)`;
             document.getElementById('ch-left').style.transform = `translateX(-${gap}px)`;
