@@ -33,7 +33,7 @@ class ArmoryTests(unittest.TestCase):
         tree = Structure(html)
         controls = ['armory-grid', 'agent-card-jett', 'agent-card-phoenix',
                     'mode-tactical', 'mode-strafing', 'mode-stationary',
-                    'wpn-card-vandal', 'wpn-card-phantom', 'wpn-card-operator',
+                    'wpn-card-vandal', 'wpn-card-phantom', 'wpn-card-odin', 'wpn-card-operator',
                     'wpn-card-classic', 'shield-card-heavy', 'shield-card-light']
         for control in controls:
             with self.subTest(control=control):

@@ -187,7 +187,7 @@
                 </div>
                 <div class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
                     <div class="font-black text-[#00F5D4] tracking-wider" id="hud-mode-label">1v5 擬真戰術攻防</div>
-                    <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 掠奪苦無 [Y] 檢視武器</div>
+                    <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 神罰雷槌 [Y] 檢視武器</div>
                     <div class="text-white/80">[Ctrl] 蹲下 [Shift] 靜走 [右鍵] 瞄準／倍率</div>
                     <div class="text-white/80">[C] 煙霧彈 [Q] 閃光/竄升 [E] 衝刺/冰牆 [X] 暴風刃大招</div>
                     <div class="text-[#FF4655] font-bold">[4/F] 裝包/拆包 | [B] 商店與連線大廳 | [TAB] 計分板</div>
@@ -383,7 +383,7 @@
                     <div class="flex flex-col items-end">
                         <div class="flex items-center space-x-2">
                             <span class="text-[11px] text-[#00F5D4] font-bold">¤ <span id="hud-creds">9000</span></span>
-                            <span id="hud-weapon-name" class="text-xs font-black tracking-widest text-[#FF4655] uppercase">掠奪暴徒 VANDAL</span>
+                            <span id="hud-weapon-name" class="text-xs font-black tracking-widest text-[#FF4655] uppercase">神罰暴徒 VANDAL</span>
                         </div>
                         <div class="flex items-baseline space-x-1.5 mt-0.5">
                             <span id="hud-ammo-mag" class="font-val text-4xl sm:text-5xl font-black text-white leading-none">25</span>
@@ -539,27 +539,32 @@
                 <p class="text-xs text-white/60">選好裝備後，點擊右上方「進入戰場」。按 B 返回購買頁，按 Esc 釋放滑鼠。</p>
             </section>
             <section class="lg:col-span-6 space-y-3">
-                <h2 class="font-black text-[#00F5D4]">武器庫</h2>
+                <h2 class="font-black text-[#00F5D4]">武器庫 <span class="text-xs text-[#70e9ff]">全武器・SMITE 神罰</span></h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-4 text-left space-y-3">
-                        <div class="flex justify-between gap-2"><strong>掠奪暴徒 VANDAL</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
+                        <div class="flex justify-between gap-2"><strong>神罰暴徒 VANDAL</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 160 · 身體 40 · 25 發</div>
                     </button>
                     <button id="wpn-card-phantom" onclick="buyWeapon('phantom')" class="val-card  p-4 text-left space-y-3">
-                        <div class="flex justify-between gap-2"><strong>奇點幻象 PHANTOM</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
+                        <div class="flex justify-between gap-2"><strong>神罰幻象 PHANTOM</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 140 · 身體 39 · 30 發</div>
                     </button>
+                    <button id="wpn-card-odin" onclick="buyWeapon('odin')" class="val-card p-4 text-left space-y-3">
+                        <div class="flex justify-between gap-2"><strong>神罰奧丁 ODIN</strong><span class="text-[#00F5D4]">¤ 3200</span></div>
+                        <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M3 10h111v8H75v12H49V18H26l-5 10h-9l3-10H3zM35 4h42v4H35zM115 11h12v5h-12z"/></svg>
+                        <div class="text-xs text-white/70">爆頭 95 · 身體 38 · 100 發 · 1.15× 瞄準</div>
+                    </button>
                     <button id="wpn-card-operator" onclick="buyWeapon('operator')" class="val-card  p-4 text-left space-y-3">
-                        <div class="flex justify-between gap-2"><strong>龍火重狙・間諜 OPERATOR</strong><span class="text-[#00F5D4]">¤ 4700</span></div>
+                        <div class="flex justify-between gap-2"><strong>神罰間諜 OPERATOR</strong><span class="text-[#00F5D4]">¤ 4700</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 255 · 身體 150 · 右鍵開鏡</div>
                     </button>
                     <button id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card  p-4 text-left space-y-3">
-                        <div class="flex justify-between gap-2"><strong>制式手槍 CLASSIC</strong><span class="text-[#00F5D4]">¤ 0</span></div>
+                        <div class="flex justify-between gap-2"><strong>神罰手槍 CLASSIC</strong><span class="text-[#00F5D4]">¤ 0</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
-                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換苦無</div>
+                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換雷槌</div>
                     </button>
                 </div>
             </section>
@@ -652,11 +657,11 @@
                 gain.connect(this.ctx.destination);
                 noise.start(now);
 
-                // Reaver dark resonant undertone
+                // Smite-inspired electric resonance
                 const osc = this.ctx.createOscillator();
                 const oscGain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(type === 'operator' ? 95 : 155, now);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(type === 'operator' ? 196 : type === 'odin' ? 147 : 294, now);
                 osc.frequency.exponentialRampToValueAtTime(32, now + 0.11);
                 oscGain.gain.setValueAtTime(0.26, now);
                 oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
@@ -673,7 +678,7 @@
                 const baseFreqs = [587.33, 659.25, 783.99, 880.0, 1046.5];
                 const freq = baseFreqs[Math.min(killStreak - 1, 4)];
 
-                // Reaver-style dark chime + crisp headshot dink
+                // Smite-inspired harmonic chime + crisp headshot dink
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'triangle';
@@ -760,10 +765,55 @@
         /********************************************************************
          * 2. WEAPON & AGENT CONFIGURATION
          ********************************************************************/
+        const SMITE_SKIN = Object.freeze({
+            id: 'smite', name: '神罰 SMITE',
+            porcelain: 0x102345, gold: 0x9fb7c9, accent: 0x49dfff,
+            energy: 0xb9f5ff, dark: 0x061128
+        });
+        function createSmiteTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 1024, 0);
+            gradient.addColorStop(0, '#030b24');
+            gradient.addColorStop(0.45, '#10234d');
+            gradient.addColorStop(0.8, '#117caa');
+            gradient.addColorStop(1, '#59ebf6');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1024, 512);
+            let seed = 424242;
+            const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+            const bolt = (x, y, dx, dy, steps, width) => {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                for (let i = 0; i < steps; i++) {
+                    x += dx + (random() - 0.5) * 28;
+                    y += dy + (random() - 0.5) * 38;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineWidth = width;
+                ctx.strokeStyle = '#ecfcff';
+                ctx.shadowColor = '#6fcfff';
+                ctx.shadowBlur = 10;
+                ctx.stroke();
+                return {x, y};
+            };
+            for (let i = 0; i < 9; i++) {
+                const y = random() * 512;
+                bolt(0, y, 42, 0, 25, 2.5);
+                bolt(180 + random() * 600, y, 14, i % 2 ? 22 : -22, 8, 1.4);
+            }
+            ctx.shadowBlur = 0;
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+            return texture;
+        }
+
         const WEAPONS = {
             vandal: {
                 id: 'vandal',
-                name: '掠奪暴徒 VANDAL',
+                name: '神罰暴徒 VANDAL',
                 cost: 2900,
                 headDmg: 160,
                 bodyDmg: 40,
@@ -782,7 +832,7 @@
             },
             phantom: {
                 id: 'phantom',
-                name: '奇點幻象 PHANTOM',
+                name: '神罰幻象 PHANTOM',
                 cost: 2900,
                 headDmg: 140,
                 bodyDmg: 39,
@@ -799,9 +849,29 @@
                 color: 0x00F5D4,
                 glowColor: 0x00F5D4
             },
+            odin: {
+                id: 'odin',
+                name: '神罰奧丁 ODIN',
+                cost: 3200,
+                headDmg: 95,
+                bodyDmg: 38,
+                fireRate: 83,
+                fullAutoFireRate: 64,
+                zoomLevels: [1.15],
+                magSize: 100,
+                reserve: 200,
+                reloadTimeMs: 5000,
+                recoilPitch: 0.018,
+                spreadBase: 0.006,
+                spreadMove: 0.085,
+                auto: true,
+                moveSpeedMult: 0.76,
+                color: 0xB5179E,
+                glowColor: 0x00F5D4
+            },
             operator: {
                 id: 'operator',
-                name: '龍火間諜 OPERATOR',
+                name: '神罰間諜 OPERATOR',
                 cost: 4700,
                 headDmg: 255,
                 bodyDmg: 150,
@@ -819,7 +889,7 @@
             },
             classic: {
                 id: 'classic',
-                name: '制式手槍 CLASSIC',
+                name: '神罰手槍 CLASSIC',
                 cost: 0,
                 headDmg: 78,
                 bodyDmg: 26,
@@ -836,7 +906,7 @@
             },
             melee: {
                 id: 'melee',
-                name: '掠奪苦無 REAVER KUNAI',
+                name: '神罰雷槌 SMITE HAMMER',
                 cost: 0,
                 headDmg: 150,
                 bodyDmg: 75,
@@ -870,6 +940,12 @@
                 glowColor: 0x00F5D4
             }
         };
+
+        Object.values(WEAPONS).forEach(weapon => {
+            weapon.skin = SMITE_SKIN.id;
+            weapon.color = SMITE_SKIN.accent;
+            weapon.glowColor = SMITE_SKIN.energy;
+        });
 
         const AGENTS = {
             jett: {
@@ -923,6 +999,8 @@
             roundEnding: false,
             roundKills: 0,
             lastShotTime: 0,
+            consecutiveShots: 0,
+            reloadTimeout: null,
             recoilAccum: 0,
             cCharges: 2,
             cCooldown: 0,
@@ -984,7 +1062,7 @@
         scene.add(sunLight);
 
         // Dynamic Muzzle Flash PointLight attached to player
-        const muzzlePointLight = new THREE.PointLight(0xffb703, 0, 12);
+        const muzzlePointLight = new THREE.PointLight(SMITE_SKIN.energy, 0, 12);
         camera.add(muzzlePointLight);
 
         // Procedural Textures
@@ -1199,6 +1277,8 @@
         }
         buildArena();
 
+        const smiteTexture = createSmiteTexture();
+
         // 3D Animated Spike Model
         const spikeGroup = new THREE.Group();
         const spikeBase = new THREE.Mesh(
@@ -1243,9 +1323,9 @@
             const wpn = WEAPONS[wpnKey];
 
             // Materials
-            const darkMetal = new THREE.MeshStandardMaterial({ color: 0x161d26, metalness: 0.75, roughness: 0.28 });
-            const gunSteel = new THREE.MeshStandardMaterial({ color: 0x2b3645, metalness: 0.6, roughness: 0.35 });
-            const skinAccent = new THREE.MeshStandardMaterial({ color: wpn.color, metalness: 0.5, roughness: 0.25 });
+            const darkMetal = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.32, metalness: 0.4, roughness: 0.3 });
+            const gunSteel = new THREE.MeshStandardMaterial({ color: SMITE_SKIN.gold, metalness: 0.85, roughness: 0.2 });
+            const skinAccent = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.4, metalness: 0.35, roughness: 0.25 });
             const glowMat = new THREE.MeshBasicMaterial({ color: wpn.glowColor });
             const gloveMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
             const skinMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69, roughness: 0.6 });
@@ -1268,32 +1348,48 @@
                 return;
             }
 
-            // 2. REAVER KUNAI MELEE KNIFE ([3] Key)
+            // Smite-inspired lightning hammer, matching the supplied reference.
             if (wpnKey === 'melee') {
                 knifeSpinGroup = new THREE.Group();
-                knifeSpinGroup.position.set(0.26, -0.22, -0.45);
-
-                // Finger ring
-                const ring = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.008, 8, 16), skinAccent);
-                ring.rotation.y = Math.PI / 2;
-                // Handle grip
-                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.11, 8), darkMetal);
-                handle.position.y = 0.07;
-                // Diamond Kunai Blade
-                const blade = new THREE.Mesh(new THREE.ConeGeometry(0.048, 0.26, 4), darkMetal);
-                blade.position.y = 0.24;
-                // Glowing Reaver core edge
-                const core = new THREE.Mesh(new THREE.ConeGeometry(0.051, 0.22, 4), glowMat);
-                core.position.y = 0.23;
-                core.scale.set(0.5, 0.9, 1.05);
-
-                knifeSpinGroup.add(ring, handle, blade, core);
-
-                // Right Tactical Hand holding Kunai
+                knifeSpinGroup.name = 'smite-hammer';
+                knifeSpinGroup.position.set(0.30, -0.22, -0.65);
+                knifeSpinGroup.rotation.z = -0.16;
+                const headShape = new THREE.Shape();
+                [[-0.09,-0.15],[0.09,-0.15],[0.12,-0.12],[0.12,0.12],
+                 [0.09,0.15],[-0.09,0.15],[-0.12,0.12],[-0.12,-0.12]].forEach(([x,y],i) => {
+                    if (i === 0) headShape.moveTo(x,y); else headShape.lineTo(x,y);
+                });
+                headShape.closePath();
+                const headGeometry = new THREE.ExtrudeGeometry(headShape, {
+                    depth: 0.15, bevelEnabled: true, bevelThickness: 0.008,
+                    bevelSize: 0.008, bevelSegments: 1, steps: 1
+                });
+                const position = headGeometry.attributes.position;
+                const uv = headGeometry.attributes.uv;
+                const normal = headGeometry.attributes.normal;
+                for (let i = 0; i < uv.count; i++) {
+                    uv.setXY(i, Math.abs(normal.getZ(i)) > 0.5
+                        ? (position.getX(i) + 0.13) / 0.26 : position.getZ(i) / 0.15,
+                        (position.getY(i) + 0.16) / 0.32);
+                }
+                const head = new THREE.Mesh(headGeometry, skinAccent);
+                head.name = 'lightning-hammer-head';
+                head.position.set(0, 0.29, -0.075);
+                knifeSpinGroup.add(head);
+                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.027, 0.42, 12), darkMetal);
+                handle.position.y = -0.02;
+                knifeSpinGroup.add(handle);
+                [0.12, 0.085, -0.20, -0.23].forEach(y => {
+                    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.024, 12), gunSteel);
+                    collar.position.y = y;
+                    knifeSpinGroup.add(collar);
+                });
+                const pommel = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.031, 0.045, 8), gunSteel);
+                pommel.position.y = -0.26;
+                knifeSpinGroup.add(pommel);
                 const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.09, 0.38), gloveMat);
-                rightArm.position.set(0.32, -0.30, -0.28);
+                rightArm.position.set(0.30, -0.30, -0.28);
                 rightArm.rotation.x = 0.25;
-
                 gunGroup.add(knifeSpinGroup, rightArm);
                 return;
             }
@@ -1303,10 +1399,11 @@
             const isSniper = wpnKey === 'operator';
             const isPistol = wpnKey === 'classic';
             const isPhantom = wpnKey === 'phantom';
-            const bodyLen = isSniper ? 0.95 : (isPistol ? 0.28 : 0.68);
+            const isOdin = wpnKey === 'odin';
+            const bodyLen = isOdin ? 0.9 : isSniper ? 0.95 : (isPistol ? 0.28 : 0.68);
 
             // Main Receiver Body
-            const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.11, bodyLen), darkMetal);
+            const receiver = new THREE.Mesh(new THREE.BoxGeometry(isOdin ? 0.14 : 0.085, isOdin ? 0.15 : 0.11, bodyLen), darkMetal);
             receiver.position.set(0.25, -0.22, -0.46);
             rig.add(receiver);
 
@@ -1322,7 +1419,7 @@
 
             // Barrel / Suppressor
             const barrelLen = isSniper ? 0.65 : (isPhantom ? 0.45 : (isPistol ? 0.12 : 0.34));
-            const barrelRadius = isPhantom ? 0.024 : 0.015;
+            const barrelRadius = isOdin ? 0.035 : isPhantom ? 0.024 : 0.015;
             const barrel = new THREE.Mesh(
                 new THREE.CylinderGeometry(barrelRadius, barrelRadius, barrelLen, 12),
                 isPhantom ? skinAccent : gunSteel
@@ -1355,12 +1452,25 @@
 
             // Detachable Curved Magazine (Animated during reload!)
             gunMagazineMesh = new THREE.Mesh(
-                new THREE.BoxGeometry(0.055, isPistol ? 0.14 : 0.22, 0.085),
+                new THREE.BoxGeometry(isOdin ? 0.22 : 0.055, isOdin ? 0.2 : isPistol ? 0.14 : 0.22, isOdin ? 0.22 : 0.085),
                 skinAccent
             );
             gunMagazineMesh.position.set(0.25, -0.34, isPistol ? -0.38 : -0.50);
             gunMagazineMesh.rotation.x = isPistol ? 0.15 : -0.22;
             rig.add(gunMagazineMesh);
+
+            if (isOdin) {
+                // Heavy receiver cooling fins and exposed ammunition belt.
+                for (let i = 0; i < 7; i++) {
+                    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.012, 0.012), gunSteel);
+                    fin.position.set(0.25, -0.17, -0.75 - i * 0.025);
+                    rig.add(fin);
+                    const cartridge = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.065, 6), skinAccent);
+                    cartridge.rotation.z = Math.PI / 2;
+                    cartridge.position.set(0.35 + i * 0.009, -0.24 - i * 0.016, -0.44);
+                    rig.add(cartridge);
+                }
+            }
 
             // Pistol Grip & Buttstock
             const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.15, 0.07), darkMetal);
@@ -1387,7 +1497,7 @@
             // 3D Star-Cross Muzzle Flash Mesh
             muzzleFlashGroup = new THREE.Group();
             const flashMat = new THREE.MeshBasicMaterial({
-                color: 0xffd166,
+                color: SMITE_SKIN.energy,
                 transparent: true,
                 opacity: 0,
                 side: THREE.DoubleSide
@@ -1653,7 +1763,7 @@
 
             const gunMesh = new THREE.Mesh(
                 new THREE.BoxGeometry(0.11, 0.15, 0.82),
-                new THREE.MeshStandardMaterial({ color: 0xB5179E, metalness: 0.6 })
+                new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.3, metalness: 0.4 })
             );
             gunMesh.position.set(0.25, 1.32, -0.45);
 
@@ -2196,7 +2306,11 @@
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
-            const shotInterval = wpn.fireRate / (state.isScoped ? (wpn.adsRateMultiplier || 1) : 1);
+            if (now - state.lastShotTime > 200) state.consecutiveShots = 0;
+            const baseInterval = wpn.id === 'odin'
+                ? (state.isScoped ? wpn.fullAutoFireRate : Math.max(wpn.fullAutoFireRate, wpn.fireRate - state.consecutiveShots * 2))
+                : wpn.fireRate;
+            const shotInterval = baseInterval / (state.isScoped ? (wpn.adsRateMultiplier || 1) : 1);
             if (now - state.lastShotTime < shotInterval) return;
 
             if (!wpn.isMelee && state.mag <= 0) {
@@ -2205,6 +2319,7 @@
             }
 
             state.lastShotTime = now;
+            state.consecutiveShots++;
             state.isInspecting = false;
             if (!wpn.isMelee) {
                 state.mag--;
@@ -2222,7 +2337,7 @@
                 muzzlePointLight.intensity = 2.8;
             }
             gunGroup.position.z = wpn.isMelee ? -0.22 : 0.11;
-            gunGroup.rotation.x = wpn.isMelee ? -0.35 : 0.075;
+            gunGroup.rotation.x = wpn.isMelee ? -0.75 : 0.075;
             spawnEjectedShell();
 
             // Calculate Accuracy Spread
@@ -2361,7 +2476,8 @@
             setScope(false);
             document.getElementById('hud-ammo-mag').textContent = 'RLD';
 
-            setTimeout(() => {
+            state.reloadTimeout = setTimeout(() => {
+                state.reloadTimeout = null;
                 const needed = wpn.magSize - state.mag;
                 const loaded = Math.min(needed, state.reserve);
                 state.mag += loaded;
@@ -2369,7 +2485,7 @@
                 state.isReloading = false;
                 if (gunMagazineMesh) gunMagazineMesh.position.y = -0.34;
                 updateAmmoHUD();
-            }, 1350);
+            }, wpn.reloadTimeMs || 1350);
         }
 
         let centerBannerTimer = null;
@@ -2659,6 +2775,9 @@
          * 11. WEAPON SWITCHING, SHOP & UI HELPERS
          ********************************************************************/
         function equipWeaponSlot(slotKey) {
+            clearTimeout(state.reloadTimeout);
+            state.reloadTimeout = null;
+            state.consecutiveShots = 0;
             setScope(false);
             state.isReloading = false;
             state.isInspecting = false;
@@ -2686,7 +2805,12 @@
 
         window.buyWeapon = function(wpnKey) {
             const wpn = WEAPONS[wpnKey];
-            if (state.primaryWeaponKey !== wpnKey && state.creds >= wpn.cost) {
+            if (!wpn) return;
+            if (state.primaryWeaponKey !== wpnKey) {
+                if (state.creds < wpn.cost) {
+                    showCenterBanner('CREDITS', '信用點不足，無法購買這把武器', 1800);
+                    return;
+                }
                 state.creds -= wpn.cost;
             }
             if (wpnKey !== 'classic' && wpnKey !== 'melee') {
@@ -2729,7 +2853,7 @@
         function updateShopUI() {
             document.getElementById('shop-creds').textContent = state.creds;
             document.getElementById('hud-creds').textContent = state.creds;
-            ['vandal', 'phantom', 'operator', 'classic'].forEach(k => {
+            ['vandal', 'phantom', 'odin', 'operator', 'classic'].forEach(k => {
                 const el = document.getElementById(`wpn-card-${k}`);
                 if (el) el.classList.toggle('active', state.weaponKey === k);
             });
@@ -3249,7 +3373,7 @@
             // Reload Magazine Drop & Insert Animation
             if (state.isReloading && gunMagazineMesh) {
                 state.reloadTimer += dt;
-                const phase = Math.sin((state.reloadTimer / 1.35) * Math.PI);
+                const phase = Math.sin((state.reloadTimer / ((WEAPONS[state.weaponKey].reloadTimeMs || 1350) / 1000)) * Math.PI);
                 gunMagazineMesh.position.y = -0.34 - phase * 0.28;
                 gunGroup.rotation.z = phase * 0.26;
                 gunGroup.rotation.x = phase * 0.18;
@@ -3257,7 +3381,8 @@
                 // [Y] Key Weapon / Kunai Spin Inspect Animation
                 state.inspectTimer += dt;
                 if (knifeSpinGroup) {
-                    knifeSpinGroup.rotation.x = state.inspectTimer * Math.PI * 4;
+                    knifeSpinGroup.rotation.y = Math.sin(state.inspectTimer / 2.2 * Math.PI) * 0.9;
+                    knifeSpinGroup.rotation.z = -0.16 + Math.sin(state.inspectTimer / 2.2 * Math.PI) * 0.35;
                 } else {
                     const p = Math.sin((state.inspectTimer / 2.2) * Math.PI);
                     gunGroup.rotation.z = p * 0.52;
@@ -3266,7 +3391,7 @@
                 if (state.inspectTimer >= 2.2) {
                     state.isInspecting = false;
                     gunGroup.rotation.set(0, 0, 0);
-                    if (knifeSpinGroup) knifeSpinGroup.rotation.set(0, 0, 0);
+                    if (knifeSpinGroup) knifeSpinGroup.rotation.set(0, 0, -0.16);
                 }
             } else {
                 gunGroup.rotation.z += (0 - gunGroup.rotation.z) * 10 * dt;
