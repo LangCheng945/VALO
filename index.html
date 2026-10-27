@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VALORANT Web | 特戰英豪 3D 擬真戰術射擊旗艦版</title>
+    <title>VALO ASCENT | 義境空島風格訓練場</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Oswald:wght@600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
@@ -116,6 +116,38 @@
         .custom-scroll::-webkit-scrollbar-thumb {
             background: var(--val-red);
         }
+        /* Training workspace: restrained tactical panels, warm white and signal red. */
+        .trainer-shell{position:fixed;inset:0;z-index:40;display:grid;grid-template-columns:68px 1fr;background:#0d131b;color:#e9e8e3;font-size:13px}
+        .trainer-rail{display:flex;flex-direction:column;align-items:center;gap:22px;padding:23px 0;background:#090e14;border-right:1px solid #ffffff0d}
+        .trainer-rail a{display:grid;place-items:center;width:38px;height:38px;color:#7b8796;text-decoration:none;font-size:26px;transition:color .15s,background .15s}
+        .trainer-rail a:hover{color:#ff626c;background:#ff465515}.trainer-rail .range-mark{font:bold 29px 'Oswald',sans-serif;color:#fff;margin-bottom:34px}.range-mark span{color:#ff4655;margin-left:-9px}
+        .rail-index{margin-top:auto;font:9px/1.8 monospace;color:#65717e;letter-spacing:2px;writing-mode:vertical-rl}
+        .trainer-workspace{min-width:0;min-height:0;display:grid;grid-template-rows:70px minmax(0,1fr) 78px;background:radial-gradient(ellipse at 36% 0%,#1d2a3a55,transparent 65%),#0e151f}
+        .trainer-topbar{display:flex;justify-content:space-between;align-items:center;padding:0 34px;border-bottom:1px solid #ffffff12}
+        .trainer-brand{font:700 22px 'Oswald',sans-serif;letter-spacing:2px}.trainer-brand>span{color:#ff4655;margin:0 12px}.trainer-brand small{font:10px monospace;letter-spacing:3px;color:#a4adb8}
+        .trainer-online{font:9px monospace;color:#8c99a9;letter-spacing:1.4px;display:flex;gap:12px;align-items:center}.trainer-online i,.skin-badge i{width:5px;height:5px;background:#83c8b5;border-radius:50%;box-shadow:0 0 9px #83c8b544}.trainer-online span{color:#394655}
+        .trainer-layout{display:grid;grid-template-columns:minmax(0,1fr) 328px;min-height:0;min-width:0;margin:0}
+        .trainer-main{overflow-y:auto;padding:32px 38px 30px;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#344454 transparent}
+        .range-hero{display:flex;justify-content:space-between;align-items:center;min-height:239px;border-bottom:1px solid #ffffff12;padding-bottom:26px;position:relative}
+        .range-hero-copy{position:relative;z-index:1}.range-eyebrow{font:9px monospace;letter-spacing:2px;color:#98a6b8;margin-bottom:16px}.range-eyebrow span{color:#ff4655;margin:0 7px}
+        .range-hero h1{font-size:clamp(36px,3.7vw,62px);line-height:1.15;font-weight:900;letter-spacing:-2px;margin:0 0 16px}.range-hero h1 em{font-style:normal;color:#ff5966}
+        .free-roam-button{margin-top:13px;padding:8px 14px;color:#d9e3ec;font-size:10px;border:1px solid #71879866;background:#8aadb110;cursor:pointer}.free-roam-button:hover{border-color:#ff5966}.free-roam-button span{margin-left:22px;color:#ff6570}
+        .hero-description{font-size:11px;color:#97a3b2;line-height:1.9;max-width:390px}.hero-tags{display:flex;gap:18px;color:#778696;font-size:9px;margin-top:16px;letter-spacing:1px}
+        .range-blueprint{width:30%;max-width:250px;min-width:160px;color:#8b9bab;text-align:center}.blueprint-label{font:8px monospace;letter-spacing:4px;color:#738193}
+        .trainer-summary{display:grid;grid-template-columns:repeat(4,1fr);padding:24px 0 20px;border-bottom:1px solid #ffffff12;gap:12px}.trainer-summary>div{border-right:1px solid #ffffff12;padding-right:12px}.trainer-summary>div:last-child{border:0}.trainer-summary span{font-size:10px;color:#9ca8b6;display:block}.trainer-summary strong{display:block;font:500 29px 'Oswald',sans-serif;margin:5px 0;letter-spacing:1px}.trainer-summary strong em{font:14px 'Oswald',sans-serif;font-style:normal;color:#738397;margin-left:3px}.trainer-summary small{font:7px monospace;letter-spacing:1.4px;color:#65778a}
+        .trainer-section{padding-top:25px;scroll-margin:20px}.section-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.section-heading h2{font-weight:700;font-size:13px;letter-spacing:1px;margin:0}.section-heading h2>span{font:10px monospace;color:#ff5a66;margin-right:10px}.section-heading>small{font:8px monospace;letter-spacing:1.7px;color:#718196}
+        .training-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.mode-card{position:relative;min-width:0;text-align:left;background:#151f2b;border:1px solid #ffffff0e;padding:17px 16px 13px;color:#e8e8e4;cursor:pointer;transition:.18s;overflow:hidden}.mode-card:hover{background:#1d2937;border-color:#8898a544;transform:translateY(-2px)}.mode-card.active{border-color:#ff6471;background:linear-gradient(140deg,#ff46551a,#151f2b 65%)}.mode-card.active:before{content:'';position:absolute;top:0;left:0;width:31px;height:3px;background:#ff5966}.mode-number{font:8px monospace;letter-spacing:1px;color:#8190a2}.mode-glyph{display:block;font:36px/1.4 sans-serif;color:#859aaa;margin:8px 0}.mode-card.active .mode-glyph{color:#ff6873}.mode-card strong{display:block;font-size:15px;margin-bottom:9px;letter-spacing:1px}.mode-card p{font-size:10px;line-height:1.8;color:#889aaf;min-height:35px;margin:0 0 14px}.mode-card small{display:block;font-size:9px;color:#9babbc;border-top:1px solid #ffffff0e;padding-top:11px}.mode-card small i{float:right;color:#ff6873;font-style:normal}
+        .trainer-settings-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:22px;padding:18px;background:#121c28;border:1px solid #ffffff0b}.trainer-settings-grid>label,.trainer-settings-grid>div{font-size:10px;color:#abb8c6}.trainer-settings-grid small{display:block;font-size:8px;line-height:1.7;color:#64778b;margin-top:8px}.trainer-settings-grid output{float:right;color:#e9ebe7;font-family:monospace}.trainer-settings-grid input[type=range]{width:100%;margin-top:19px;accent-color:#ff6570;height:3px;display:block}.trainer-settings-grid select{display:block;width:100%;border:1px solid #344151;border-radius:0;background:#101923;color:#d7dfe7;padding:7px;margin-top:9px;font-size:10px}.crosshair-swatches{display:flex;gap:9px;margin-top:13px}.crosshair-swatches button{width:18px;height:18px;background:var(--swatch);border:3px solid #1a2635;outline:1px solid #ffffff22;cursor:pointer}.crosshair-swatches button:hover{outline:1px solid #fff}
+        .trainer-loadout{overflow-y:auto;background:#0a111a90;border-left:1px solid #ffffff12;padding:28px 23px;scrollbar-width:thin;scrollbar-color:#344454 transparent}.trainer-loadout .section-heading{margin-bottom:22px}.loadout-credits{display:flex;justify-content:space-between;font-size:10px;color:#798ba0;align-items:center}.loadout-credits strong{font:18px 'Oswald',sans-serif;color:#dbe4e9}.skin-badge{display:flex;gap:8px;align-items:center;font:8px monospace;letter-spacing:1px;color:#8fb7c6;border-bottom:1px solid #ffffff12;margin:15px 0;padding-bottom:16px}.skin-badge span{margin-left:auto;color:#73c3d7;font:9px sans-serif}
+        .loadout-weapons{display:grid;gap:8px}.trainer-loadout .loadout-weapons .val-card{position:relative;padding:13px 14px!important;width:100%;clip-path:none;border:1px solid #ffffff0c;background:#141f2b;box-shadow:none;display:grid;grid-template-columns:1fr 75px;gap:6px 4px;text-align:left;min-height:80px;transition:.15s}.trainer-loadout .loadout-weapons .val-card.active{border-color:#ff657078;background:#ff46550d}.trainer-loadout .loadout-weapons .val-card:hover{border-color:#ffffff55;background:#1d2a38}.loadout-weapons button>div:first-child{grid-column:1/-1;display:flex;justify-content:space-between;gap:4px;margin:0!important}.loadout-weapons strong{font-size:10px;letter-spacing:.5px;color:#d7e1ea}.loadout-weapons button>div:first-child span{font:10px 'Oswald',sans-serif;color:#8595a8}.loadout-weapons button>svg{grid-column:2;grid-row:2;width:75px;height:26px;color:#94bdcf;margin:0!important;align-self:center}.loadout-weapons button>div:last-child{grid-column:1;grid-row:2;font-size:8px;line-height:1.8;color:#6e8399;margin:0!important;align-self:center}.agent-selector{display:flex;gap:7px;margin-top:18px}.agent-selector .val-card{flex:1;padding:10px;font:11px 'Oswald',sans-serif;letter-spacing:1px}.agent-selector small{color:#8599aa;float:right;font:9px sans-serif}.trainer-loadout .val-card.active{border-color:#7894a9;background:#1b2c3d;box-shadow:none}.shield-selector{display:grid;gap:6px;margin-top:8px}.shield-selector button{padding:9px;font-size:9px;text-align:left}.shield-selector span{float:right;color:#8599aa}.loadout-note{border-top:1px solid #ffffff12;padding-top:18px;margin-top:19px}.loadout-note b{font-size:11px;font-weight:500;color:#aebecb}.loadout-note p{color:#61778e;line-height:1.9;font-size:9px;margin-top:8px}
+        .trainer-footer{display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-top:1px solid #ffffff12;background:#101923;gap:15px;z-index:2}.trainer-footer>div{font-size:9px;color:#8a9bad}.trainer-footer kbd{display:inline-block;padding:3px 5px;border:1px solid #3c4b5d;background:#1e2c3d;font:9px monospace;color:#d0dae4}.trainer-footer>div>span{margin:0 8px}.trainer-footer small{margin-left:24px;color:#526a81;letter-spacing:1px}.trainer-start{background:#ff4655;color:white;border:0;padding:17px 31px;font-size:13px;font-weight:800;letter-spacing:2px;min-width:211px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));cursor:pointer;transition:.15s}.trainer-start:hover{background:#ff6470}.trainer-start span{margin-left:36px;font-size:18px}
+        .trainer-network{border-top:1px solid #ffffff12;margin-top:25px;padding-top:15px;color:#7a8da2;font-size:10px}.trainer-network>summary{cursor:pointer;list-style:none}.trainer-network>summary>span{float:right}.trainer-network>div{margin-top:15px;background:#101a26;border-color:#344859!important}.trainer-result{display:grid;grid-template-columns:1fr auto;gap:8px;padding:17px 20px;margin-top:20px;background:#83c8b50a;border:1px solid #83c8b544}.trainer-result>span{font:8px monospace;letter-spacing:2px;color:#83c8b5}.trainer-result strong{grid-column:1;font-size:16px}.trainer-result p{grid-column:1;font-size:10px;color:#93aaba}.trainer-result button{grid-column:2;grid-row:1/4;align-self:center;padding:11px;background:#83c8b522;border:1px solid #83c8b544;color:#c6e4da;font-size:10px;cursor:pointer}
+        .trainer-live{display:none;position:absolute;left:50%;top:22px;transform:translateX(-50%);gap:28px;align-items:center;z-index:20;padding:12px 20px;background:#0c1725d9;border:1px solid #ffffff1f;border-top:2px solid #ff5966;backdrop-filter:blur(8px)}.trainer-live>div>span{display:block;font:8px monospace;color:#94a6b5;letter-spacing:1px;margin-bottom:5px}.trainer-live strong{font:20px 'Oswald',sans-serif;color:#fff}.trainer-live>div:first-child strong{font:12px sans-serif;letter-spacing:1px}.trainer-live-time{padding-left:22px;border-left:1px solid #ffffff22}.trainer-live-time strong{color:#ff6873}.is-training .trainer-live{display:flex}.is-training #tactical-score,.is-training #keybind-hints{display:none}.is-training #hud>div:first-child>div:first-child>div:first-child{width:112px;height:112px}.is-training #hud>div:first-child>div:last-child>div:first-child{max-width:230px;flex-wrap:wrap;justify-content:flex-end}.is-training #stance-hud{font-size:10px;bottom:145px;background:#0c172599;border-color:#ffffff25}.is-training #hud button{font-size:10px}.is-training #chat-messages{opacity:.65}
+        .hidden{display:none!important}
+        @media(min-width:1550px){.trainer-main{padding:40px 60px}.trainer-layout{grid-template-columns:minmax(0,1fr) 365px}.range-hero{min-height:280px}.mode-card{min-height:218px;padding:20px}.range-blueprint{max-width:300px;width:35%}.hero-description{font-size:12px}.trainer-summary{padding:25px 0}}
+        @media(max-width:1100px){.trainer-layout{grid-template-columns:minmax(0,1fr) 275px}.trainer-main{padding:24px}.trainer-loadout{padding:24px 17px}.trainer-topbar,.trainer-footer{padding-left:24px;padding-right:24px}.range-blueprint{min-width:130px;width:27%}.range-hero h1{font-size:39px}.hero-tags{gap:8px;font-size:8px}.trainer-settings-grid{gap:12px}.trainer-footer small{display:none}.mode-card{padding:13px 11px}.section-heading>small{font-size:7px}}
+        @media(max-width:800px){.trainer-shell{grid-template-columns:1fr}.trainer-rail{display:none}.trainer-workspace{grid-template-rows:58px minmax(0,1fr) 73px}.trainer-layout{display:block;overflow-y:auto}.trainer-main,.trainer-loadout{overflow:visible}.trainer-loadout{border-left:0;border-top:1px solid #ffffff22}.trainer-online{display:none}.trainer-brand small{font-size:8px;letter-spacing:1px}.trainer-main{padding:22px}.range-hero h1{font-size:40px}.range-blueprint{min-width:115px;max-width:155px}.hero-description{max-width:240px;font-size:10px}.hero-tags{display:none}.trainer-summary small{display:none}.trainer-summary strong{font-size:24px}.trainer-summary span{font-size:8px}.training-modes{gap:7px}.mode-card strong{font-size:12px}.mode-card p{font-size:9px}.mode-number{font-size:7px}.mode-card small{font-size:8px}.trainer-settings-grid{grid-template-columns:1fr 1fr}.trainer-settings-grid>div{grid-column:1/-1}.crosshair-swatches{margin-top:9px}.loadout-weapons{grid-template-columns:1fr 1fr}.trainer-footer{padding:0 16px}.trainer-start{min-width:165px;padding:14px 18px;font-size:12px}.trainer-start span{margin-left:18px}.trainer-footer>div{font-size:8px}.trainer-footer>div>span{margin:0 4px}.trainer-live{gap:12px;top:14px;padding:8px 12px;left:16px;transform:none}.trainer-live strong{font-size:17px}.trainer-live>div:first-child{display:none}.is-training #hud>div:first-child>div:first-child{display:none}.trainer-live-time{padding-left:12px}}
+
     </style>
 </head>
 <body class="relative select-none">
@@ -171,6 +203,7 @@
     </div>
 
     <!-- ==================== AUTHENTIC VALORANT IN-GAME HUD ==================== -->
+    <div id="trainer-live" class="trainer-live pointer-events-none"><div><span>ASCENT / TRAINING</span><strong id="trainer-live-mode">預瞄定位</strong></div><div><span>擊殺</span><strong id="trainer-live-kills">0</strong></div><div><span>命中率</span><strong id="trainer-live-accuracy">0%</strong></div><div><span>爆頭率</span><strong id="trainer-live-headshots">0%</strong></div><div class="trainer-live-time"><span>剩餘時間</span><strong id="trainer-live-time">01:00</strong></div></div>
     <div id="hud" class="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 sm:p-5">
 
         <!-- TOP BAR: Minimap Radar | Top Agent Rosters & Round Timer | Killfeed -->
@@ -182,10 +215,10 @@
                     <canvas id="radar-canvas" width="176" height="176" class="w-full h-full"></canvas>
                     <div class="absolute top-1.5 text-[9px] font-val font-bold tracking-widest text-[#00F5D4]">N ▲</div>
                     <div class="absolute bottom-1.5 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-[#ECE8E1]/90 tracking-wider">
-                        ASCENT // A 據點
+                        ASCENT // REBUILD
                     </div>
                 </div>
-                <div class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
+                <div id="keybind-hints" class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
                     <div class="font-black text-[#00F5D4] tracking-wider" id="hud-mode-label">1v5 擬真戰術攻防</div>
                     <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 神罰雷槌 [Y] 檢視武器</div>
                     <div class="text-white/80">[Ctrl] 蹲下 [Shift] 靜走 [右鍵] 瞄準／倍率</div>
@@ -195,7 +228,7 @@
             </div>
 
             <!-- Top-Center: Official Valorant Roster Portraits + Score + Timer -->
-            <div class="flex flex-col items-center">
+            <div id="tactical-score" class="flex flex-col items-center">
                 <div class="flex items-center space-x-2">
                     <!-- Ally Portrait Strip -->
                     <div id="ally-roster-strip" class="hidden sm:flex items-center space-x-1 bg-[#0F1923]/85 px-2 py-1 border-b-2 border-[#00F5D4]">
@@ -431,34 +464,71 @@
         </div>
     </div>
 
-    <!-- ==================== PRE-ROUND / ARMORY & MULTIPLAYER LOBBY MODAL ==================== -->
-    <div id="buy-menu-modal" class="absolute inset-0 z-30 bg-[#0F1923]/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto">
-
-        <!-- Header -->
-        <div class="flex flex-wrap justify-between items-center border-b border-white/15 pb-3 gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="w-3 h-9 bg-[#FF4655]"></div>
-                <div>
-                    <h1 class="font-val text-2xl sm:text-3xl font-black tracking-wider text-white">
-                        VALORANT <span class="text-[#FF4655]">ONLINE</span> 特戰英豪 3D 多人聯機旗艦版
-                    </h1>
-                    <p class="text-xs text-white/65">
-                        支援即時好友連線房間對戰 (PvP / 合作打 AI) • 同步 3D 走位、曳光彈、煙霧彈、玉石牆與 Spike 攻防
-                    </p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-3">
-                <div class="bg-white/5 border border-white/20 px-3.5 py-1 val-clip-sm text-right">
-                    <div class="text-[10px] text-white/60 font-bold">CREDITS 宇宙幣</div>
-                    <div class="font-val text-xl font-bold text-[#00F5D4]">¤ <span id="shop-creds">9000</span></div>
-                </div>
-                <button id="btn-start-combat" class="val-btn val-clip px-6 py-2.5 font-black text-base tracking-widest shadow-lg cursor-pointer">
-                    鎖定準星・進入戰場 [ESC/B]
-                </button>
-            </div>
-        </div>
-
-        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
+    <!-- Training configuration and armory: every control belongs to this modal. -->
+    <div id="buy-menu-modal" class="trainer-shell">
+        <aside class="trainer-rail" aria-label="訓練場導覽">
+            <a href="#training-home" class="range-mark" aria-label="訓練主頁">V<span>／</span></a>
+            <a href="#training-modes" title="訓練模式" aria-label="訓練模式">⌖</a>
+            <a href="#loadout-panel" title="武器庫" aria-label="武器庫">▰</a>
+            <a href="#trainer-settings" title="操作設定" aria-label="操作設定">⚙</a>
+            <span class="rail-index">RANGE<br>01 / A</span>
+        </aside>
+        <div class="trainer-workspace">
+            <header class="trainer-topbar" id="training-home">
+                <div class="trainer-brand">VALO<span>／</span><small>ASCENT / FIELD TRAINING</small></div>
+                <div class="trainer-online"><i></i> 瀏覽器訓練場 <span>／</span> LOCAL SESSION</div>
+            </header>
+            <div id="armory-grid" class="trainer-layout">
+                <main class="trainer-main">
+                    <section class="range-hero">
+                        <div class="range-hero-copy">
+                            <p class="range-eyebrow">ASCENT <span>／</span> FIELD TRAINING</p>
+                            <h1>義境空島。<br><em>從轉角開始。</em></h1>
+                            <p class="hero-description">探索 A、B 點與中路，練習準星定位與進點路線。Ascent 風格自建場景，非原版等比例地圖。</p>
+                            <button class="free-roam-button" onclick="startFreeRoam()">自由跑圖 <span>↗</span></button>
+                            <div class="hero-tags"><span>01　準星定位</span><span>02　急停射擊</span><span>03　壓槍控制</span></div>
+                        </div>
+                        <div class="range-blueprint" aria-hidden="true">
+                            <svg viewBox="0 0 300 230" fill="none">
+                                <path d="M40 180V35h70v45h80V35h70v145H40Z" stroke="currentColor" opacity=".4"/>
+                                <path d="M70 175V70h25m135 105V70h-25M150 175V65M70 175h160M90 100h120" stroke="#ff6570" stroke-dasharray="4 6" opacity=".65"/>
+                                <rect x="48" y="40" width="52" height="44" fill="#8bb6af18" stroke="#8bb6af"/>
+                                <rect x="200" y="40" width="52" height="44" fill="#8bb6af18" stroke="#8bb6af"/>
+                                <text x="68" y="69" fill="#b7d5cd" font-size="17">B</text><text x="220" y="69" fill="#b7d5cd" font-size="17">A</text>
+                                <text x="133" y="115" fill="currentColor" font-size="9" letter-spacing="2">MID</text>
+                                <circle cx="150" cy="175" r="4" fill="#ff6570"/>
+                                <text x="94" y="205" fill="currentColor" font-size="8" letter-spacing="2">ATTACKER SPAWN</text>
+                            </svg>
+                            <span class="blueprint-label">ASCENT / ORIGINAL REBUILD</span>
+                        </div>
+                    </section>
+                    <div class="trainer-summary">
+                        <div><span>個人最佳擊殺</span><strong id="trainer-best">—</strong><small>PERSONAL BEST</small></div>
+                        <div><span>本輪命中率</span><strong id="trainer-menu-accuracy">0<em>%</em></strong><small>ACCURACY</small></div>
+                        <div><span>本輪爆頭率</span><strong id="trainer-menu-headshots">0<em>%</em></strong><small>HEADSHOT RATE</small></div>
+                        <div><span>已完成訓練</span><strong id="trainer-sessions">0</strong><small>SESSIONS</small></div>
+                    </div>
+                    <section id="trainer-result" class="trainer-result hidden" aria-live="polite">
+                        <span>SESSION COMPLETE</span><strong id="trainer-result-title">訓練完成</strong><p id="trainer-result-detail"></p>
+                        <button onclick="resetTraining()">再練一輪 ↗</button>
+                    </section>
+                    <section id="training-modes" class="trainer-section">
+                        <div class="section-heading"><h2><span>01</span> 選擇訓練</h2><small>CHOOSE YOUR FOCUS</small></div>
+                        <div class="training-modes">
+                            <button id="mode-stationary" onclick="setGameMode('stationary')" class="mode-card active"><span class="mode-number">01 / FLICK</span><b class="mode-glyph">⊕</b><strong>預瞄定位</strong><p>預瞄、甩槍、爆頭。一發一個目標。</p><small>地圖預瞄 · 無反擊 <i>↗</i></small></button>
+                            <button id="mode-strafing" onclick="setGameMode('strafing')" class="mode-card"><span class="mode-number">02 / STRAFE</span><b class="mode-glyph">↔</b><strong>移動追蹤</strong><p>追蹤左右移動的目標，掌握急停時機。</p><small>移動靶 · 無反擊 <i>↗</i></small></button>
+                            <button id="mode-tactical" onclick="setGameMode('tactical')" class="mode-card"><span class="mode-number">03 / TACTICAL</span><b class="mode-glyph">◇</b><strong>戰術攻防</strong><p>利用掩體與技能，完成據點攻防。</p><small>AI 交戰 · 裝包攻防 <i>↗</i></small></button>
+                        </div>
+                    </section>
+                    <section id="trainer-settings" class="trainer-section">
+                        <div class="section-heading"><h2><span>02</span> 調整手感</h2><small>MAKE IT YOURS</small></div>
+                        <div class="trainer-settings-grid">
+                            <label>滑鼠靈敏度 <output id="sensitivity-value">0.35</output><input id="sensitivity-input" type="range" min="0.1" max="1" step="0.01" value="0.35" oninput="setTrainerSensitivity(this.value)"><small>固定 DPI，找到適合自己的手感。</small></label>
+                            <label>訓練時間<select id="trainer-duration" onchange="setTrainerDuration(this.value)"><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">120 秒</option><option value="0">自由練習 · 不限時</option></select><small>開啟購買頁時暫停計時。</small></label>
+                            <div>準星顏色<div class="crosshair-swatches"><button style="--swatch:#00f5d4" onclick="setCrosshairColor('#00f5d4')" aria-label="青色準星"></button><button style="--swatch:#ffffff" onclick="setCrosshairColor('#ffffff')" aria-label="白色準星"></button><button style="--swatch:#ff4655" onclick="setCrosshairColor('#ff4655')" aria-label="紅色準星"></button><button style="--swatch:#b5ff62" onclick="setCrosshairColor('#b5ff62')" aria-label="綠色準星"></button></div><small>選擇與場景對比清楚的顏色。</small></div>
+                        </div>
+                    </section>
+                    <details class="trainer-network"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
@@ -523,25 +593,13 @@
             </div>
         </div>
 
-        <!-- All armory content must remain inside this modal. -->
-        <div id="armory-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-4 my-3">
-            <section class="lg:col-span-3 space-y-3">
-                <h2 class="font-black text-[#00F5D4]">特務與訓練模式</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active p-3 text-left"><strong>JETT</strong><br><span class="text-xs">氣流竄升・逐風衝刺</span></button>
-                    <button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card p-3 text-left"><strong>SAGE</strong><br><span class="text-xs">閃光・結晶冰牆</span></button>
-                </div>
-                <div class="grid gap-2">
-                    <button id="mode-tactical" onclick="setGameMode('tactical')" class="val-card active p-3 text-left">戰術攻防</button>
-                    <button id="mode-strafing" onclick="setGameMode('strafing')" class="val-card p-3 text-left">移動急停靶場</button>
-                    <button id="mode-stationary" onclick="setGameMode('stationary')" class="val-card p-3 text-left">定點壓槍靶場</button>
-                </div>
-                <p class="text-xs text-white/60">選好裝備後，點擊右上方「進入戰場」。按 B 返回購買頁，按 Esc 釋放滑鼠。</p>
-            </section>
-            <section class="lg:col-span-6 space-y-3">
-                <h2 class="font-black text-[#00F5D4]">武器庫 <span class="text-xs text-[#70e9ff]">全武器・SMITE 神罰</span></h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-4 text-left space-y-3">
+</details>
+                </main>
+                <aside class="trainer-loadout" id="loadout-panel">
+                    <div class="section-heading"><h2>武器配置</h2><small>LOADOUT / 03</small></div>
+                    <div class="loadout-credits">可用信用點<strong>¤ <span id="shop-creds">9000</span></strong></div>
+                    <p class="skin-badge"><i></i> SMITE COLLECTION <span>神罰</span></p>
+                    <div class="loadout-weapons">                    <button id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰暴徒 VANDAL</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 160 · 身體 40 · 25 發</div>
@@ -566,27 +624,13 @@
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換雷槌</div>
                     </button>
-                </div>
-            </section>
-            <section class="lg:col-span-3 space-y-3">
-                <h2 class="font-black text-[#00F5D4]">護盾與操作</h2>
-                <button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active p-3 w-full text-left"><strong>重型護盾 HEAVY SHIELD</strong><div class="text-xs text-[#00F5D4]">+50 護甲 · ¤ 1000</div></button>
-                <button id="shield-card-light" onclick="buyShield(25)" class="val-card p-3 w-full text-left"><strong>輕型護盾 LIGHT SHIELD</strong><div class="text-xs text-[#00F5D4]">+25 護甲 · ¤ 400</div></button>
-                <div class="val-card p-3 text-xs space-y-2">
-                    <div class="font-black text-[#00F5D4]">操作按鍵</div>
-                    <p>WASD 移動 · Shift 靜走 · Ctrl 蹲下 · Space 跳躍</p>
-                    <p>左鍵射擊 · 右鍵瞄準 · R 換彈（Operator：2.5× / 5× / 關閉）</p>
-                    <p>1 / 2 / 3 切換武器 · Y 檢視武器</p>
-                    <p>C / Q / E 技能 · X 終極技能</p>
-                    <p>按住 4 / F 裝包或拆包</p>
-                    <p>B 購買頁 · Tab 計分板 · Enter 聊天</p>
-                </div>
-            </section>
-        </div>
-
-        <div class="border-t border-white/15 pt-2 flex justify-between items-center text-xs text-white/50">
-            <div>多人連線提示：建立房間後點擊「複製房號」傳給朋友，朋友輸入相同的 6 碼房號即可進入同一張 3D 戰場即時對戰！</div>
-            <div class="font-val text-white/70">ASCENT // MULTIPLAYER PROTOCOL V3.5</div>
+</div>
+                    <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
+                    <div class="shield-selector"><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card">輕型護盾 <span>25 / ¤400</span></button></div>
+                    <div class="loadout-note"><b>裝備已就緒。</b><p>Ctrl 蹲下 · Shift 靜走 · 右鍵瞄準<br>3 雷槌 · Y 檢視 · R 換彈</p></div>
+                </aside>
+            </div>
+            <footer class="trainer-footer"><div><kbd>B</kbd> 購買／暫停 <span>·</span> <kbd>Esc</kbd> 釋放滑鼠 <small>專注當下這一發。</small></div><button id="btn-start-combat" class="trainer-start">進入 Ascent <span>↗</span></button></footer>
         </div>
     </div>
 
@@ -806,6 +850,7 @@
             }
             ctx.shadowBlur = 0;
             const texture = new THREE.CanvasTexture(canvas);
+            texture.encoding = THREE.sRGBEncoding;
             texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
             return texture;
         }
@@ -972,7 +1017,7 @@
         const state = {
             isLocked: false,
             inBuyMenu: true,
-            gameMode: 'tactical',
+            gameMode: 'stationary',
             agent: 'jett',
             team: 'attack', // 'attack' or 'defend'
             playerName: '特務_' + Math.floor(100 + Math.random() * 899),
@@ -1014,6 +1059,82 @@
             walkBobTime: 0
         };
 
+        function getTrainingSummary(training) {
+            return {
+                accuracy: training.shots ? Math.round(training.hits / training.shots * 100) : 0,
+                headshots: training.hits ? Math.round(training.headshots / training.hits * 100) : 0,
+                kills: training.kills
+            };
+        }
+        function readTrainingData() {
+            try { return JSON.parse(localStorage.getItem('valo-range-v1') || '{}'); }
+            catch { return {}; }
+        }
+        const trainingData = readTrainingData();
+        state.sensitivity = Number.isFinite(trainingData.sensitivity) ? Math.max(.1,Math.min(1,trainingData.sensitivity)) : .35;
+        state.trainingDuration = [0,60,90,120].includes(trainingData.duration) ? trainingData.duration : 60;
+        state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
+        state.trainingSessions = Number.isInteger(trainingData.sessions) ? Math.max(0,trainingData.sessions) : 0;
+        state.trainingBest = Number.isFinite(trainingData.best) ? Math.max(0,trainingData.best) : null;
+        let lastTrainingRender = '';
+        function saveTrainingData() {
+            try {localStorage.setItem('valo-range-v1',JSON.stringify({sensitivity:state.sensitivity,duration:state.trainingDuration,sessions:state.trainingSessions,best:state.trainingBest}));}
+            catch { /* Practice continues when browser storage is unavailable. */ }
+        }
+        function isTraining() { return state.gameMode !== 'tactical' && !currentRoomId; }
+        function renderTrainingStats() {
+            const summary=getTrainingSummary(state.training);
+            const remaining=state.trainingDuration ? Math.max(0,Math.ceil(state.trainingDuration-state.training.elapsed)) : 0;
+            const clock=state.trainingDuration ? `${Math.floor(remaining/60).toString().padStart(2,'0')}:${(remaining%60).toString().padStart(2,'0')}` : '自由';
+            const key=[summary.accuracy,summary.headshots,summary.kills,clock,state.trainingBest,state.trainingSessions,state.gameMode,state.freeRoam].join('|');
+            if(key===lastTrainingRender)return;
+            lastTrainingRender=key;
+            document.getElementById('trainer-best').textContent=state.trainingBest===null?'—':state.trainingBest;
+            document.getElementById('trainer-sessions').textContent=state.trainingSessions;
+            document.getElementById('trainer-menu-accuracy').textContent=`${summary.accuracy}%`;
+            document.getElementById('trainer-menu-headshots').textContent=`${summary.headshots}%`;
+            document.getElementById('trainer-live-kills').textContent=summary.kills;
+            document.getElementById('trainer-live-accuracy').textContent=`${summary.accuracy}%`;
+            document.getElementById('trainer-live-headshots').textContent=`${summary.headshots}%`;
+            document.getElementById('trainer-live-time').textContent=clock;
+            document.getElementById('trainer-live-mode').textContent=state.freeRoam?'自由跑圖':state.gameMode==='stationary'?'預瞄定位':'移動追蹤';
+        }
+        function tickTraining(dt) {
+            if(isTraining() && state.isLocked && !state.training.finished) {
+                state.training.elapsed+=dt;
+                if(state.trainingDuration && state.training.elapsed>=state.trainingDuration) {
+                    state.training.elapsed=state.trainingDuration;
+                    state.training.finished=true;
+                    state.roundEnding=true;
+                    state.trainingSessions++;
+                    state.trainingBest=Math.max(state.trainingBest||0,state.training.kills);
+                    saveTrainingData();
+                    const result=getTrainingSummary(state.training);
+                    document.getElementById('trainer-result-title').textContent=`完成 ${state.trainingDuration} 秒訓練`;
+                    document.getElementById('trainer-result-detail').textContent=`${result.kills} 擊殺 · ${state.training.shots} 發射擊 · 命中率 ${result.accuracy}% · 爆頭率 ${result.headshots}%`;
+                    document.getElementById('trainer-result').classList.remove('hidden');
+                    showBuyMenu();safeExitPointerLock();
+                }
+            }
+            renderTrainingStats();
+        }
+        window.setTrainerSensitivity=function(value) {
+            const parsed=Number(value);if(!Number.isFinite(parsed))return;
+            state.sensitivity=Math.max(.1,Math.min(1,parsed));
+            document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);saveTrainingData();
+        };
+        window.setTrainerDuration=function(value) {
+            const parsed=Number(value);if(![0,60,90,120].includes(parsed))return;
+            state.trainingDuration=parsed;saveTrainingData();resetRound();
+        };
+        window.resetTraining=function(){resetRound();lockPointerAndPlay();};
+        window.startFreeRoam=function(){
+            setGameMode('stationary');state.freeRoam=true;state.trainingDuration=0;
+            document.getElementById('trainer-duration').value='0';
+            toggleBotsInMatch(false);document.getElementById('chk-enable-bots').checked=false;
+            renderTrainingStats();lockPointerAndPlay();
+        };
+
         document.getElementById('input-player-name').value = state.playerName;
         document.getElementById('input-player-name').addEventListener('input', (e) => {
             state.playerName = (e.target.value || '特務').trim().slice(0, 14);
@@ -1024,11 +1145,11 @@
          ********************************************************************/
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x16222f, 0.0065);
+        scene.fog = new THREE.FogExp2(0xcbd7da, 0.0035);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 260);
         const yawObject = new THREE.Object3D();
-        yawObject.position.set(0, 2.2, 26);
+        yawObject.position.set(0, 2.2, 58);
         const pitchObject = new THREE.Object3D();
         pitchObject.add(camera);
         yawObject.add(pitchObject);
@@ -1036,25 +1157,26 @@
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.08;
+        renderer.toneMappingExposure = 0.96;
         container.appendChild(renderer.domElement);
 
         // Rich Stylized Lighting (Hemisphere + Sun Directional + Muzzle Dynamic PointLight)
-        const hemiLight = new THREE.HemisphereLight(0xdbe9f6, 0x263545, 0.78);
+        const hemiLight = new THREE.HemisphereLight(0xdbe9f6, 0xbcb39c, 0.65);
         scene.add(hemiLight);
 
         const sunLight = new THREE.DirectionalLight(0xfff4e0, 0.95);
-        sunLight.position.set(28, 52, 24);
+        sunLight.position.set(-24, 38, 16);
         sunLight.castShadow = true;
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.mapSize.width = 1024;
+        sunLight.shadow.mapSize.height = 1024;
         sunLight.shadow.camera.near = 1;
         sunLight.shadow.camera.far = 130;
-        const d = 44;
+        const d = 86;
         sunLight.shadow.camera.left = -d;
         sunLight.shadow.camera.right = d;
         sunLight.shadow.camera.top = d;
@@ -1070,7 +1192,7 @@
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#263340';
+            ctx.fillStyle = '#a5a69a';
             ctx.fillRect(0, 0, 512, 512);
             // Subtle noise speckles
             for (let i = 0; i < 3500; i++) {
@@ -1078,7 +1200,7 @@
                 ctx.fillRect(Math.random() * 512, Math.random() * 512, 3, 3);
             }
             // Tactical tile seams
-            ctx.strokeStyle = '#1b252f';
+            ctx.strokeStyle = '#92968d';
             ctx.lineWidth = 4;
             ctx.strokeRect(0, 0, 512, 512);
             ctx.lineWidth = 2;
@@ -1087,9 +1209,10 @@
             ctx.moveTo(0, 256); ctx.lineTo(512, 256);
             ctx.stroke();
             // Corner tactical cross marks
-            ctx.fillStyle = '#00F5D4';
+            ctx.fillStyle = '#b7b7a2';
             ctx.fillRect(252, 252, 8, 8);
             const tex = new THREE.CanvasTexture(c);
+            tex.encoding = THREE.sRGBEncoding;
             tex.wrapS = THREE.RepeatWrapping;
             tex.wrapT = THREE.RepeatWrapping;
             tex.repeat.set(22, 22);
@@ -1103,18 +1226,21 @@
             ctx.fillStyle = '#e5e0d5';
             ctx.fillRect(0, 0, 512, 512);
             // Lower wainscot dark slate trim
-            ctx.fillStyle = '#2b3947';
+            ctx.fillStyle = '#a9aa99';
             ctx.fillRect(0, 370, 512, 142);
             // Red Valorant stripe
-            ctx.fillStyle = '#FF4655';
+            ctx.fillStyle = '#c8b592';
             ctx.fillRect(0, 356, 512, 14);
-            // Architectural panel lines
-            ctx.strokeStyle = '#c8c2b4';
-            ctx.lineWidth = 3;
-            for (let x = 0; x <= 512; x += 128) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 356); ctx.stroke();
+            // Fine plaster grain, worn patches and lower stone courses.
+            for(let i=0;i<7000;i++) {
+                ctx.fillStyle=i%2?'rgba(75,63,48,.05)':'rgba(255,255,255,.08)';
+                ctx.fillRect(Math.random()*512,Math.random()*512,2,2);
             }
+            ctx.strokeStyle='rgba(88,84,70,.27)';ctx.lineWidth=2;
+            for(let y=390;y<512;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();
+                for(let x=(y%80?0:60);x<512;x+=120){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+40);ctx.stroke();}}
             const tex = new THREE.CanvasTexture(c);
+            tex.encoding = THREE.sRGBEncoding;
             tex.wrapS = THREE.RepeatWrapping;
             tex.wrapT = THREE.RepeatWrapping;
             return tex;
@@ -1143,7 +1269,9 @@
             ctx.fillStyle = '#00F5D4';
             ctx.font = 'bold 22px Oswald, sans-serif';
             ctx.fillText('RADIANITE // A', 55, 134);
-            return new THREE.CanvasTexture(c);
+            const texture = new THREE.CanvasTexture(c);
+            texture.encoding = THREE.sRGBEncoding;
+            return texture;
         }
 
         function createSkyDome() {
@@ -1151,21 +1279,22 @@
             c.width = 1024; c.height = 512;
             const ctx = c.getContext('2d');
             const grad = ctx.createLinearGradient(0, 0, 0, 512);
-            grad.addColorStop(0, '#0d1b2a');
-            grad.addColorStop(0.45, '#1e3a5f');
-            grad.addColorStop(0.78, '#4a7c9b');
-            grad.addColorStop(1, '#e0a96d');
+            grad.addColorStop(0, '#76a7c9');
+            grad.addColorStop(0.45, '#b7d2df');
+            grad.addColorStop(0.78, '#e5e5d7');
+            grad.addColorStop(1, '#ece0cd');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 1024, 512);
 
             // Distant stylized Ascent floating structures silhouette
-            ctx.fillStyle = 'rgba(15, 25, 35, 0.55)';
+            ctx.fillStyle = 'rgba(153, 146, 136, 0.23)';
             for (let i = 0; i < 18; i++) {
                 const bx = i * 60;
                 const bh = 50 + (i * 37) % 110;
                 ctx.fillRect(bx, 390 - bh, 46, bh + 120);
             }
             const tex = new THREE.CanvasTexture(c);
+            tex.encoding = THREE.sRGBEncoding;
             const skyGeo = new THREE.SphereGeometry(180, 32, 16);
             const skyMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false });
             const sky = new THREE.Mesh(skyGeo, skyMat);
@@ -1181,101 +1310,257 @@
         const temporaryWalls = [];
         const mapRadarRects = []; // For 2D minimap accurate rendering
 
+        const arenaRoot = new THREE.Group();
+        scene.add(arenaRoot);
+
         function buildArena() {
-            const floorMat = new THREE.MeshStandardMaterial({
-                map: createConcreteFloorTex(),
-                roughness: 0.8,
-                metalness: 0.1
+            const geometries = new Set(), materials = new Set();
+            arenaRoot.traverse(mesh => {
+                if (mesh.geometry) geometries.add(mesh.geometry);
+                if (mesh.material) materials.add(mesh.material);
             });
-            const floor = new THREE.Mesh(new THREE.PlaneGeometry(96, 96), floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            scene.add(floor);
-            shootableMeshes.push(floor);
-
-            const ascentWallMat = new THREE.MeshStandardMaterial({
-                map: createAscentWallTex(),
-                roughness: 0.65
-            });
-            const darkMetalMat = new THREE.MeshStandardMaterial({
-                color: 0x1a2634,
-                roughness: 0.45,
-                metalness: 0.4
-            });
-            const radianiteMat = new THREE.MeshStandardMaterial({
-                map: createRadianiteCrateTex(),
-                roughness: 0.35,
-                metalness: 0.3
-            });
-            const neonCyanMat = new THREE.MeshBasicMaterial({ color: 0x00F5D4 });
-            const neonRedMat = new THREE.MeshBasicMaterial({ color: 0xFF4655 });
-
-            function addBlock(x, y, z, w, h, d, mat, isCollidable = true, showOnRadar = true) {
-                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-                mesh.position.set(x, y + h / 2, z);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                scene.add(mesh);
-                shootableMeshes.push(mesh);
-                if (isCollidable) {
-                    mapColliders.push(new THREE.Box3().setFromObject(mesh));
-                }
-                if (showOnRadar && y < 2) {
-                    mapRadarRects.push({ x, z, w, d });
-                }
+            arenaRoot.clear();
+            geometries.forEach(g => g.dispose());
+            materials.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); });
+            mapColliders.length = 0;
+            mapRadarRects.length = 0;
+            shootableMeshes.length = 0;
+            const practice = state.gameMode !== 'tactical';
+            const mat = {
+                plaster: new THREE.MeshStandardMaterial({map:createAscentWallTex(), color:0xf1dfc3, roughness:0.96}),
+                peach: new THREE.MeshStandardMaterial({map:createAscentWallTex(),color:0xc6937c,roughness:0.96}),
+                ochre: new THREE.MeshStandardMaterial({map:createAscentWallTex(),color:0xd9b479,roughness:0.96}),
+                stone: new THREE.MeshStandardMaterial({color:0x9e9e91,roughness:0.92}),
+                lightStone: new THREE.MeshStandardMaterial({color:0xc9c3af,roughness:0.9}),
+                wood: new THREE.MeshStandardMaterial({color:0x5a4334,roughness:0.85}),
+                roof: new THREE.MeshStandardMaterial({color:0x98604e,roughness:0.9}),
+                roofLight: new THREE.MeshStandardMaterial({color:0xac7356,roughness:0.9}),
+                steel: new THREE.MeshStandardMaterial({color:0x35454a,roughness:0.7,metalness:0.4}),
+                window: new THREE.MeshStandardMaterial({color:0x374a50,roughness:0.4,metalness:0.2}),
+                teal: new THREE.MeshStandardMaterial({color:0x56817b,roughness:0.8}),
+                white: new THREE.MeshStandardMaterial({color:0xebe4d3,roughness:0.8}),
+                grass: new THREE.MeshStandardMaterial({color:0x5f7b4e,roughness:1}),
+                yellow: new THREE.MeshStandardMaterial({color:0xd6aa56,roughness:0.9}),
+                crate: new THREE.MeshStandardMaterial({map:createRadianiteCrateTex(),roughness:0.5,metalness:0.15})
+            };
+            Object.values(mat).forEach(material=>material.color.convertSRGBToLinear());
+            // Decorative boxes are instanced per material, keeping fine detail inexpensive.
+            const batches = new Map();
+            const dummy = new THREE.Object3D();
+            function detail(x,y,z,w,h,d,material,rotation = 0) {
+                dummy.position.set(x,y,z);dummy.rotation.set(0,rotation,0);dummy.scale.set(w,h,d);dummy.updateMatrix();
+                if (!batches.has(material)) batches.set(material,[]);
+                batches.get(material).push(dummy.matrix.clone());
+            }
+            function beam(a,b,width,depth,material) {
+                const start = new THREE.Vector3(...a), end = new THREE.Vector3(...b);
+                dummy.position.copy(start).add(end).multiplyScalar(0.5);
+                const direction = end.sub(start);
+                dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.clone().normalize());
+                dummy.scale.set(width,direction.length(),depth);dummy.updateMatrix();
+                if (!batches.has(material)) batches.set(material,[]);
+                batches.get(material).push(dummy.matrix.clone());
+                dummy.rotation.set(0,0,0);
+            }
+            function block(x,y,z,w,h,d,material,collidable=true,radar=true) {
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
+                mesh.position.set(x,y+h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;
+                arenaRoot.add(mesh);shootableMeshes.push(mesh);
+                if(collidable)mapColliders.push(new THREE.Box3().setFromObject(mesh));
+                if(radar&&y<2)mapRadarRects.push({x,z,w,d});
                 return mesh;
             }
-
-            // Outer Perimeter Walls
-            addBlock(0, 0, -36, 66, 10, 2, darkMetalMat, true, false);
-            addBlock(0, 0, 36, 66, 10, 2, darkMetalMat, true, false);
-            addBlock(-32, 0, 0, 2, 10, 72, darkMetalMat, true, false);
-            addBlock(32, 0, 0, 2, 10, 72, darkMetalMat, true, false);
-
-            // Glowing Top Borders
-            addBlock(0, 10, -36, 66, 0.5, 2.3, neonRedMat, false, false);
-            addBlock(-32, 10, 0, 2.3, 0.5, 72, neonRedMat, false, false);
-            addBlock(32, 10, 0, 2.3, 0.5, 72, neonRedMat, false, false);
-
-            // Site A Hazard Floor Zone (Yellow/Cyan glowing boundary)
-            const siteBorder = new THREE.Mesh(
-                new THREE.RingGeometry(7.2, 7.6, 4),
-                new THREE.MeshBasicMaterial({ color: 0x00F5D4, side: THREE.DoubleSide })
-            );
-            siteBorder.rotation.x = -Math.PI / 2;
-            siteBorder.rotation.z = Math.PI / 4;
-            siteBorder.position.set(0, 0.04, -12);
-            scene.add(siteBorder);
-
-            const siteFloor = new THREE.Mesh(
-                new THREE.PlaneGeometry(10.5, 10.5),
-                new THREE.MeshBasicMaterial({ color: 0x00F5D4, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
-            );
-            siteFloor.rotation.x = -Math.PI / 2;
-            siteFloor.position.set(0, 0.02, -12);
-            scene.add(siteFloor);
-
-            // Central Site A Radianite Twin Stack + Neon Beacon
-            addBlock(-1.2, 0, -12, 3.4, 3.4, 3.4, radianiteMat);
-            addBlock(2.2, 0, -12, 3.2, 3.2, 3.2, radianiteMat);
-            addBlock(0.5, 3.4, -12, 2.8, 2.8, 2.8, radianiteMat);
-
-            // Tactical Choke Walls (Ascent Style)
-            addBlock(-13, 0, 4, 9, 4.8, 2.2, ascentWallMat);
-            addBlock(13, 0, 4, 9, 4.8, 2.2, ascentWallMat);
-            addBlock(0, 0, 12, 7.5, 4.6, 2.4, ascentWallMat);
-
-            // Defender Heaven High Platform + Ramp Crates
-            addBlock(19, 0, -23, 13, 3.8, 11, darkMetalMat);
-            addBlock(19, 3.8, -17.6, 13, 0.25, 0.3, neonCyanMat, false, false);
-            addBlock(10.5, 0, -20, 4, 1.9, 4, radianiteMat);
-
-            // Left Lane Cover & Archway
-            addBlock(-19, 0, -14, 4.2, 3.8, 4.2, radianiteMat);
-            addBlock(-10, 0, -24, 7, 4.8, 2.2, ascentWallMat);
-            addBlock(-15, 4.8, -5, 14, 2.2, 2.2, darkMetalMat, false, false); // Overhead arch beam
+            function sign(text,x,y,z,width=5,height=1,color='#e4ddc7',back='#293d40') {
+                const c=document.createElement('canvas');c.width=768;c.height=192;
+                const ctx=c.getContext('2d');ctx.fillStyle=back;ctx.fillRect(0,0,768,192);
+                ctx.strokeStyle=color;ctx.lineWidth=3;ctx.strokeRect(13,13,742,166);
+                ctx.fillStyle=color;ctx.font='bold 52px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,384,96);
+                const texture=new THREE.CanvasTexture(c);texture.encoding=THREE.sRGBEncoding;
+                const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:texture}));
+                mesh.position.set(x,y,z);arenaRoot.add(mesh);return mesh;
+            }
+            function arch(x,z,radius=2.8,spring=3.5) {
+                const thick=0.42;
+                block(x-radius-thick/2,0,z,thick,spring,0.85,mat.lightStone);
+                block(x+radius+thick/2,0,z,thick,spring,0.85,mat.lightStone);
+                const shape=new THREE.Shape();
+                shape.moveTo(-radius-thick,0);shape.absarc(0,0,radius+thick,Math.PI,0,true);
+                shape.lineTo(radius,0);shape.absarc(0,0,radius,0,Math.PI,false);shape.closePath();
+                const geometry=new THREE.ExtrudeGeometry(shape,{depth:0.85,bevelEnabled:false,curveSegments:24});
+                const mesh=new THREE.Mesh(geometry,mat.lightStone);mesh.position.set(x,spring,z-0.425);mesh.castShadow=true;mesh.receiveShadow=true;arenaRoot.add(mesh);shootableMeshes.push(mesh);
+                // Narrow collision wedges preserve the opening, including its curved roof.
+                for(let i=0;i<12;i++) {
+                    const theta=(i+.5)/12*Math.PI;
+                    const wx=x+Math.cos(theta)*(radius+.2), wy=spring+Math.sin(theta)*(radius+.2);
+                    const collision=new THREE.Box3(new THREE.Vector3(wx-.17,wy-.17,z-.425),new THREE.Vector3(wx+.17,wy+.17,z+.425));
+                    mapColliders.push(collision);
+                    detail(wx,wy,z+.44,.035,.15,.04,mat.wood,0);
+                }
+                for(let y=.5;y<spring;y+=.6){detail(x-radius-.21,y,z+.44,.44,.025,.03,mat.stone);detail(x+radius+.21,y,z+.44,.44,.025,.03,mat.stone);}
+            }
+            function building(x,z,w,h,d,material,doors=2) {
+                block(x,0,z,w,h,d,material,true,false);
+                detail(x,.35,z+d/2+.04,w+.15,.7,.18,mat.stone);
+                detail(x,h-.2,z,w+.4,.25,d+.4,mat.lightStone);
+                // Plaster gable ends support the pitched terracotta roof.
+                const rise=Math.max(1.4,w*.18);
+                const gableGeometry=new THREE.BufferGeometry();
+                gableGeometry.setAttribute('position',new THREE.Float32BufferAttribute([
+                    x-w/2,h,z+d/2+.02,x+w/2,h,z+d/2+.02,x,h+rise,z+d/2+.02,
+                    x+w/2,h,z-d/2-.02,x-w/2,h,z-d/2-.02,x,h+rise,z-d/2-.02
+                ],3));
+                gableGeometry.computeVertexNormals();
+                const gable=new THREE.Mesh(gableGeometry,material);gable.castShadow=true;arenaRoot.add(gable);
+                // Individually instanced terracotta tile courses.
+                for(const side of [-1,1]) {
+                    for(let row=0;row<6;row++) {
+                        const rx=x+side*(row+.5)*w/12, ry=h+rise-(row+.5)*rise/6;
+                        detail(rx,ry,z,w/12+.03,.14,d+.8,row%2?mat.roof:mat.roofLight);
+                        for(let t=0;t<Math.ceil(d/.52);t++)detail(rx,ry+.085,z-d/2+t*.52,w/12,.035,.035,mat.roof);
+                    }
+                }
+                for(let level=3;level<h-1.5;level+=3.4) {
+                    for(let i=0;i<doors;i++) {
+                        const wx=x-w/2+(i+1)*w/(doors+1), wz=z+d/2+.12;
+                        detail(wx,level,wz,1.15,1.8,.14,mat.window);
+                        detail(wx,level-.95,wz+.1,1.5,.16,.4,mat.lightStone);
+                        detail(wx,level+.95,wz+.1,1.45,.13,.25,mat.lightStone);
+                        detail(wx,level,wz+.12,.06,1.8,.06,mat.wood);
+                        detail(wx,level,wz+.13,1.15,.06,.06,mat.wood);
+                        [-1,1].forEach(side=>{
+                            detail(wx+side*.81,level,wz,.38,1.85,.15,mat.teal);
+                            for(let j=-3;j<=3;j++)detail(wx+side*.81,level+j*.20,wz+.09,.38,.035,.04,mat.steel);
+                        });
+                        if(level>5&&i%2===0){
+                            detail(wx,level-.95,wz+.65,2.1,.18,1.1,mat.stone);
+                            detail(wx,level-.28,wz+1.14,2.1,.055,.055,mat.steel);
+                            for(let j=-4;j<=4;j++)detail(wx+j*.23,level-.6,wz+1.14,.035,.6,.035,mat.steel);
+                        }
+                    }
+                }
+                // Drain pipe and cornice lines add readable scale from the ground.
+                detail(x-w/2+.22,h/2,z+d/2+.2,.1,h,.1,mat.steel);
+                for(let y=1.2;y<h;y+=3.4)detail(x,y,z+d/2+.06,w,.07,.12,mat.lightStone);
+            }
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(150,166),new THREE.MeshStandardMaterial({map:createConcreteFloorTex(),roughness:.98}));
+            floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;arenaRoot.add(floor);shootableMeshes.push(floor);
+            // Ascent-inspired original layout: attacker plaza, A/B main, Mid, Tree,
+            // Market and two sites. Geometry is authored here, not the reference asset.
+            block(-61,0,0,2,8,144,mat.plaster,true,false);
+            block(61,0,0,2,8,144,mat.plaster,true,false);
+            block(0,0,-72,124,10,2,mat.plaster,true,false);
+            block(0,0,72,124,6,2,mat.plaster,true,false);
+            building(-23,27,22,10,27,mat.ochre,4);
+            building(23,27,22,12,27,mat.peach,4);
+            building(-56,11,8,13,40,mat.peach,2);
+            building(56,11,8,10,40,mat.ochre,2);
+            building(-17,-8,12,10,16,mat.plaster,2);
+            building(17,-8,12,10,16,mat.ochre,2);
+            building(-52,-55,15,14,13,mat.ochre,3);
+            building(0,-62,20,13,10,mat.peach,4);
+            building(52,-57,14,15,12,mat.plaster,3);
+            // Lower facade portals and awnings give the routes a human scale.
+            for(const side of [-1,1]) {
+                for(const z of [19,31]) {
+                    detail(side*34.1,2.1,z,.14,3.5,2.3,mat.wood);
+                    detail(side*34.2,3.95,z,.3,.2,2.7,mat.lightStone);
+                    detail(side*34.9,4.2,z,1.9,.13,3,mat.teal);
+                }
+                block(side*43,0,47,10,.45,1,mat.stone);
+                for(let i=0;i<3;i++) {
+                    const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15,1),mat.grass);
+                    leaves.scale.y=1.7;leaves.position.set(side*(39+i*2),1.9,47);arenaRoot.add(leaves);
+                }
+            }
+            arch(0,-28,3.4,3.5);
+            block(-9.3,0,-28,11.5,7,.85,mat.peach);
+            block(9.3,0,-28,11.5,7,.85,mat.plaster);
+            sign('DEFENDER SIDE',0,7.9,-27.5,6,.8);
+            arch(34,-11,3.8,3.4);arch(-34,-11,3.8,3.4);
+            sign('A  /  MAIN',34,8,-10.5,5,.8);
+            sign('B  /  MAIN',-34,8,-10.5,5,.8);
+            block(23,0,-11,14,7,.9,mat.plaster);
+            block(48,0,-11,19,7,.9,mat.peach);
+            block(-23,0,-11,14,7,.9,mat.peach);
+            block(-48,0,-11,19,7,.9,mat.plaster);
+            // Tree and Market connect Mid to each site through open side corridors.
+            arch(20,-21,2.2,3.0);arch(-20,-21,2.2,3.0);
+            sign('TREE  →',17,3.0,1,3,.65);sign('←  MARKET',-17,3.0,1,3,.65);
+            // A site: Generator, double cover, Heaven platform and walkable stairs.
+            block(29,0,-27,5,3.8,5,mat.steel);
+            for(const z of [-28.5,-27,-25.5])detail(26.47,2.1,z,.08,2.8,.23,mat.lightStone);
+            detail(29,3.9,-27,5.1,.2,5.1,mat.stone);
+            block(40,0,-23,4,3.0,4,mat.crate);
+            block(40,0,-28,4,3.0,4,mat.crate);
+            block(34,0,-40,22,3.2,8,mat.stone);
+            building(34,-47,22,11,6,mat.plaster,4);
+            for(let i=0;i<8;i++)block(48,0,-27-i*1.25,3,.4*(i+1),1.25,mat.lightStone);
+            block(46.5,0,-39,3,3.2,6,mat.stone);
+            for(let i=0;i<8;i++)detail(24+i*2.3,3.9,-35.8,.06,1.2,.06,mat.steel);
+            detail(32,4.5,-35.8,17,.06,.06,mat.steel);
+            detail(34,7.2,-44,24,.27,1.3,mat.wood);
+            for(const x of [24,44])detail(x,5.2,-43.6,.25,4,.25,mat.wood);
+            sign('A',34,2.1,-35.85,1.6,1.5,'#ece2bf','#7e8a7d');
+            // B site: green cover and a timber boathouse at the rear.
+            block(-31,0,-26,4.5,3.0,4.5,mat.crate);block(-39,0,-30,4,2.8,4,mat.crate);
+            block(-34,0,-42,24,6.5,.7,mat.plaster);
+            block(-47,0,-33,1,6.5,18,mat.peach);
+            block(-21,0,-34,1,6.5,16,mat.plaster);
+            arch(-34,-36,3.1,2.5);
+            for(const x of [-42,-26])block(x,0,-36,9,6.1,.8,mat.wood);
+            for(const z of [-37,-39,-41]) {
+                beam([-46,6.2,z],[-34,8.8,z],.25,.25,mat.wood);
+                beam([-34,8.8,z],[-22,6.2,z],.25,.25,mat.wood);
+                detail(-34,6.1,z,24,.2,.2,mat.wood);
+            }
+            sign('B  /  BOATHOUSE',-34,6.1,-35.5,6,.7);
+            // Plant zones and route marks are authored to match this version's geometry.
+            for(const site of [{x:34,z:-26,name:'A'},{x:-34,z:-27,name:'B'}]) {
+                for(const edge of [-1,1]) {
+                    detail(site.x+edge*11,.025,site.z,.07,.035,20,mat.yellow);
+                    detail(site.x,.025,site.z+edge*10,22,.035,.07,mat.yellow);
+                }
+                const label=sign(site.name,0,0,0,4,4,'#d6bd7a','#9b9d8a');label.rotation.x=-Math.PI/2;label.position.set(site.x,.04,site.z+5);
+            }
+            // Mid courtyard fountain with a low, collidable basin and planted tree.
+            const basin=new THREE.Mesh(new THREE.CylinderGeometry(2.8,3.1,.8,12),mat.lightStone);
+            basin.position.set(0,.4,4);basin.castShadow=true;basin.receiveShadow=true;arenaRoot.add(basin);shootableMeshes.push(basin);
+            mapColliders.push(new THREE.Box3().setFromObject(basin));mapRadarRects.push({x:0,z:4,w:6,d:6});
+            const water=new THREE.Mesh(new THREE.CircleGeometry(2.45,32),new THREE.MeshStandardMaterial({color:0x759eaa,roughness:.16,metalness:.3}));water.rotation.x=-Math.PI/2;water.position.set(0,.82,4);arenaRoot.add(water);
+            const fountain=new THREE.Mesh(new THREE.CylinderGeometry(.2,.5,2.3,8),mat.stone);fountain.position.set(0,1.5,4);arenaRoot.add(fountain);
+            for(const side of [-1,1]) {
+                block(side*8,0,-18,2.8,.7,3.8,mat.lightStone);
+                const treeTrunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.32,4,7),mat.wood);treeTrunk.position.set(side*8,2.6,-18);arenaRoot.add(treeTrunk);
+                for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.7,1),mat.grass);crown.position.set(side*8+(i-1)*.7,4.8+i*.45,-18);crown.castShadow=true;arenaRoot.add(crown);}
+            }
+            sign('MID  /  COURTYARD',0,3.3,43,5,.75);
+            sign('ASCENT  /  FIELD TRAINING',0,6,68.8,10,1.2);
+            // Clock tower landmark. Its facade remains visible from the main lanes.
+            block(-48,0,-58,5.8,23,5.8,mat.peach,true,false);
+            for(const y of [1,8,16,22])detail(-48,y,-58,6.1,.3,6.1,mat.lightStone);
+            for(const dx of [-2.3,2.3])detail(-48+dx,11,-55.0,.2,20,.22,mat.lightStone);
+            const clockCanvas=document.createElement('canvas');clockCanvas.width=256;clockCanvas.height=256;
+            const clockCtx=clockCanvas.getContext('2d');clockCtx.fillStyle='#e7dec4';clockCtx.beginPath();clockCtx.arc(128,128,122,0,Math.PI*2);clockCtx.fill();clockCtx.strokeStyle='#4c4d4a';clockCtx.lineWidth=5;
+            for(let i=0;i<12;i++){const angle=i*Math.PI/6;clockCtx.beginPath();clockCtx.moveTo(128+Math.sin(angle)*98,128-Math.cos(angle)*98);clockCtx.lineTo(128+Math.sin(angle)*110,128-Math.cos(angle)*110);clockCtx.stroke();}
+            clockCtx.lineWidth=7;clockCtx.beginPath();clockCtx.moveTo(128,128);clockCtx.lineTo(128,57);clockCtx.moveTo(128,128);clockCtx.lineTo(175,145);clockCtx.stroke();
+            const clockTexture=new THREE.CanvasTexture(clockCanvas);clockTexture.encoding=THREE.sRGBEncoding;
+            const clock=new THREE.Mesh(new THREE.CircleGeometry(1.5,32),new THREE.MeshBasicMaterial({map:clockTexture,transparent:true}));clock.position.set(-48,19,-55.05);arenaRoot.add(clock);
+            const spire=new THREE.Mesh(new THREE.ConeGeometry(4.3,8,4),mat.roof);spire.rotation.y=Math.PI/4;spire.position.set(-48,27,-58);arenaRoot.add(spire);
+            // Observatory dome and its exposed frame echo Ascent's skyline language.
+            block(50,0,-58,17,15,17,mat.plaster,true,false);
+            const dome=new THREE.Mesh(new THREE.SphereGeometry(9,24,10,0,Math.PI*2,0,Math.PI/2),mat.stone);dome.position.set(50,15,-58);arenaRoot.add(dome);
+            for(let i=0;i<8;i++) {
+                const arc=new THREE.Mesh(new THREE.TorusGeometry(9.08,.065,5,36,Math.PI),mat.steel);
+                arc.position.set(50,15,-58);arc.rotation.y=i*Math.PI/8;arenaRoot.add(arc);
+            }
+            // Instanced detail is decorative; structural meshes supply collision and ray tests.
+            for(const [material,matrices] of batches) {
+                const mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material,matrices.length);
+                matrices.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));mesh.castShadow=true;mesh.receiveShadow=true;arenaRoot.add(mesh);
+            }
         }
         buildArena();
+
 
         const smiteTexture = createSmiteTexture();
 
@@ -1518,11 +1803,11 @@
          ********************************************************************/
         const bots = [];
         const BOT_SPAWNS = [
-            { x: -16, z: -8, patrol: 5 },
-            { x: 15, z: -10, patrol: 6 },
-            { x: -6, z: -19, patrol: 4.5 },
-            { x: 8, z: -22, patrol: 5 },
-            { x: 0, z: -4, patrol: 4.5 }
+            { x: 34, z: -18, patrol: 2 },
+            { x: -34, z: -18, patrol: 2 },
+            { x: 0, z: -18, patrol: 2 },
+            { x: -18, z: -17, patrol: 1.5 },
+            { x: 18, z: -17, patrol: 1.5 }
         ];
 
         function createHumanoidBot(idx, sp) {
@@ -1637,7 +1922,9 @@
                 updateAliveHUD();
                 return;
             }
-            BOT_SPAWNS.forEach((sp, idx) => {
+            const spawns = state.gameMode === 'tactical' ? BOT_SPAWNS
+                : [{x:0,z:25,patrol:1.5},{x:-30,z:45,patrol:1.5},{x:30,z:45,patrol:1.5},{x:-40,z:8,patrol:1.5},{x:40,z:8,patrol:1.5}];
+            spawns.forEach((sp, idx) => {
                 bots.push(createHumanoidBot(idx, sp));
             });
             updateAliveHUD();
@@ -1709,6 +1996,7 @@
             ctx.fillText(`${nameText} [${agentKey.toUpperCase()}]`, 128, 39);
 
             const tex = new THREE.CanvasTexture(c);
+            tex.encoding = THREE.sRGBEncoding;
             const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
             const sprite = new THREE.Sprite(mat);
             sprite.scale.set(2.2, 0.55, 1);
@@ -1832,12 +2120,12 @@
             if (state.team === 'attack') {
                 btn.textContent = '陣營: 攻擊方 (赤紅)';
                 btn.className = 'bg-[#FF4655]/25 border border-[#FF4655] px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap hover:bg-[#FF4655] transition cursor-pointer';
-                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 26);
+                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 58);
                 yawObject.rotation.y = 0;
             } else {
                 btn.textContent = '陣營: 守備方 (青藍)';
                 btn.className = 'bg-[#00F5D4]/25 border border-[#00F5D4] px-2.5 py-1.5 text-xs font-bold text-[#00F5D4] whitespace-nowrap hover:bg-[#00F5D4] hover:text-black transition cursor-pointer';
-                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -24);
+                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -58);
                 yawObject.rotation.y = Math.PI;
             }
             pushMyStateToFirestore(true);
@@ -2321,6 +2609,7 @@
             state.lastShotTime = now;
             state.consecutiveShots++;
             state.isInspecting = false;
+            if (isTraining() && !wpn.isMelee && state.weaponKey !== 'bladestorm') state.training.shots++;
             if (!wpn.isMelee) {
                 state.mag--;
                 if (state.weaponKey === 'bladestorm') {
@@ -2392,6 +2681,10 @@
                     });
                 }
 
+                if (isTraining() && isBot && !wpn.isMelee && state.weaponKey !== 'bladestorm') {
+                    state.training.hits++;
+                    if (isHead) state.training.headshots++;
+                }
                 if (isRemotePlayer) {
                     const targetUid = hit.object.userData.uid;
                     const rp = remotePlayers.get(targetUid);
@@ -2512,6 +2805,7 @@
             bot.dyingTimer = 0.65; // Smooth fall-back death animation
             state.roundKills++;
             state.kills++;
+            if (isTraining()) state.training.kills++;
             state.creds = Math.min(9000, state.creds + 300);
 
             // Blade Storm Ultimate refills all 5 knives on kill!
@@ -2831,7 +3125,11 @@
         };
 
         window.setGameMode = function(mode) {
+            if (!['tactical','strafing','stationary'].includes(mode)) return;
             state.gameMode = mode;
+            if(state.freeRoam) {state.enableBots=true;document.getElementById('chk-enable-bots').checked=true;state.freeRoam=false;}
+            document.body.classList.toggle('is-training',mode!=='tactical');
+            buildArena();
             ['tactical', 'strafing', 'stationary'].forEach(m => {
                 document.getElementById(`mode-${m}`).classList.toggle('active', m === mode);
             });
@@ -2927,10 +3225,12 @@
         /********************************************************************
          * 12. ROUND RESET & SPIKE LOGIC (ATTACK PLANT / DEFEND DEFUSE)
          ********************************************************************/
-        function isPlayerOnSiteA() {
-            const p = yawObject.position;
-            return Math.abs(p.x) < 7.5 && Math.abs(p.z - (-12)) < 7.5;
+        function getPlantSite(position = yawObject.position) {
+            if (Math.abs(position.x-34)<11 && Math.abs(position.z+26)<10) return 'A';
+            if (Math.abs(position.x+34)<11 && Math.abs(position.z+27)<10) return 'B';
+            return null;
         }
+        function isPlayerOnSiteA() { return getPlantSite() !== null; }
 
         function endRound(allyWon, reasonText, broadcast = true) {
             if (state.roundEnding) return;
@@ -2968,6 +3268,9 @@
 
         function resetRound(syncRoomDoc = true) {
             state.roundEnding = false;
+            state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
+            document.getElementById('trainer-result').classList.add('hidden');
+            renderTrainingStats();
             resetMovementInput();
             state.crouchAmount = 0;
             camera.position.y = 0;
@@ -3002,10 +3305,10 @@
             smokeSpheres.length = 0;
 
             if (state.team === 'attack') {
-                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 26);
+                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 58);
                 yawObject.rotation.y = 0;
             } else {
-                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -24);
+                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -58);
                 yawObject.rotation.y = Math.PI;
             }
             pitchObject.rotation.x = 0;
@@ -3065,6 +3368,7 @@
         }
 
         function lockPointerAndPlay() {
+            if (state.training.finished) resetRound();
             sfx.init();
             resetMovementInput();
             safeRequestPointerLock();
@@ -3103,7 +3407,7 @@
         document.addEventListener('mousemove', (e) => {
             if (!state.isLocked || state.inBuyMenu) return;
             const zoom = WEAPONS[state.weaponKey].zoomLevels?.[state.scopeLevel - 1] || 1;
-            const sens = 0.0021 / zoom;
+            const sens = 0.006 * state.sensitivity / zoom;
             yawObject.rotation.y -= e.movementX * sens;
             pitchObject.rotation.x -= e.movementY * sens;
             pitchObject.rotation.x = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, pitchObject.rotation.x));
@@ -3259,17 +3563,17 @@
             rCtx.stroke();
 
             const toRadar = (wx, wz) => ({
-                x: 88 + (wx / 36) * 76,
-                y: 88 + (wz / 38) * 76
+                x: 88 + (wx / 62) * 76,
+                y: 88 + (wz / 74) * 76
             });
 
-            // Site A Zone Box
-            const siteTL = toRadar(-7.5, -19.5);
-            const siteBR = toRadar(7.5, -4.5);
-            rCtx.fillStyle = 'rgba(0, 245, 212, 0.12)';
-            rCtx.strokeStyle = 'rgba(0, 245, 212, 0.55)';
-            rCtx.fillRect(siteTL.x, siteTL.y, siteBR.x - siteTL.x, siteBR.y - siteTL.y);
-            rCtx.strokeRect(siteTL.x, siteTL.y, siteBR.x - siteTL.x, siteBR.y - siteTL.y);
+            // Plant zones for both A and B in the authored Ascent layout.
+            for(const site of [{x:34,z:-26,name:'A'},{x:-34,z:-27,name:'B'}]) {
+                const tl=toRadar(site.x-11,site.z-10),br=toRadar(site.x+11,site.z+10);
+                rCtx.fillStyle='rgba(0,245,212,.13)';rCtx.strokeStyle='rgba(0,245,212,.5)';
+                rCtx.fillRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);rCtx.strokeRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);
+                rCtx.fillStyle='#b6eee0';rCtx.font='bold 10px sans-serif';rCtx.fillText(site.name,tl.x+3,tl.y+12);
+            }
 
             // Map Cover Walls on Radar
             rCtx.fillStyle = '#334659';
@@ -3346,8 +3650,19 @@
          ********************************************************************/
         let prevTime = performance.now();
 
+        function getGroundHeight(position) {
+            const feet=position.y-2.2;
+            let ground=0;
+            for(const box of mapColliders) {
+                if(position.x+.61>box.min.x && position.x-.61<box.max.x
+                    && position.z+.61>box.min.z && position.z-.61<box.max.z
+                    && box.max.y<=feet+.45 && box.max.y>ground) ground=box.max.y;
+            }
+            return ground;
+        }
+
         function checkPlayerCollision(nextPos, crouchAmount = state.crouchAmount) {
-            if (Math.abs(nextPos.x) > 30 || Math.abs(nextPos.z) > 34) return true;
+            if (Math.abs(nextPos.x) > 59 || Math.abs(nextPos.z) > 70) return true;
             const playerBox = new THREE.Box3(
                 new THREE.Vector3(nextPos.x - 0.6, nextPos.y - 2.0, nextPos.z - 0.6),
                 new THREE.Vector3(nextPos.x + 0.6, nextPos.y + 0.3 - crouchAmount * 0.75, nextPos.z + 0.6)
@@ -3560,9 +3875,9 @@
                         state.hp = 100;
                         state.shield = 50;
                         if (state.team === 'attack') {
-                            yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 26);
+                            yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 58);
                         } else {
-                            yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -24);
+                            yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -58);
                         }
                         updateHealthHUD();
                         pushMyStateToFirestore(true);
@@ -3587,7 +3902,7 @@
                 }
             });
 
-            if (!state.isLocked || state.roundEnding) return;
+            if (!state.isLocked || state.roundEnding || isTraining()) return;
 
             const onSite = isPlayerOnSiteA();
             const canPlant = onSite && !state.spikePlanted && state.team === 'attack';
@@ -3612,7 +3927,7 @@
                         spikeGroup.position.set(yawObject.position.x, 0, yawObject.position.z);
                         spikeGroup.visible = true;
                         sfx.playSpikeBeep(true);
-                        showCenterBanner('SPIKE PLANTED // 輻能核心已部署', '守住 A 據點直到輻能引爆！', 2400);
+                        showCenterBanner('SPIKE PLANTED // 輻能核心已部署', `守住 ${state.spikeSite || 'A'} 據點直到輻能引爆！`, 2400);
 
                         if (currentRoomId && db) {
                             const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
@@ -3669,7 +3984,8 @@
             requestAnimationFrame(animate);
 
             const now = performance.now();
-            const dt = Math.min((now - prevTime) / 1000, 0.1);
+            const realDt = (now - prevTime) / 1000;
+            const dt = Math.min(realDt, 0.1);
             prevTime = now;
 
             if (isMouseDown && WEAPONS[state.weaponKey].auto) {
@@ -3733,18 +4049,20 @@
 
                 const nextX = yawObject.position.clone();
                 nextX.x += playerVelocity.x * dt;
-                if (!checkPlayerCollision(nextX)) yawObject.position.x = nextX.x;
+                if(canJump) nextX.y=Math.max(nextX.y,getGroundHeight(nextX)+2.2);
+                if (!checkPlayerCollision(nextX)) {yawObject.position.x=nextX.x;yawObject.position.y=nextX.y;}
 
                 const nextZ = yawObject.position.clone();
                 nextZ.z += playerVelocity.z * dt;
-                if (!checkPlayerCollision(nextZ)) yawObject.position.z = nextZ.z;
+                if(canJump) nextZ.y=Math.max(nextZ.y,getGroundHeight(nextZ)+2.2);
+                if (!checkPlayerCollision(nextZ)) {yawObject.position.z=nextZ.z;yawObject.position.y=nextZ.y;}
 
-                yawObject.position.y += playerVelocity.y * dt;
-                if (yawObject.position.y <= 2.2) {
-                    yawObject.position.y = 2.2;
-                    playerVelocity.y = 0;
-                    canJump = true;
-                }
+                const ground=getGroundHeight(yawObject.position)+2.2;
+                const vertical=yawObject.position.clone();vertical.y+=playerVelocity.y*dt;
+                if(playerVelocity.y>0 && checkPlayerCollision(vertical)) playerVelocity.y=0;
+                else yawObject.position.y=vertical.y;
+                if(yawObject.position.y<=ground) {yawObject.position.y=ground;playerVelocity.y=0;canJump=true;}
+                else canJump=false;
             }
 
             // Dynamic Crosshair Expansion
@@ -3759,6 +4077,7 @@
             updateViewmodelAnimations(dt, isMoving);
             updateBotsAndVFX(dt);
             updateTimersAndSpike(dt);
+            tickTraining(realDt);
             pushMyStateToFirestore(false);
             drawRadar();
 
@@ -3772,6 +4091,11 @@
         });
 
         window.onload = function () {
+            document.body.classList.toggle('is-training',state.gameMode!=='tactical');
+            document.getElementById('sensitivity-input').value=state.sensitivity;
+            document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);
+            document.getElementById('trainer-duration').value=state.trainingDuration;
+            renderTrainingStats();
             spawnBots();
             updateShopUI();
             animate();
