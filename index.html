@@ -620,6 +620,7 @@
         </div>
     </div>
 
+    <script src="./firebase-config.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -1564,6 +1565,7 @@
         let db = null;
         let auth = null;
         let currentUser = null;
+        let multiplayerError = null;
         let currentRoomId = null;
         let unsubPlayers = null;
         let unsubEvents = null;
@@ -1575,10 +1577,12 @@
         async function initFirebaseMultiplayer() {
             try {
                 if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    multiplayerError = '尚未設定 Firebase，請先在 firebase-config.js 填入專案設定';
                     document.getElementById('lobby-uid-display').textContent = '本地模式 (未偵測到雲端設定)';
                     return;
                 }
-                const firebaseConfig = JSON.parse(__firebase_config);
+                const firebaseConfig = typeof __firebase_config === 'string'
+                    ? JSON.parse(__firebase_config) : __firebase_config;
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
@@ -1597,6 +1601,7 @@
                     }
                 });
             } catch (err) {
+                multiplayerError = `雲端登入失敗 (${err.code || err.message})，請檢查 Firebase 設定與匿名登入`;
                 console.error('Firebase initialization error:', err);
                 document.getElementById('lobby-uid-display').textContent = '單機離線模式';
             }
@@ -1816,10 +1821,26 @@
 
         async function connectToMultiplayerRoom(roomCode) {
             if (!db || !currentUser) {
-                showCenterBanner('CONNECTING...', '正在初始化雲端連線，請稍候再試', 1800);
+                showCenterBanner(multiplayerError ? 'CONNECTION ERROR' : 'CONNECTING...',
+                    multiplayerError || '正在初始化雲端連線，請稍候再試', 4000);
                 return;
             }
             await window.leaveMultiplayerRoom();
+
+            // Verify the backend accepts the room before showing a connected state.
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', roomCode);
+            try {
+                await setDoc(roomDocRef, {
+                    roomCode,
+                    enableBots: state.enableBots,
+                    updatedAt: Date.now()
+                }, { merge: true });
+            } catch (err) {
+                console.error('Room connection error:', err);
+                showCenterBanner('CONNECTION ERROR',
+                    `無法加入房間 (${err.code || err.message})，請檢查網路與 Firestore 權限`, 4000);
+                return;
+            }
 
             currentRoomId = roomCode;
             document.getElementById('input-room-code').value = roomCode;
@@ -1830,14 +1851,6 @@
             document.getElementById('hud-room-code').textContent = `ROOM: ${roomCode}`;
             document.getElementById('round-phase-label').textContent = `ROOM #${roomCode}`;
             document.getElementById('sb-room-title').textContent = `ASCENT // MULTIPLAYER ROOM #${roomCode}`;
-
-            // Initialize or merge Room Metadata
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', roomCode);
-            setDoc(roomDocRef, {
-                roomCode,
-                enableBots: state.enableBots,
-                updatedAt: Date.now()
-            }, { merge: true }).catch(() => {});
 
             // 1. Listen to Room Global State (Spike Planted / Defused / Round Scores)
             unsubRoomState = onSnapshot(roomDocRef, (snap) => {
@@ -2377,6 +2390,16 @@
             }, 1350);
         }
 
+        let centerBannerTimer = null;
+        function showCenterBanner(subtitle, title, duration = 2400) {
+            const banner = document.getElementById('center-banner');
+            document.getElementById('center-banner-sub').textContent = subtitle;
+            document.getElementById('center-banner-title').textContent = title;
+            clearTimeout(centerBannerTimer);
+            banner.classList.remove('hidden');
+            centerBannerTimer = setTimeout(() => banner.classList.add('hidden'), duration);
+        }
+
         function showHitmarker(isHead) {
             const hm = document.getElementById('hitmarker');
             const svg = document.getElementById('hitmarker-svg');
@@ -2406,6 +2429,7 @@
             updateAliveHUD();
             updateShopUI();
             pushMyStateToFirestore(true);
+            if (currentRoomId) {
                 setTimeout(() => {
                     bot.hp = 100;
                     bot.hpFill.scale.x = 1;
@@ -2474,6 +2498,10 @@
         /********************************************************************
          * 10. TACTICAL ABILITIES: [C] Smoke, [Q] Updraft/Flash, [E] Dash/Wall, [X] Blade Storm
          ********************************************************************/
+        const moveState = {
+            forward: false, backward: false, left: false, right: false,
+            walk: false, holdPlant: false
+        };
         const playerVelocity = new THREE.Vector3();
         let canJump = true;
 
