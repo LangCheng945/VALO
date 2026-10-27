@@ -106,6 +106,15 @@
             pointer-events: none;
             background: radial-gradient(circle, transparent 35%, rgba(6, 10, 15, 0.98) 37%, #04070b 100%);
         }
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 25, 35, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: var(--val-red);
+        }
     </style>
 </head>
 <body class="relative select-none">
@@ -175,7 +184,7 @@
                     <div class="font-black text-[#00F5D4] tracking-wider" id="hud-mode-label">1v5 擬真戰術攻防</div>
                     <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 掠奪苦無 [Y] 檢視武器</div>
                     <div class="text-white/80">[C] 煙霧彈 [Q] 閃光/竄升 [E] 衝刺/冰牆 [X] 暴風刃大招</div>
-                    <div class="text-[#FF4655] font-bold">[4/F] 部署輻能核心 | [B] 軍火商店</div>
+                    <div class="text-[#FF4655] font-bold">[4/F] 裝包/拆包 | [B] 商店與連線大廳 | [TAB] 計分板</div>
                 </div>
             </div>
 
@@ -183,7 +192,7 @@
             <div class="flex flex-col items-center">
                 <div class="flex items-center space-x-2">
                     <!-- Ally Portrait Strip -->
-                    <div class="hidden sm:flex items-center space-x-1 bg-[#0F1923]/85 px-2 py-1 border-b-2 border-[#00F5D4]">
+                    <div id="ally-roster-strip" class="hidden sm:flex items-center space-x-1 bg-[#0F1923]/85 px-2 py-1 border-b-2 border-[#00F5D4]">
                         <div class="w-8 h-8 bg-[#00F5D4]/20 border border-[#00F5D4] flex items-center justify-center relative">
                             <span class="font-val font-black text-xs text-[#00F5D4]" id="top-ally-icon">JETT</span>
                             <span class="absolute -bottom-1 w-2 h-2 rotate-45 bg-[#FFBE0B]" title="終極技能就緒"></span>
@@ -193,16 +202,16 @@
                     <!-- Central Score & Round Clock -->
                     <div class="flex items-center bg-[#0F1923]/95 border border-white/25 px-4 py-1 val-clip-sm shadow-2xl">
                         <div class="flex flex-col items-center pr-3 border-r border-white/15">
-                            <span class="text-[9px] font-bold text-[#00F5D4] tracking-widest">ATTACK</span>
-                            <span id="score-ally" class="font-val text-2xl sm:text-3xl font-black text-[#00F5D4] leading-none">0</span>
+                            <span class="text-[9px] font-bold text-[#FF4655] tracking-widest">ATTACK</span>
+                            <span id="score-ally" class="font-val text-2xl sm:text-3xl font-black text-[#FF4655] leading-none">0</span>
                         </div>
                         <div class="px-4 flex flex-col items-center min-w-[96px]">
-                            <div id="round-phase-label" class="text-[9px] font-bold tracking-[0.2em] text-white/70 uppercase">ROUND 1</div>
+                            <div id="round-phase-label" class="text-[9px] font-bold tracking-[0.2em] text-[#00F5D4] uppercase">SOLO // LOCAL</div>
                             <div id="round-timer" class="font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight">1:40</div>
                         </div>
                         <div class="flex flex-col items-center pl-3 border-l border-white/15">
-                            <span class="text-[9px] font-bold text-[#FF4655] tracking-widest">DEFEND</span>
-                            <span id="score-enemy" class="font-val text-2xl sm:text-3xl font-black text-[#FF4655] leading-none">0</span>
+                            <span class="text-[9px] font-bold text-[#00F5D4] tracking-widest">DEFEND</span>
+                            <span id="score-enemy" class="font-val text-2xl sm:text-3xl font-black text-[#00F5D4] leading-none">0</span>
                         </div>
                     </div>
 
@@ -219,13 +228,17 @@
             </div>
 
             <!-- Top-Right: Quick Buttons & Authentic Killfeed -->
-            <div class="flex flex-col items-end space-y-2 w-68">
-                <div class="pointer-events-auto flex space-x-1.5">
+            <div class="flex flex-col items-end space-y-2 w-72">
+                <div class="pointer-events-auto flex flex-wrap justify-end gap-1.5">
+                    <div id="room-hud-pill" class="hidden bg-[#00F5D4]/20 border border-[#00F5D4] text-[#00F5D4] px-2.5 py-1.5 text-xs font-val font-bold flex items-center space-x-1.5">
+                        <span class="w-2 h-2 rounded-full bg-[#00F5D4] animate-ping"></span>
+                        <span id="hud-room-code">ROOM: ----</span>
+                    </div>
                     <button id="btn-inspect-gun" class="bg-[#0F1923]/90 hover:bg-[#B5179E] text-white border border-white/25 px-2.5 py-1.5 text-xs font-bold val-clip-sm transition">
-                        [Y] 檢視造型
+                        [Y] 檢視
                     </button>
                     <button id="btn-open-buy" class="bg-[#0F1923]/90 hover:bg-[#FF4655] text-white border border-white/25 px-3 py-1.5 text-xs font-bold val-clip-sm transition">
-                        [B] 軍火商店
+                        [B] 商店/連線
                     </button>
                     <button id="btn-reset-round" class="bg-[#0F1923]/90 hover:bg-[#00F5D4] hover:text-black text-white border border-white/25 px-2.5 py-1.5 text-xs font-bold val-clip-sm transition">
                         重置回合
@@ -242,15 +255,26 @@
                 <div id="center-banner-title" class="font-val text-3xl sm:text-5xl font-black tracking-wider text-white mt-0.5">殲滅敵軍 或 部署輻能核心</div>
             </div>
 
-            <div id="spike-progress-box" class="hidden bg-[#0F1923]/95 border border-[#FF4655] px-6 py-3 w-76 val-clip-sm text-center shadow-2xl">
-                <div class="text-xs font-bold tracking-widest text-[#FF4655] mb-1.5">正在部署輻能核心 SPIKE (按住 4 或 F)...</div>
+            <div id="spike-progress-box" class="hidden bg-[#0F1923]/95 border border-[#FF4655] px-6 py-3 w-80 val-clip-sm text-center shadow-2xl">
+                <div id="spike-action-label" class="text-xs font-bold tracking-widest text-[#FF4655] mb-1.5">正在部署輻能核心 SPIKE (按住 4 或 F)...</div>
                 <div class="w-full h-2.5 bg-white/10 overflow-hidden">
                     <div id="spike-progress-bar" class="h-full bg-[#FF4655] w-0 transition-all duration-75"></div>
                 </div>
             </div>
 
             <div id="site-prompt" class="hidden bg-[#0F1923]/90 border border-[#00F5D4] px-4 py-1 text-xs font-bold text-[#00F5D4] tracking-wider shadow-lg">
-                進入 A 據點目標區 — 按住 [4] 或 [F] 部署輻能核心
+                進入 A 據點目標區 — 按住 [4] 或 [F] 部署 / 拆除輻能核心
+            </div>
+        </div>
+
+        <!-- IN-GAME REALTIME CHAT BOX (Bottom-Left above HP) -->
+        <div class="pointer-events-auto w-72 sm:w-80 mb-1 flex flex-col space-y-1">
+            <div id="chat-messages" class="max-h-28 overflow-y-auto custom-scroll bg-[#0F1923]/75 border-l-2 border-[#00F5D4] px-2.5 py-1.5 text-[11px] space-y-1">
+                <div class="text-[#00F5D4] font-bold">[系統] 按 [Enter] 開啟戰術頻道，按 [B] 建立或加入朋友房間！</div>
+            </div>
+            <div id="chat-input-row" class="hidden flex items-center bg-[#0F1923]/95 border border-[#00F5D4] px-2 py-1">
+                <span class="text-[10px] font-bold text-[#00F5D4] mr-2">[隊伍]</span>
+                <input id="chat-input" type="text" maxlength="80" placeholder="輸入戰術訊息後按 Enter 發送..." class="bg-transparent text-xs text-white focus:outline-none w-full" />
             </div>
         </div>
 
@@ -367,134 +391,134 @@
         </div>
     </div>
 
-    <!-- ==================== PRE-ROUND / ARMORY & TACTICAL SETTINGS MODAL ==================== -->
-    <div id="buy-menu-modal" class="absolute inset-0 z-30 bg-[#0F1923]/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-7 overflow-y-auto">
+    <!-- ==================== [TAB] MULTIPLAYER SCOREBOARD OVERLAY ==================== -->
+    <div id="scoreboard-modal" class="hidden pointer-events-none absolute inset-0 z-25 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-4xl bg-[#0F1923]/95 border border-white/25 val-clip p-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-white/15 pb-3 mb-4">
+                <div>
+                    <div class="text-xs font-bold text-[#00F5D4] tracking-widest" id="sb-room-title">ASCENT // TACTICAL MATCH</div>
+                    <h2 class="font-val text-2xl font-black text-white">戰術即時戰績表 SCOREBOARD</h2>
+                </div>
+                <div class="text-right text-xs text-white/60">
+                    <div>個人識別碼 UID: <span id="sb-my-uid" class="text-[#00F5D4] font-mono select-all">連線中...</span></div>
+                    <div>網路狀態: <span id="sb-net-status" class="text-[#00FF66] font-bold">ONLINE SYNC (60Hz)</span></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Attackers Table -->
+                <div class="border border-[#FF4655]/40 bg-[#FF4655]/5 p-3">
+                    <div class="text-xs font-black text-[#FF4655] tracking-wider mb-2 flex justify-between">
+                        <span>ATTACKERS // 攻擊方 (赤紅)</span>
+                        <span>K / D / 武器</span>
+                    </div>
+                    <div id="sb-list-attack" class="space-y-1.5 text-xs"></div>
+                </div>
+                <!-- Defenders Table -->
+                <div class="border border-[#00F5D4]/40 bg-[#00F5D4]/5 p-3">
+                    <div class="text-xs font-black text-[#00F5D4] tracking-wider mb-2 flex justify-between">
+                        <span>DEFENDERS // 守備方 (青藍)</span>
+                        <span>K / D / 武器</span>
+                    </div>
+                    <div id="sb-list-defend" class="space-y-1.5 text-xs"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PRE-ROUND / ARMORY & MULTIPLAYER LOBBY MODAL ==================== -->
+    <div id="buy-menu-modal" class="absolute inset-0 z-30 bg-[#0F1923]/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 overflow-y-auto">
 
         <!-- Header -->
-        <div class="flex flex-wrap justify-between items-center border-b border-white/15 pb-3 gap-4">
+        <div class="flex flex-wrap justify-between items-center border-b border-white/15 pb-3 gap-3">
             <div class="flex items-center space-x-3">
                 <div class="w-3 h-9 bg-[#FF4655]"></div>
                 <div>
-                    <h1 class="font-val text-2xl sm:text-4xl font-black tracking-wider text-white">
-                        VALORANT <span class="text-[#FF4655]">PRO</span> 特戰英豪 3D 擬真視覺版
+                    <h1 class="font-val text-2xl sm:text-3xl font-black tracking-wider text-white">
+                        VALORANT <span class="text-[#FF4655]">ONLINE</span> 特戰英豪 3D 多人聯機旗艦版
                     </h1>
                     <p class="text-xs text-white/65">
-                        高細節第一人稱雙手與掠奪印象塗裝建模 • 支援 <span class="text-[#00F5D4] font-bold">[Y] 轉槍/轉刀檢視</span>、<span class="text-[#FFBE0B] font-bold">[X] 暴風刃飛刀大招</span>、彈孔火花與煙霧彈
+                        支援即時好友連線房間對戰 (PvP / 合作打 AI) • 同步 3D 走位、曳光彈、煙霧彈、玉石牆與 Spike 攻防
                     </p>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="bg-white/5 border border-white/20 px-4 py-1.5 val-clip-sm text-right">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/5 border border-white/20 px-3.5 py-1 val-clip-sm text-right">
                     <div class="text-[10px] text-white/60 font-bold">CREDITS 宇宙幣</div>
-                    <div class="font-val text-2xl font-bold text-[#00F5D4]">¤ <span id="shop-creds">9000</span></div>
+                    <div class="font-val text-xl font-bold text-[#00F5D4]">¤ <span id="shop-creds">9000</span></div>
                 </div>
-                <button id="btn-start-combat" class="val-btn val-clip px-7 py-3 font-black text-base sm:text-lg tracking-widest shadow-lg cursor-pointer">
+                <button id="btn-start-combat" class="val-btn val-clip px-6 py-2.5 font-black text-base tracking-widest shadow-lg cursor-pointer">
                     鎖定準星・進入戰場 [ESC/B]
                 </button>
             </div>
         </div>
 
-        <!-- Grid Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto py-3">
-
-            <!-- Left 4 Cols: Agent & Mode & Crosshair Color -->
-            <div class="lg:col-span-4 flex flex-col space-y-3">
-                <div class="text-xs font-black tracking-widest text-[#FF4655] uppercase border-l-2 border-[#FF4655] pl-2">
-                    1. 選擇出戰特務 (AGENTS)
+        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
+        <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+                <!-- Player Callsign & UID -->
+                <div class="lg:col-span-3 flex flex-col space-y-1">
+                    <label class="text-[10px] font-black text-[#00F5D4] tracking-wider uppercase">1. 你的特務代號 (PLAYER NAME)</label>
+                    <div class="flex space-x-1.5">
+                        <input id="input-player-name" type="text" maxlength="14" value="特務_JETT" class="bg-black/60 border border-white/25 px-2.5 py-1.5 text-xs font-bold text-white w-full focus:border-[#00F5D4] focus:outline-none" />
+                        <button id="btn-switch-team" onclick="toggleMyTeam()" class="bg-[#FF4655]/25 border border-[#FF4655] px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap hover:bg-[#FF4655] transition cursor-pointer">
+                            陣營: 攻擊方
+                        </button>
+                    </div>
+                    <div class="text-[10px] text-white/45 truncate">UID: <span id="lobby-uid-display" class="text-white/75 font-mono select-all">連線初始化中...</span></div>
                 </div>
 
-                <div id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active p-3.5 val-clip-sm cursor-pointer">
-                    <div class="flex justify-between items-center">
-                        <span class="font-black text-base text-white">婕提 JETT <span class="text-xs text-[#00F5D4] font-bold ml-1">// 決鬥者</span></span>
-                        <span class="text-[10px] bg-[#00F5D4]/20 text-[#00F5D4] px-2 py-0.5 font-bold">暴風刃飛刀 + 瞬移</span>
-                    </div>
-                    <div class="mt-2 grid grid-cols-2 gap-1.5 text-[11px] text-[#00F5D4] font-bold">
-                        <span class="bg-black/40 px-2 py-1">[C] 雲爆煙霧彈</span>
-                        <span class="bg-black/40 px-2 py-1">[Q] 氣流竄升飛空</span>
-                        <span class="bg-black/40 px-2 py-1">[E] 逐風衝刺位移</span>
-                        <span class="bg-black/40 px-2 py-1 text-[#FFBE0B]">[X] 暴風刃 (5把懸浮飛刀)</span>
-                    </div>
-                </div>
-
-                <div id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card p-3.5 val-clip-sm cursor-pointer">
-                    <div class="flex justify-between items-center">
-                        <span class="font-black text-base text-white">聖祈 / 菲尼克斯 <span class="text-xs text-[#FF4655] font-bold ml-1">// 控場守衛</span></span>
-                        <span class="text-[10px] bg-[#FF4655]/20 text-[#FF4655] px-2 py-0.5 font-bold">致盲閃光 + 結晶冰牆</span>
-                    </div>
-                    <div class="mt-2 grid grid-cols-2 gap-1.5 text-[11px] text-[#FF4655] font-bold">
-                        <span class="bg-black/40 px-2 py-1">[C] 戰術煙霧遮蔽</span>
-                        <span class="bg-black/40 px-2 py-1">[Q] 閃光曲球 (全屏致盲)</span>
-                        <span class="bg-black/40 px-2 py-1">[E] 玉石冰牆 + 治療</span>
-                        <span class="bg-black/40 px-2 py-1 text-[#FFBE0B]">[X] 暴風刃終極武裝</span>
+                <!-- Create / Join Room Controls -->
+                <div class="lg:col-span-5 flex flex-col space-y-1">
+                    <label class="text-[10px] font-black text-[#FFBE0B] tracking-wider uppercase">2. 與朋友聯機對戰房間 (MULTIPLAYER ROOM)</label>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="createMultiplayerRoom()" class="bg-[#00F5D4] hover:bg-[#00d8bb] text-black font-black px-3 py-1.5 text-xs val-clip-sm transition cursor-pointer">
+                            + 建立新房間
+                        </button>
+                        <button onclick="joinQuickPublicLobby()" class="bg-[#FFBE0B]/20 hover:bg-[#FFBE0B]/40 border border-[#FFBE0B] text-[#FFBE0B] font-bold px-3 py-1.5 text-xs val-clip-sm transition cursor-pointer">
+                            ⚡ 快速加入公開房 (#PUBLIC)
+                        </button>
+                        <div class="flex items-center bg-black/60 border border-white/25 px-2">
+                            <input id="input-room-code" type="text" maxlength="10" placeholder="輸入6碼房號" class="bg-transparent text-xs font-val font-bold text-white uppercase w-24 focus:outline-none" />
+                            <button onclick="joinRoomByInput()" class="text-xs font-black text-[#00F5D4] hover:underline pl-1 cursor-pointer">加入</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="text-xs font-black tracking-widest text-[#FF4655] uppercase border-l-2 border-[#FF4655] pl-2 pt-1">
-                    2. 戰術對戰模式 (GAME MODE)
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button id="mode-tactical" onclick="setGameMode('tactical')" class="val-card active p-2.5 text-left val-clip-sm cursor-pointer">
-                        <div class="font-bold text-xs text-[#00F5D4]">1v5 據點實戰</div>
-                        <div class="text-[10px] text-white/60 mt-0.5">特務 AI 持槍巡邏、守角反擊與裝包</div>
-                    </button>
-                    <button id="mode-strafing" onclick="setGameMode('strafing')" class="val-card p-2.5 text-left val-clip-sm cursor-pointer">
-                        <div class="font-bold text-xs text-white">移動急停靶場</div>
-                        <div class="text-[10px] text-white/60 mt-0.5">人形特務左右橫移，練習急停爆頭</div>
-                    </button>
-                    <button id="mode-stationary" onclick="setGameMode('stationary')" class="val-card p-2.5 text-left val-clip-sm cursor-pointer">
-                        <div class="font-bold text-xs text-white">定點壓槍靶場</div>
-                        <div class="text-[10px] text-white/60 mt-0.5">靜止高細節特務靶位，無限重生</div>
-                    </button>
-                </div>
-
-                <!-- Crosshair Color Customizer -->
-                <div class="bg-black/40 border border-white/15 p-3 val-clip-sm flex items-center justify-between">
-                    <span class="text-xs font-bold text-white/80">準星色彩 (CROSSHAIR)</span>
-                    <div class="flex space-x-2">
-                        <button onclick="setCrosshairColor('#00F5D4')" class="w-6 h-6 rounded-full bg-[#00F5D4] border-2 border-white"></button>
-                        <button onclick="setCrosshairColor('#00FF66')" class="w-6 h-6 rounded-full bg-[#00FF66] border-2 border-transparent"></button>
-                        <button onclick="setCrosshairColor('#FFBE0B')" class="w-6 h-6 rounded-full bg-[#FFBE0B] border-2 border-transparent"></button>
-                        <button onclick="setCrosshairColor('#FF4655')" class="w-6 h-6 rounded-full bg-[#FF4655] border-2 border-transparent"></button>
-                        <button onclick="setCrosshairColor('#FFFFFF')" class="w-6 h-6 rounded-full bg-white border-2 border-transparent"></button>
+                <!-- Active Room Status & Share Code + AI Bot Toggle -->
+                <div class="lg:col-span-4 flex flex-col justify-between bg-black/45 border border-white/15 p-2.5 rounded">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-white/50 font-bold">目前連線狀態：</span>
+                            <span id="lobby-room-status" class="text-xs font-black text-[#FFBE0B] ml-1">單人離線訓練 (未加入房間)</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button id="btn-copy-room" onclick="copyRoomCode()" class="hidden bg-white/10 hover:bg-white/20 border border-white/30 px-2 py-0.5 text-[10px] font-bold text-[#00F5D4] cursor-pointer">
+                                複製房號
+                            </button>
+                            <button id="btn-leave-room" onclick="leaveMultiplayerRoom()" class="hidden bg-[#FF4655]/20 hover:bg-[#FF4655] border border-[#FF4655] px-2 py-0.5 text-[10px] font-bold text-white cursor-pointer">
+                                離開
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-1.5 pt-1.5 border-t border-white/10 text-[11px]">
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input id="chk-enable-bots" type="checkbox" checked onchange="toggleBotsInMatch(this.checked)" class="accent-[#00F5D4]" />
+                            <span class="text-white/80 font-bold">在戰場中啟用 AI 特務機器人 (可與朋友組隊打 AI)</span>
+                        </label>
+                        <span id="lobby-online-count" class="text-[#00F5D4] font-bold">線上: 1 人</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Center 5 Cols: Weapons Arsenal (With Reaver/Prime Skin aesthetics) -->
-            <div class="lg:col-span-5 flex flex-col space-y-3">
-                <div class="text-xs font-black tracking-widest text-[#FF4655] uppercase border-l-2 border-[#FF4655] pl-2">
-                    3. 購買精細建模武器庫 (3D SKIN ARSENAL)
-                </div>
+            <!-- Connected Players Strip inside Lobby -->
+            <div id="lobby-players-bar" class="mt-2 pt-2 border-t border-white/10 flex flex-wrap items-center gap-2 text-xs">
+                <span class="text-[10px] text-white/50 font-bold">房間成員列表：</span>
+                <span class="bg-[#00F5D4]/15 border border-[#00F5D4] text-[#00F5D4] px-2 py-0.5 text-[11px] font-bold">等待加入或建立房間...</span>
+            </div>
+        </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <!-- Vandal -->
-                    <div id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-3.5 val-clip-sm cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-base text-white">掠奪印象・暴徒 VANDAL</span>
-                                <span class="font-val text-sm text-[#00F5D4]">¤ 2900</span>
-                            </div>
-                            <div class="text-[11px] text-white/60">黑紫能量核心步槍 • 無視距離一槍爆頭 (160)</div>
-                        </div>
-                        <div class="my-2.5 h-11 flex items-center justify-center bg-black/40 border border-[#B5179E]/40">
-                            <svg class="w-32 h-8 text-[#B5179E] fill-current" viewBox="0 0 120 32">
-                                <path d="M8 14h85l8 4v3H75l-5 9h-8l3-9H35l-6 10H20l4-10H8v-7zm22-4h35v3H30v-3z"/>
-                            </svg>
-                        </div>
-                        <div class="grid grid-cols-3 text-[10px] text-white/80 bg-black/50 p-1 text-center">
-                            <div>爆頭 <span class="text-[#FF4655] font-bold">160</span></div>
-                            <div>身體 <span class="font-bold">40</span></div>
-                            <div>檢視 <span class="text-[#00F5D4] font-bold">[Y] 動畫</span></div>
-                        </div>
-                    </div>
-
-                    <!-- Phantom -->
-                    <div id="wpn-card-phantom" onclick="buyWeapon('phantom')" class="val-card p-3.5 val-clip-sm cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-base text-white">奇點科技・幻象 PHANTOM</span>
-                                <span class="font-val text-sm text-[#00F5D4]">¤ 2900</span>
-                            </div>
+        <!-- Grid Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 my-auto py-1">
                             <div class="text-[11px] text-white/60">消音高射速步槍 • 穩定壓槍與青光槍管</div>
                         </div>
                         <div class="my-2.5 h-11 flex items-center justify-center bg-black/40 border border-[#00F5D4]/40">
@@ -581,23 +605,26 @@
                     <div class="font-black text-[#00F5D4] tracking-wider uppercase mb-1">擬真操作總覽 PRO KEYBINDS</div>
                     <div class="flex justify-between text-white/80"><span>切換主武器 / 手槍 / 近戰苦無</span><span class="font-bold text-[#FFBE0B]">1 / 2 / 3 鍵</span></div>
                     <div class="flex justify-between text-white/80"><span>檢視武器 / 苦無轉刀動畫</span><span class="font-bold text-[#00F5D4]">Y 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>雲爆煙霧彈 (立體視線遮蔽)</span><span class="font-bold text-white">C 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>竄升飛空 / 閃光曲球</span><span class="font-bold text-white">Q 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>逐風衝刺 / 結晶冰牆</span><span class="font-bold text-white">E 鍵</span></div>
+                    <div class="flex justify-between text-white/80"><span>雲爆煙霧 / 閃光 / 衝刺冰牆</span><span class="font-bold text-white">C / Q / E 鍵</span></div>
                     <div class="flex justify-between text-white/80"><span>暴風刃大招 (5把懸浮飛刀)</span><span class="font-bold text-[#FFBE0B]">X 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>換彈動畫 / 部署 Spike</span><span class="font-bold text-[#FF4655]">R 鍵 / 按住 4 或 F</span></div>
+                    <div class="flex justify-between text-white/80"><span>裝包 (攻方) / 拆包 (守方)</span><span class="font-bold text-[#FF4655]">按住 4 或 F</span></div>
+                    <div class="flex justify-between text-white/80"><span>戰績計分板 / 房間即時聊天</span><span class="font-bold text-[#00F5D4]">TAB 鍵 / Enter 鍵</span></div>
                 </div>
             </div>
 
         </div>
 
-        <div class="border-t border-white/15 pt-2.5 flex justify-between items-center text-xs text-white/50">
-            <div>視覺升級亮點：即時牆面彈孔貼花、立體槍口火光動態照明、黃銅拋殼物理、敵方特務人形骨架與紅框高光！</div>
-            <div class="font-val text-white/70">ASCENT // PROTOCOL V2.5</div>
+        <div class="border-t border-white/15 pt-2 flex justify-between items-center text-xs text-white/50">
+            <div>多人連線提示：建立房間後點擊「複製房號」傳給朋友，朋友輸入相同的 6 碼房號即可進入同一張 3D 戰場即時對戰！</div>
+            <div class="font-val text-white/70">ASCENT // MULTIPLAYER PROTOCOL V3.5</div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         /********************************************************************
          * 1. SOUND SYNTHESIS ENGINE (Crisp Shots, Reaver Bell Kill, Blade Storm)
          ********************************************************************/
@@ -901,6 +928,9 @@
             inBuyMenu: true,
             gameMode: 'tactical',
             agent: 'jett',
+            team: 'attack', // 'attack' or 'defend'
+            playerName: '特務_' + Math.floor(100 + Math.random() * 899),
+            enableBots: true,
             primaryWeaponKey: 'vandal',
             weaponKey: 'vandal',
             hp: 100,
@@ -908,6 +938,8 @@
             creds: 9000,
             mag: 25,
             reserve: 75,
+            kills: 0,
+            deaths: 0,
             isReloading: false,
             reloadTimer: 0,
             isInspecting: false,
@@ -930,6 +962,11 @@
             beepAccumulator: 0,
             walkBobTime: 0
         };
+
+        document.getElementById('input-player-name').value = state.playerName;
+        document.getElementById('input-player-name').addEventListener('input', (e) => {
+            state.playerName = (e.target.value || '特務').trim().slice(0, 14);
+        });
 
         /********************************************************************
          * 4. PROCEDURAL HIGH-RES TEXTURES & SKYBOX GENERATOR
@@ -1484,7 +1521,7 @@
 
             return {
                 index: idx,
-                name: `特務 REYNA-0${idx + 1}`,
+                name: `AI 特務-0${idx + 1}`,
                 group,
                 bodyMesh,
                 headMesh,
@@ -1510,10 +1547,585 @@
         function spawnBots() {
             bots.forEach(b => scene.remove(b.group));
             bots.length = 0;
+            if (!state.enableBots) {
+                updateAliveHUD();
+                return;
+            }
             BOT_SPAWNS.forEach((sp, idx) => {
                 bots.push(createHumanoidBot(idx, sp));
             });
             updateAliveHUD();
+        }
+
+        /********************************************************************
+         * 7B. FIREBASE MULTIPLAYER ENGINE (REALTIME ROOMS, PLAYERS & EVENTS)
+         ********************************************************************/
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let currentRoomId = null;
+        let unsubPlayers = null;
+        let unsubEvents = null;
+        let unsubRoomState = null;
+        let lastNetSyncTime = 0;
+        const remotePlayers = new Map(); // uid -> { uid, data, group, headMesh, bodyMesh, leftLeg, rightLeg, gunMesh, hpFill, nameSprite, targetPos, targetYaw }
+        const processedEventIds = new Set();
+
+        async function initFirebaseMultiplayer() {
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    document.getElementById('lobby-uid-display').textContent = '本地模式 (未偵測到雲端設定)';
+                    return;
+                }
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user) {
+                        document.getElementById('lobby-uid-display').textContent = user.uid;
+                        document.getElementById('sb-my-uid').textContent = user.uid;
+                    }
+                });
+            } catch (err) {
+                console.error('Firebase initialization error:', err);
+                document.getElementById('lobby-uid-display').textContent = '單機離線模式';
+            }
+        }
+        initFirebaseMultiplayer();
+
+        function createNameplateSprite(nameText, team, agentKey) {
+            const c = document.createElement('canvas');
+            c.width = 256;
+            c.height = 64;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = 'rgba(15, 25, 35, 0.85)';
+            ctx.fillRect(16, 12, 224, 40);
+            ctx.strokeStyle = team === 'attack' ? '#FF4655' : '#00F5D4';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(16, 12, 224, 40);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 20px "Noto Sans TC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${nameText} [${agentKey.toUpperCase()}]`, 128, 39);
+
+            const tex = new THREE.CanvasTexture(c);
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(2.2, 0.55, 1);
+            sprite.position.y = 3.05;
+            return sprite;
+        }
+
+        function createRemotePlayerAvatar(uid, pData) {
+            const group = new THREE.Group();
+            const isEnemy = pData.team !== state.team;
+            const highlightHex = isEnemy ? 0xFF4655 : 0x00F5D4;
+            const agentColorHex = pData.agent === 'jett' ? 0x2563eb : 0x0d9488;
+
+            const armorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.45 });
+            const outlineMat = new THREE.MeshBasicMaterial({ color: highlightHex, side: THREE.BackSide });
+            const trimMat = new THREE.MeshStandardMaterial({ color: agentColorHex, roughness: 0.35 });
+            const visorMat = new THREE.MeshBasicMaterial({ color: highlightHex });
+
+            // Torso
+            const torsoGeo = new THREE.BoxGeometry(0.76, 1.05, 0.44);
+            const bodyMesh = new THREE.Mesh(torsoGeo, armorMat);
+            bodyMesh.position.y = 1.32;
+            bodyMesh.castShadow = true;
+            bodyMesh.userData = { isRemotePlayer: true, uid, part: 'body' };
+
+            const torsoOutline = new THREE.Mesh(torsoGeo, outlineMat);
+            torsoOutline.scale.set(1.10, 1.07, 1.10);
+            bodyMesh.add(torsoOutline);
+
+            const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.56, 0.48), trimMat);
+            chestPlate.position.y = 0.08;
+            bodyMesh.add(chestPlate);
+
+            // Legs
+            const legGeo = new THREE.BoxGeometry(0.28, 0.82, 0.32);
+            const leftLeg = new THREE.Mesh(legGeo, armorMat);
+            leftLeg.position.set(-0.20, 0.41, 0);
+            leftLeg.userData = { isRemotePlayer: true, uid, part: 'body' };
+
+            const rightLeg = new THREE.Mesh(legGeo, armorMat);
+            rightLeg.position.set(0.20, 0.41, 0);
+            rightLeg.userData = { isRemotePlayer: true, uid, part: 'body' };
+
+            // Arms & Held Weapon
+            const armGeo = new THREE.BoxGeometry(0.22, 0.72, 0.24);
+            const leftArm = new THREE.Mesh(armGeo, trimMat);
+            leftArm.position.set(-0.52, 1.38, 0.15);
+            leftArm.rotation.x = -0.6;
+            const rightArm = new THREE.Mesh(armGeo, trimMat);
+            rightArm.position.set(0.52, 1.38, 0.15);
+            rightArm.rotation.x = -0.6;
+
+            const gunMesh = new THREE.Mesh(
+                new THREE.BoxGeometry(0.11, 0.15, 0.82),
+                new THREE.MeshStandardMaterial({ color: 0xB5179E, metalness: 0.6 })
+            );
+            gunMesh.position.set(0.25, 1.32, -0.45);
+
+            // Head Hitbox
+            const headGeo = new THREE.BoxGeometry(0.46, 0.48, 0.46);
+            const headMesh = new THREE.Mesh(headGeo, armorMat);
+            headMesh.position.y = 2.14;
+            headMesh.castShadow = true;
+            headMesh.userData = { isRemotePlayer: true, uid, part: 'head' };
+
+            const headOutline = new THREE.Mesh(headGeo, outlineMat);
+            headOutline.scale.set(1.14, 1.14, 1.14);
+            headMesh.add(headOutline);
+
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.15, 0.49), visorMat);
+            visor.position.y = 0.02;
+            headMesh.add(visor);
+
+            // Floating HP Bar
+            const hpBg = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.15, 0.14),
+                new THREE.MeshBasicMaterial({ color: 0x0F1923, side: THREE.DoubleSide })
+            );
+            hpBg.position.y = 2.66;
+            const hpFill = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.08, 0.09),
+                new THREE.MeshBasicMaterial({ color: highlightHex, side: THREE.DoubleSide })
+            );
+            hpFill.position.set(0, 2.66, 0.01);
+
+            const nameSprite = createNameplateSprite(pData.name || 'Player', pData.team || 'attack', pData.agent || 'jett');
+
+            group.add(bodyMesh, leftLeg, rightLeg, leftArm, rightArm, gunMesh, headMesh, hpBg, hpFill, nameSprite);
+            group.position.set(pData.x || 0, (pData.y || 2.2) - 2.2, pData.z || 20);
+            scene.add(group);
+
+            return {
+                uid,
+                data: pData,
+                group,
+                bodyMesh,
+                headMesh,
+                leftLeg,
+                rightLeg,
+                gunMesh,
+                torsoOutline,
+                headOutline,
+                visor,
+                hpBg,
+                hpFill,
+                nameSprite,
+                targetPos: new THREE.Vector3(pData.x || 0, (pData.y || 2.2) - 2.2, pData.z || 20),
+                targetYaw: pData.yaw || 0,
+                walkCycle: 0
+            };
+        }
+
+        function clearAllRemotePlayers() {
+            remotePlayers.forEach(rp => scene.remove(rp.group));
+            remotePlayers.clear();
+        }
+
+        window.toggleMyTeam = function() {
+            state.team = state.team === 'attack' ? 'defend' : 'attack';
+            const btn = document.getElementById('btn-switch-team');
+            if (state.team === 'attack') {
+                btn.textContent = '陣營: 攻擊方 (赤紅)';
+                btn.className = 'bg-[#FF4655]/25 border border-[#FF4655] px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap hover:bg-[#FF4655] transition cursor-pointer';
+                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 26);
+                yawObject.rotation.y = 0;
+            } else {
+                btn.textContent = '陣營: 守備方 (青藍)';
+                btn.className = 'bg-[#00F5D4]/25 border border-[#00F5D4] px-2.5 py-1.5 text-xs font-bold text-[#00F5D4] whitespace-nowrap hover:bg-[#00F5D4] hover:text-black transition cursor-pointer';
+                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -24);
+                yawObject.rotation.y = Math.PI;
+            }
+            pushMyStateToFirestore(true);
+            addChatMessage('系統', `你已切換至 ${state.team === 'attack' ? '攻擊方 (Attackers)' : '守備方 (Defenders)'}`);
+        };
+
+        window.toggleBotsInMatch = function(enabled) {
+            state.enableBots = enabled;
+            spawnBots();
+            if (currentRoomId && db && currentUser) {
+                const roomDoc = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
+                setDoc(roomDoc, { enableBots: enabled, updatedAt: Date.now() }, { merge: true }).catch(() => {});
+            }
+        };
+
+        window.createMultiplayerRoom = async function() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+            await connectToMultiplayerRoom(code);
+        };
+
+        window.joinQuickPublicLobby = async function() {
+            await connectToMultiplayerRoom('PUBLIC');
+        };
+
+        window.joinRoomByInput = async function() {
+            const raw = document.getElementById('input-room-code').value || '';
+            const code = raw.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+            if (!code) {
+                showCenterBanner('ROOM ERROR', '請輸入有效的房間代碼', 1600);
+                return;
+            }
+            await connectToMultiplayerRoom(code);
+        };
+
+        window.copyRoomCode = function() {
+            if (!currentRoomId) return;
+            const temp = document.createElement('input');
+            temp.value = currentRoomId;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showCenterBanner('ROOM CODE COPIED', `已複製房間代碼 [${currentRoomId}]，快傳給朋友吧！`, 2000);
+        };
+
+        window.leaveMultiplayerRoom = async function() {
+            if (unsubPlayers) { unsubPlayers(); unsubPlayers = null; }
+            if (unsubEvents) { unsubEvents(); unsubEvents = null; }
+            if (unsubRoomState) { unsubRoomState(); unsubRoomState = null; }
+            if (currentRoomId && db && currentUser) {
+                const myDoc = doc(db, 'artifacts', appId, 'public', 'data', `val_room_${currentRoomId}_players`, currentUser.uid);
+                deleteDoc(myDoc).catch(() => {});
+            }
+            currentRoomId = null;
+            clearAllRemotePlayers();
+            document.getElementById('lobby-room-status').textContent = '單人離線訓練 (未加入房間)';
+            document.getElementById('btn-copy-room').classList.add('hidden');
+            document.getElementById('btn-leave-room').classList.add('hidden');
+            document.getElementById('room-hud-pill').classList.add('hidden');
+            document.getElementById('round-phase-label').textContent = 'SOLO // LOCAL';
+            updateLobbyPlayersUI();
+            updateAliveHUD();
+        };
+
+        async function connectToMultiplayerRoom(roomCode) {
+            if (!db || !currentUser) {
+                showCenterBanner('CONNECTING...', '正在初始化雲端連線，請稍候再試', 1800);
+                return;
+            }
+            await window.leaveMultiplayerRoom();
+
+            currentRoomId = roomCode;
+            document.getElementById('input-room-code').value = roomCode;
+            document.getElementById('lobby-room-status').textContent = `已連線房號: #${roomCode}`;
+            document.getElementById('btn-copy-room').classList.remove('hidden');
+            document.getElementById('btn-leave-room').classList.remove('hidden');
+            document.getElementById('room-hud-pill').classList.remove('hidden');
+            document.getElementById('hud-room-code').textContent = `ROOM: ${roomCode}`;
+            document.getElementById('round-phase-label').textContent = `ROOM #${roomCode}`;
+            document.getElementById('sb-room-title').textContent = `ASCENT // MULTIPLAYER ROOM #${roomCode}`;
+
+            // Initialize or merge Room Metadata
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', roomCode);
+            setDoc(roomDocRef, {
+                roomCode,
+                enableBots: state.enableBots,
+                updatedAt: Date.now()
+            }, { merge: true }).catch(() => {});
+
+            // 1. Listen to Room Global State (Spike Planted / Defused / Round Scores)
+            unsubRoomState = onSnapshot(roomDocRef, (snap) => {
+                if (!snap.exists()) return;
+                const rData = snap.data();
+                if (typeof rData.enableBots === 'boolean' && rData.enableBots !== state.enableBots) {
+                    state.enableBots = rData.enableBots;
+                    document.getElementById('chk-enable-bots').checked = state.enableBots;
+                    spawnBots();
+                }
+                if (typeof rData.scoreAttack === 'number') {
+                    state.scoreAlly = rData.scoreAttack;
+                    document.getElementById('score-ally').textContent = state.scoreAlly;
+                }
+                if (typeof rData.scoreDefend === 'number') {
+                    state.scoreEnemy = rData.scoreDefend;
+                    document.getElementById('score-enemy').textContent = state.scoreEnemy;
+                }
+                if (rData.spikePlanted && !state.spikePlanted) {
+                    state.spikePlanted = true;
+                    state.spikeTimer = 45;
+                    spikeGroup.position.set(rData.spikeX || 0, 0, rData.spikeZ || -12);
+                    spikeGroup.visible = true;
+                    document.getElementById('spike-hud-badge').classList.remove('hidden');
+                    sfx.playSpikeBeep(true);
+                    showCenterBanner('SPIKE PLANTED // 輻能核心已部署', `${rData.planterName || '隊友'} 已在 A 據點部署輻能核心！`, 2400);
+                } else if (rData.spikePlanted === false && state.spikePlanted) {
+                    state.spikePlanted = false;
+                    spikeGroup.visible = false;
+                    document.getElementById('spike-hud-badge').classList.add('hidden');
+                }
+            }, (err) => console.error('Room state listener error:', err));
+
+            // 2. Listen to All Players in Room
+            const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', `val_room_${roomCode}_players`);
+            unsubPlayers = onSnapshot(playersColRef, (snapshot) => {
+                const now = Date.now();
+                const seenUids = new Set();
+
+                snapshot.forEach((docSnap) => {
+                    const p = docSnap.data();
+                    const uid = docSnap.id;
+                    if (!p || (now - (p.updatedAt || 0) > 45000)) return; // Ignore stale players > 45s
+                    seenUids.add(uid);
+
+                    if (uid === currentUser.uid) return; // Skip self
+
+                    if (!remotePlayers.has(uid)) {
+                        const rp = createRemotePlayerAvatar(uid, p);
+                        remotePlayers.set(uid, rp);
+                        addChatMessage('系統', `${p.name || '新特務'} 加入了房間 (${p.team === 'attack' ? '攻擊方' : '守備方'})`);
+                    } else {
+                        const rp = remotePlayers.get(uid);
+                        const teamOrNameChanged = (rp.data.team !== p.team || rp.data.name !== p.name || rp.data.agent !== p.agent);
+                        rp.data = p;
+                        rp.targetPos.set(p.x || 0, (p.y || 2.2) - 2.2, p.z || 0);
+                        rp.targetYaw = p.yaw || 0;
+                        rp.group.visible = (p.hp > 0);
+                        rp.hpFill.scale.x = Math.max(0.01, (p.hp || 0) / 100);
+
+                        if (teamOrNameChanged) {
+                            const isEnemy = p.team !== state.team;
+                            const col = isEnemy ? 0xFF4655 : 0x00F5D4;
+                            rp.torsoOutline.material.color.setHex(col);
+                            rp.headOutline.material.color.setHex(col);
+                            rp.hpFill.material.color.setHex(col);
+                            rp.group.remove(rp.nameSprite);
+                            rp.nameSprite = createNameplateSprite(p.name || 'Player', p.team || 'attack', p.agent || 'jett');
+                            rp.group.add(rp.nameSprite);
+                        }
+                    }
+                });
+
+                // Remove disconnected players
+                remotePlayers.forEach((rp, uid) => {
+                    if (!seenUids.has(uid)) {
+                        scene.remove(rp.group);
+                        remotePlayers.delete(uid);
+                    }
+                });
+
+                updateLobbyPlayersUI();
+                updateAliveHUD();
+                updateScoreboardUI();
+            }, (err) => console.error('Players listener error:', err));
+
+            // 3. Listen to Realtime Combat & Tactical Events (Shots, Hits, Kills, Smokes, Walls, Chat)
+            const eventsColRef = collection(db, 'artifacts', appId, 'public', 'data', `val_room_${roomCode}_events`);
+            unsubEvents = onSnapshot(eventsColRef, (snapshot) => {
+                const now = Date.now();
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type !== 'added') return;
+                    const evId = change.doc.id;
+                    if (processedEventIds.has(evId)) return;
+                    processedEventIds.add(evId);
+
+                    const ev = change.doc.data();
+                    if (!ev || (now - (ev.timestamp || 0) > 10000)) return; // Only process recent events
+
+                    handleNetworkCombatEvent(ev);
+                });
+            }, (err) => console.error('Events listener error:', err));
+
+            await pushMyStateToFirestore(true);
+            broadcastRoomEvent({
+                type: 'chat',
+                senderName: state.playerName,
+                senderTeam: state.team,
+                text: `已進入戰場房間 #${roomCode}！`
+            });
+            showCenterBanner(`CONNECTED // 房間 #${roomCode}`, '多人即時連線已啟動！複製房號邀請朋友加入對戰', 2400);
+        }
+
+        async function pushMyStateToFirestore(force = false) {
+            if (!db || !currentUser || !currentRoomId) return;
+            const now = performance.now();
+            if (!force && now - lastNetSyncTime < 90) return; // ~11 Hz smooth position sync
+            lastNetSyncTime = now;
+
+            const myDocRef = doc(db, 'artifacts', appId, 'public', 'data', `val_room_${currentRoomId}_players`, currentUser.uid);
+            setDoc(myDocRef, {
+                uid: currentUser.uid,
+                name: state.playerName,
+                team: state.team,
+                agent: state.agent,
+                weapon: state.weaponKey,
+                x: Number(yawObject.position.x.toFixed(2)),
+                y: Number(yawObject.position.y.toFixed(2)),
+                z: Number(yawObject.position.z.toFixed(2)),
+                yaw: Number(yawObject.rotation.y.toFixed(3)),
+                hp: Math.max(0, Math.ceil(state.hp)),
+                shield: Math.max(0, Math.ceil(state.shield)),
+                kills: state.kills,
+                deaths: state.deaths,
+                updatedAt: Date.now()
+            }).catch(() => {});
+        }
+
+        function broadcastRoomEvent(payload) {
+            if (!db || !currentUser || !currentRoomId) return;
+            const eventsColRef = collection(db, 'artifacts', appId, 'public', 'data', `val_room_${currentRoomId}_events`);
+            addDoc(eventsColRef, {
+                ...payload,
+                senderUid: currentUser.uid,
+                timestamp: Date.now()
+            }).catch(() => {});
+        }
+
+        function handleNetworkCombatEvent(ev) {
+            if (!currentUser) return;
+
+            if (ev.type === 'chat') {
+                addChatMessage(ev.senderName || '特務', ev.text, ev.senderTeam);
+                return;
+            }
+
+            if (ev.type === 'shot' && ev.senderUid !== currentUser.uid) {
+                const s = new THREE.Vector3(ev.sx, ev.sy, ev.sz);
+                const e = new THREE.Vector3(ev.ex, ev.ey, ev.ez);
+                createBulletTracer(s, e, ev.color || 0x00F5D4);
+                sfx.playGunshot(ev.weapon || 'vandal');
+                return;
+            }
+
+            if (ev.type === 'hit' && ev.targetUid === currentUser.uid && state.hp > 0) {
+                applyDamageToPlayer(ev.dmg || 40, ev.attackerName || '敵方特務', ev.weaponName || 'VANDAL', ev.isHead);
+                return;
+            }
+
+            if (ev.type === 'kill') {
+                addKillfeedItem(ev.killerName, ev.victimName, ev.weaponName, ev.isHead);
+                if (ev.killerUid === currentUser.uid) {
+                    state.kills++;
+                    state.roundKills++;
+                    state.creds = Math.min(9000, state.creds + 300);
+                    sfx.playHeadshotKill(state.roundKills);
+                    showKillEmblem(state.roundKills, ev.isHead);
+                    updateShopUI();
+                }
+                return;
+            }
+
+            if (ev.type === 'smoke' && ev.senderUid !== currentUser.uid) {
+                spawnSmokeAtPosition(new THREE.Vector3(ev.x, ev.y, ev.z));
+                return;
+            }
+
+            if (ev.type === 'wall' && ev.senderUid !== currentUser.uid) {
+                spawnIceWallAtPosition(new THREE.Vector3(ev.x, ev.y, ev.z), ev.yaw || 0);
+                return;
+            }
+
+            if (ev.type === 'flash' && ev.senderUid !== currentUser.uid && ev.senderTeam !== state.team) {
+                const flashEl = document.getElementById('flash-overlay');
+                flashEl.style.opacity = '0.9';
+                setTimeout(() => { flashEl.style.opacity = '0'; }, 800);
+                return;
+            }
+
+            if (ev.type === 'round_end') {
+                showCenterBanner(ev.bannerSub || 'ROUND OVER', ev.bannerTitle || '回合結束', 3000);
+                setTimeout(() => resetRound(false), 3200);
+            }
+        }
+
+        function addChatMessage(sender, text, team = 'attack') {
+            const box = document.getElementById('chat-messages');
+            if (!box) return;
+            const div = document.createElement('div');
+            const colorClass = sender === '系統' ? 'text-[#FFBE0B]' : (team === 'attack' ? 'text-[#FF4655]' : 'text-[#00F5D4]');
+            div.innerHTML = `<span class="font-bold ${colorClass}">[${sender}]:</span> <span class="text-white/90">${text}</span>`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function updateLobbyPlayersUI() {
+            const bar = document.getElementById('lobby-players-bar');
+            const countEl = document.getElementById('lobby-online-count');
+            if (!bar) return;
+
+            const allPlayers = [
+                { uid: currentUser?.uid || 'me', name: state.playerName + ' (你)', team: state.team, agent: state.agent, hp: state.hp }
+            ];
+            remotePlayers.forEach(rp => {
+                allPlayers.push({
+                    uid: rp.uid,
+                    name: rp.data.name || '特務',
+                    team: rp.data.team || 'attack',
+                    agent: rp.data.agent || 'jett',
+                    hp: rp.data.hp ?? 100
+                });
+            });
+
+            countEl.textContent = `線上玩家: ${allPlayers.length} 人`;
+            bar.innerHTML = `<span class="text-[10px] text-white/50 font-bold">房間成員 (${allPlayers.length})：</span>`;
+            allPlayers.forEach(p => {
+                const badge = document.createElement('span');
+                const isAtk = p.team === 'attack';
+                badge.className = `${isAtk ? 'bg-[#FF4655]/20 border-[#FF4655] text-[#FF4655]' : 'bg-[#00F5D4]/20 border-[#00F5D4] text-[#00F5D4]'} border px-2 py-0.5 text-[11px] font-bold`;
+                badge.textContent = `${isAtk ? '⚔' : '🛡'} ${p.name} [${(p.agent || 'JETT').toUpperCase()}]`;
+                bar.appendChild(badge);
+            });
+        }
+
+        function updateScoreboardUI() {
+            const atkList = document.getElementById('sb-list-attack');
+            const defList = document.getElementById('sb-list-defend');
+            if (!atkList || !defList) return;
+            atkList.innerHTML = '';
+            defList.innerHTML = '';
+
+            const all = [
+                {
+                    name: state.playerName + ' (YOU)',
+                    team: state.team,
+                    agent: state.agent,
+                    kills: state.kills,
+                    deaths: state.deaths,
+                    weapon: WEAPONS[state.weaponKey]?.name || 'VANDAL',
+                    hp: state.hp
+                }
+            ];
+            remotePlayers.forEach(rp => {
+                all.push({
+                    name: rp.data.name || 'Player',
+                    team: rp.data.team || 'attack',
+                    agent: rp.data.agent || 'jett',
+                    kills: rp.data.kills || 0,
+                    deaths: rp.data.deaths || 0,
+                    weapon: WEAPONS[rp.data.weapon || 'vandal']?.name || 'VANDAL',
+                    hp: rp.data.hp ?? 100
+                });
+            });
+
+            all.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center bg-black/45 px-2.5 py-1.5 border-l-2 ' + (p.team === 'attack' ? 'border-[#FF4655]' : 'border-[#00F5D4]');
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="font-val font-bold text-white/70 uppercase">[${p.agent}]</span>
+                        <span class="font-bold text-white">${p.name}</span>
+                        <span class="text-[10px] ${p.hp > 0 ? 'text-[#00FF66]' : 'text-[#FF4655]'}">${p.hp > 0 ? p.hp + ' HP' : 'DEAD'}</span>
+                    </div>
+                    <div class="font-val text-sm text-white/90">${p.kills} / ${p.deaths} <span class="text-[10px] text-[#00F5D4] ml-1">${p.weapon}</span></div>
+                `;
+                if (p.team === 'attack') atkList.appendChild(row);
+                else defList.appendChild(row);
+            });
         }
 
         /********************************************************************
@@ -1640,6 +2252,11 @@
                     targets.push(b.headMesh, b.bodyMesh, b.leftLeg, b.rightLeg);
                 }
             });
+            remotePlayers.forEach(rp => {
+                if ((rp.data.hp ?? 100) > 0 && rp.data.team !== state.team) {
+                    targets.push(rp.headMesh, rp.bodyMesh, rp.leftLeg, rp.rightLeg);
+                }
+            });
 
             const intersects = raycaster.intersectObjects(targets, false);
             const muzzleWorld = new THREE.Vector3(0.22, -0.15, -0.8);
@@ -1649,12 +2266,41 @@
                 const hit = intersects[0];
                 const isHead = hit.object.userData && hit.object.userData.part === 'head';
                 const isBot = hit.object.userData && hit.object.userData.isBot;
+                const isRemotePlayer = hit.object.userData && hit.object.userData.isRemotePlayer;
 
                 if (!wpn.isMelee) {
                     createBulletTracer(muzzleWorld, hit.point, isHead ? 0xFF4655 : wpn.glowColor);
+                    broadcastRoomEvent({
+                        type: 'shot',
+                        weapon: state.weaponKey,
+                        sx: Number(muzzleWorld.x.toFixed(2)),
+                        sy: Number(muzzleWorld.y.toFixed(2)),
+                        sz: Number(muzzleWorld.z.toFixed(2)),
+                        ex: Number(hit.point.x.toFixed(2)),
+                        ey: Number(hit.point.y.toFixed(2)),
+                        ez: Number(hit.point.z.toFixed(2)),
+                        color: isHead ? 0xFF4655 : wpn.glowColor
+                    });
                 }
 
-                if (isBot) {
+                if (isRemotePlayer) {
+                    const targetUid = hit.object.userData.uid;
+                    const rp = remotePlayers.get(targetUid);
+                    if (rp) {
+                        const dmg = isHead ? wpn.headDmg : wpn.bodyDmg;
+                        showHitmarker(isHead);
+                        createImpactBurst(hit.point, isHead, true);
+                        broadcastRoomEvent({
+                            type: 'hit',
+                            targetUid,
+                            attackerUid: currentUser?.uid,
+                            attackerName: state.playerName,
+                            weaponName: wpn.name,
+                            dmg,
+                            isHead
+                        });
+                    }
+                } else if (isBot) {
                     const bot = bots[hit.object.userData.botIndex];
                     if (bot && bot.alive) {
                         const dmg = isHead ? wpn.headDmg : wpn.bodyDmg;
@@ -1679,6 +2325,17 @@
                 const farPoint = new THREE.Vector3();
                 raycaster.ray.at(90, farPoint);
                 createBulletTracer(muzzleWorld, farPoint, wpn.glowColor);
+                broadcastRoomEvent({
+                    type: 'shot',
+                    weapon: state.weaponKey,
+                    sx: Number(muzzleWorld.x.toFixed(2)),
+                    sy: Number(muzzleWorld.y.toFixed(2)),
+                    sz: Number(muzzleWorld.z.toFixed(2)),
+                    ex: Number(farPoint.x.toFixed(2)),
+                    ey: Number(farPoint.y.toFixed(2)),
+                    ez: Number(farPoint.z.toFixed(2)),
+                    color: wpn.glowColor
+                });
             }
 
             // Camera Recoil
@@ -1733,6 +2390,7 @@
             bot.alive = false;
             bot.dyingTimer = 0.65; // Smooth fall-back death animation
             state.roundKills++;
+            state.kills++;
             state.creds = Math.min(9000, state.creds + 300);
 
             // Blade Storm Ultimate refills all 5 knives on kill!
@@ -1744,11 +2402,10 @@
 
             sfx.playHeadshotKill(state.roundKills);
             showKillEmblem(state.roundKills, isHead);
-            addKillfeedItem('玩家 (YOU)', bot.name, WEAPONS[state.weaponKey].name, isHead);
+            addKillfeedItem(state.playerName, bot.name, WEAPONS[state.weaponKey].name, isHead);
             updateAliveHUD();
             updateShopUI();
-
-            if (state.gameMode !== 'tactical') {
+            pushMyStateToFirestore(true);
                 setTimeout(() => {
                     bot.hp = 100;
                     bot.hpFill.scale.x = 1;
@@ -1820,21 +2477,7 @@
         const playerVelocity = new THREE.Vector3();
         let canJump = true;
 
-        function triggerAbilityC() {
-            if (state.cCharges <= 0 || state.cCooldown > 0 || state.inBuyMenu || state.hp <= 0) return;
-            state.cCharges--;
-            state.cCooldown = 2.5;
-            sfx.playAbilitySound('smoke');
-
-            document.getElementById('dot-c-2').className = state.cCharges >= 2 ? 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]' : 'w-1.5 h-1.5 rotate-45 bg-white/20';
-            document.getElementById('dot-c-1').className = state.cCharges >= 1 ? 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]' : 'w-1.5 h-1.5 rotate-45 bg-white/20';
-
-            // Deploy Volumetric Expanding Smoke Sphere 14m ahead
-            const forward = new THREE.Vector3();
-            camera.getWorldDirection(forward);
-            const smokePos = yawObject.position.clone().add(forward.multiplyScalar(13));
-            smokePos.y = 2.2;
-
+        function spawnSmokeAtPosition(smokePos) {
             const smokeGeo = new THREE.IcosahedronGeometry(3.8, 2);
             const smokeMat = new THREE.MeshStandardMaterial({
                 color: 0xd8e2ec,
@@ -1847,8 +2490,47 @@
             smokeMesh.position.copy(smokePos);
             smokeMesh.scale.set(0.1, 0.1, 0.1);
             scene.add(smokeMesh);
-            shootableMeshes.push(smokeMesh); // Blocks AI Line of Sight!
+            shootableMeshes.push(smokeMesh);
             smokeSpheres.push({ mesh: smokeMesh, life: 11.0 });
+        }
+
+        function spawnIceWallAtPosition(wallPos, yawAngle) {
+            const iceMat = new THREE.MeshStandardMaterial({
+                color: 0x00F5D4,
+                emissive: 0x005f56,
+                roughness: 0.2,
+                transparent: true,
+                opacity: 0.88
+            });
+            const iceMesh = new THREE.Mesh(new THREE.BoxGeometry(6.8, 3.6, 1.2), iceMat);
+            iceMesh.position.set(wallPos.x, 1.8, wallPos.z);
+            iceMesh.rotation.y = yawAngle;
+            scene.add(iceMesh);
+            shootableMeshes.push(iceMesh);
+            temporaryWalls.push(iceMesh);
+        }
+
+        function triggerAbilityC() {
+            if (state.cCharges <= 0 || state.cCooldown > 0 || state.inBuyMenu || state.hp <= 0) return;
+            state.cCharges--;
+            state.cCooldown = 2.5;
+            sfx.playAbilitySound('smoke');
+
+            document.getElementById('dot-c-2').className = state.cCharges >= 2 ? 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]' : 'w-1.5 h-1.5 rotate-45 bg-white/20';
+            document.getElementById('dot-c-1').className = state.cCharges >= 1 ? 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]' : 'w-1.5 h-1.5 rotate-45 bg-white/20';
+
+            const forward = new THREE.Vector3();
+            camera.getWorldDirection(forward);
+            const smokePos = yawObject.position.clone().add(forward.multiplyScalar(13));
+            smokePos.y = 2.2;
+
+            spawnSmokeAtPosition(smokePos);
+            broadcastRoomEvent({
+                type: 'smoke',
+                x: Number(smokePos.x.toFixed(2)),
+                y: Number(smokePos.y.toFixed(2)),
+                z: Number(smokePos.z.toFixed(2))
+            });
 
             showCenterBanner('CLOUDBURST // 雲爆煙霧彈', '已展開球形戰術煙霧阻斷敵方視線', 1400);
         }
@@ -1873,6 +2555,7 @@
                         b.visor.material.color.setHex(0xffffff);
                     }
                 });
+                broadcastRoomEvent({ type: 'flash', senderTeam: state.team });
                 showCenterBanner('CURVEBALL // 閃光曲球', '敵方特務已全數致盲 4.5 秒！', 1600);
             }
         }
@@ -1906,6 +2589,7 @@
             } else {
                 state.hp = Math.min(100, state.hp + 50);
                 updateHealthHUD();
+                pushMyStateToFirestore(true);
 
                 const forward = new THREE.Vector3();
                 camera.getWorldDirection(forward);
@@ -1913,19 +2597,14 @@
                 forward.normalize();
 
                 const wallPos = yawObject.position.clone().add(forward.multiplyScalar(5.5));
-                const iceMat = new THREE.MeshStandardMaterial({
-                    color: 0x00F5D4,
-                    emissive: 0x005f56,
-                    roughness: 0.2,
-                    transparent: true,
-                    opacity: 0.88
+                spawnIceWallAtPosition(wallPos, yawObject.rotation.y);
+                broadcastRoomEvent({
+                    type: 'wall',
+                    x: Number(wallPos.x.toFixed(2)),
+                    y: 1.8,
+                    z: Number(wallPos.z.toFixed(2)),
+                    yaw: Number(yawObject.rotation.y.toFixed(3))
                 });
-                const iceMesh = new THREE.Mesh(new THREE.BoxGeometry(6.8, 3.6, 1.2), iceMat);
-                iceMesh.position.set(wallPos.x, 1.8, wallPos.z);
-                iceMesh.rotation.y = yawObject.rotation.y;
-                scene.add(iceMesh);
-                shootableMeshes.push(iceMesh);
-                temporaryWalls.push(iceMesh);
 
                 showCenterBanner('BARRIER ORB // 結晶冰牆', '回復 +50 HP 並升起高強度玉石冰牆', 1500);
             }
@@ -2034,8 +2713,43 @@
 
         function updateAliveHUD() {
             const strip = document.getElementById('enemy-roster-strip');
+            const allyStrip = document.getElementById('ally-roster-strip');
             if (!strip) return;
             strip.innerHTML = '';
+
+            // Populate Ally Strip (Self + Same Team Remote Players)
+            if (allyStrip) {
+                allyStrip.innerHTML = `
+                    <div class="w-8 h-8 bg-[#00F5D4]/20 border border-[#00F5D4] flex items-center justify-center relative">
+                        <span class="font-val font-black text-[10px] text-[#00F5D4]">${AGENTS[state.agent].short}</span>
+                    </div>
+                `;
+                remotePlayers.forEach(rp => {
+                    if (rp.data.team === state.team) {
+                        const aBox = document.createElement('div');
+                        const alive = (rp.data.hp ?? 100) > 0;
+                        aBox.className = `w-7 h-7 border flex items-center justify-center text-[10px] font-val font-bold ${
+                            alive ? 'bg-[#00F5D4]/25 border-[#00F5D4] text-white' : 'bg-black/60 border-white/10 text-white/25 line-through'
+                        }`;
+                        aBox.textContent = (rp.data.name || 'P').slice(0, 2).toUpperCase();
+                        allyStrip.appendChild(aBox);
+                    }
+                });
+            }
+
+            // Populate Enemy Strip (Enemy Players + AI Bots)
+            remotePlayers.forEach(rp => {
+                if (rp.data.team !== state.team) {
+                    const box = document.createElement('div');
+                    const alive = (rp.data.hp ?? 100) > 0;
+                    box.className = `w-7 h-7 border flex items-center justify-center text-[10px] font-val font-bold ${
+                        alive ? 'bg-[#FF4655]/40 border-[#FF4655] text-[#FFBE0B]' : 'bg-black/60 border-white/10 text-white/25 line-through'
+                    }`;
+                    box.textContent = (rp.data.name || 'E').slice(0, 2).toUpperCase();
+                    strip.appendChild(box);
+                }
+            });
+
             bots.forEach((b, i) => {
                 const box = document.createElement('div');
                 box.className = `w-7 h-7 border flex items-center justify-center text-[10px] font-val font-bold ${
@@ -2049,14 +2763,14 @@
         }
 
         /********************************************************************
-         * 12. ROUND RESET & SPIKE LOGIC
+         * 12. ROUND RESET & SPIKE LOGIC (ATTACK PLANT / DEFEND DEFUSE)
          ********************************************************************/
         function isPlayerOnSiteA() {
             const p = yawObject.position;
             return Math.abs(p.x) < 7.5 && Math.abs(p.z - (-12)) < 7.5;
         }
 
-        function endRound(allyWon, reasonText) {
+        function endRound(allyWon, reasonText, broadcast = true) {
             if (allyWon) {
                 state.scoreAlly++;
                 state.creds = Math.min(9000, state.creds + 3000);
@@ -2066,12 +2780,30 @@
             }
             document.getElementById('score-ally').textContent = state.scoreAlly;
             document.getElementById('score-enemy').textContent = state.scoreEnemy;
-            showCenterBanner(allyWon ? 'ROUND WON // 回合勝利' : 'ROUND LOST // 回合落敗', reasonText, 3100);
-            setTimeout(() => resetRound(), 3300);
+            const subTitle = allyWon ? 'ROUND WON // 攻擊方勝利' : 'ROUND WON // 守備方勝利';
+            showCenterBanner(subTitle, reasonText, 3100);
+
+            if (broadcast && currentRoomId && db) {
+                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
+                setDoc(roomDocRef, {
+                    scoreAttack: state.scoreAlly,
+                    scoreDefend: state.scoreEnemy,
+                    spikePlanted: false,
+                    updatedAt: Date.now()
+                }, { merge: true }).catch(() => {});
+                broadcastRoomEvent({
+                    type: 'round_end',
+                    bannerSub: subTitle,
+                    bannerTitle: reasonText
+                });
+            }
+
+            setTimeout(() => resetRound(false), 3300);
         }
 
-        function resetRound() {
+        function resetRound(syncRoomDoc = true) {
             state.hp = 100;
+            state.shield = 50;
             state.roundTimeLeft = 100;
             state.roundKills = 0;
             state.cCharges = 2;
@@ -2099,42 +2831,24 @@
             });
             smokeSpheres.length = 0;
 
-            yawObject.position.set(0, 2.2, 26);
-            yawObject.rotation.y = 0;
+            if (state.team === 'attack') {
+                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 26);
+                yawObject.rotation.y = 0;
+            } else {
+                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -24);
+                yawObject.rotation.y = Math.PI;
+            }
             pitchObject.rotation.x = 0;
 
             spawnBots();
             updateHealthHUD();
             updateAmmoHUD();
             updateShopUI();
-        }
+            pushMyStateToFirestore(true);
 
-        function showCenterBanner(sub, title, duration = 2200) {
-            const box = document.getElementById('center-banner');
-            document.getElementById('center-banner-sub').textContent = sub;
-            document.getElementById('center-banner-title').textContent = title;
-            box.classList.remove('hidden');
-            clearTimeout(box.timer);
-            box.timer = setTimeout(() => box.classList.add('hidden'), duration);
-        }
-
-        /********************************************************************
-         * 13. INPUT & POINTER LOCK CONTROLS
-         ********************************************************************/
-        const moveState = { forward: false, backward: false, left: false, right: false, walk: false, holdPlant: false };
-
-        function safeRequestPointerLock() {
-            try {
-                if (!renderer || !renderer.domElement || !renderer.domElement.requestPointerLock) return;
-                if (document.pointerLockElement === renderer.domElement) return;
-                const lockPromise = renderer.domElement.requestPointerLock();
-                if (lockPromise && typeof lockPromise.catch === 'function') {
-                    lockPromise.catch(() => {
-                        // Browser enforces a ~1s cooldown after ESC exit; next canvas click will re-acquire lock cleanly.
-                    });
-                }
-            } catch (err) {
-                // Ignore synchronous SecurityError during pointer lock cooldown
+            if (syncRoomDoc && currentRoomId && db) {
+                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
+                setDoc(roomDocRef, { spikePlanted: false, updatedAt: Date.now() }, { merge: true }).catch(() => {});
             }
         }
 
@@ -2223,8 +2937,52 @@
 
         window.addEventListener('contextmenu', e => e.preventDefault());
 
+        let isChatFocused = false;
+        const chatInputRow = document.getElementById('chat-input-row');
+        const chatInput = document.getElementById('chat-input');
+
         document.addEventListener('keydown', (e) => {
             const code = e.code;
+
+            // Handle Enter key for In-Game Multiplayer Chat
+            if (code === 'Enter') {
+                if (!isChatFocused) {
+                    isChatFocused = true;
+                    chatInputRow.classList.remove('hidden');
+                    safeExitPointerLock();
+                    setTimeout(() => chatInput.focus(), 20);
+                } else {
+                    const msg = chatInput.value.trim();
+                    if (msg) {
+                        if (currentRoomId) {
+                            broadcastRoomEvent({
+                                type: 'chat',
+                                senderName: state.playerName,
+                                senderTeam: state.team,
+                                text: msg
+                            });
+                        } else {
+                            addChatMessage(state.playerName, msg, state.team);
+                        }
+                    }
+                    chatInput.value = '';
+                    chatInput.blur();
+                    isChatFocused = false;
+                    chatInputRow.classList.add('hidden');
+                    if (!state.inBuyMenu) safeRequestPointerLock();
+                }
+                return;
+            }
+
+            if (isChatFocused || document.activeElement?.tagName === 'INPUT') return;
+
+            if (code === 'Tab') {
+                e.preventDefault();
+                updateScoreboardUI();
+                document.getElementById('scoreboard-modal').classList.remove('hidden');
+                return;
+            }
+
             if (code === 'KeyB') {
                 if (state.inBuyMenu) lockPointerAndPlay();
                 else {
@@ -2258,6 +3016,10 @@
 
         document.addEventListener('keyup', (e) => {
             const code = e.code;
+            if (code === 'Tab') {
+                e.preventDefault();
+                document.getElementById('scoreboard-modal').classList.add('hidden');
+            }
             if (code === 'KeyW') moveState.forward = false;
             if (code === 'KeyS') moveState.backward = false;
             if (code === 'KeyA') moveState.left = false;
@@ -2271,7 +3033,7 @@
         });
 
         /********************************************************************
-         * 14. DETAILED 2D TACTICAL RADAR MINIMAP (Walls, FOV Cone, Bots)
+         * 14. DETAILED 2D TACTICAL RADAR MINIMAP (Walls, FOV Cone, Bots & Players)
          ********************************************************************/
         const radarCanvas = document.getElementById('radar-canvas');
         const rCtx = radarCanvas.getContext('2d');
@@ -2339,6 +3101,20 @@
                 rCtx.lineWidth = 1;
                 rCtx.beginPath();
                 rCtx.arc(bp.x, bp.y, 4.2, 0, Math.PI * 2);
+                rCtx.fill();
+                rCtx.stroke();
+            });
+
+            // Remote Multiplayer Players on Radar
+            remotePlayers.forEach(rp => {
+                if ((rp.data.hp ?? 100) <= 0) return;
+                const rpPos = toRadar(rp.group.position.x, rp.group.position.z);
+                const isEnemy = rp.data.team !== state.team;
+                rCtx.fillStyle = isEnemy ? '#FF4655' : '#00F5D4';
+                rCtx.strokeStyle = '#FFBE0B';
+                rCtx.lineWidth = 1.5;
+                rCtx.beginPath();
+                rCtx.arc(rpPos.x, rpPos.y, 5.0, 0, Math.PI * 2);
                 rCtx.fill();
                 rCtx.stroke();
             });
@@ -2506,7 +3282,7 @@
                             if (b.reactionTimer > 0.88) {
                                 b.reactionTimer = 0;
                                 createBulletTracer(botEye, playerPos.clone().add(new THREE.Vector3(0, -0.4, 0)), 0xFF4655);
-                                applyDamageToPlayer(14);
+                                applyDamageToPlayer(14, b.name, 'VANDAL', false);
                             }
                         } else {
                             b.reactionTimer = Math.max(0, b.reactionTimer - dt);
@@ -2514,9 +3290,29 @@
                     }
                 }
             });
+
+            // Smoothly Interpolate Remote Multiplayer Avatars
+            remotePlayers.forEach(rp => {
+                if ((rp.data.hp ?? 100) <= 0) return;
+                const distMove = rp.group.position.distanceTo(rp.targetPos);
+                rp.group.position.lerp(rp.targetPos, Math.min(1, dt * 12));
+                rp.group.rotation.y = rp.targetYaw;
+                rp.hpBg.lookAt(playerPos);
+                rp.hpFill.lookAt(playerPos);
+
+                if (distMove > 0.03) {
+                    rp.walkCycle += dt * 10;
+                    rp.leftLeg.rotation.x = Math.sin(rp.walkCycle) * 0.55;
+                    rp.rightLeg.rotation.x = -Math.sin(rp.walkCycle) * 0.55;
+                } else {
+                    rp.leftLeg.rotation.x = 0;
+                    rp.rightLeg.rotation.x = 0;
+                }
+            });
         }
 
-        function applyDamageToPlayer(dmg) {
+        function applyDamageToPlayer(dmg, attackerName = '敵方特務', weaponName = 'VANDAL', isHead = false) {
+            if (state.hp <= 0) return;
             if (state.shield > 0) {
                 const absorb = Math.min(state.shield, Math.ceil(dmg * 0.66));
                 state.shield -= absorb;
@@ -2525,6 +3321,7 @@
                 state.hp -= dmg;
             }
             updateHealthHUD();
+            pushMyStateToFirestore(true);
 
             const vig = document.getElementById('damage-overlay');
             const arc = document.getElementById('damage-arc');
@@ -2537,9 +3334,34 @@
 
             if (state.hp <= 0) {
                 state.hp = 0;
+                state.deaths++;
                 updateHealthHUD();
                 updateAliveHUD();
-                endRound(false, '你已被敵方特務擊斃 ELIMINATED');
+                pushMyStateToFirestore(true);
+
+                if (currentRoomId) {
+                    broadcastRoomEvent({
+                        type: 'kill',
+                        killerName: attackerName,
+                        victimName: state.playerName,
+                        weaponName,
+                        isHead
+                    });
+                    showCenterBanner('YOU DIED // 遭到擊斃', `擊殺者：${attackerName} — 5 秒後於基地重生`, 4500);
+                    setTimeout(() => {
+                        state.hp = 100;
+                        state.shield = 50;
+                        if (state.team === 'attack') {
+                            yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 26);
+                        } else {
+                            yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -24);
+                        }
+                        updateHealthHUD();
+                        pushMyStateToFirestore(true);
+                    }, 5000);
+                } else {
+                    endRound(false, `你已被 ${attackerName} 擊斃 ELIMINATED`);
+                }
             }
         }
 
@@ -2560,24 +3382,46 @@
             if (!state.isLocked) return;
 
             const onSite = isPlayerOnSiteA();
-            document.getElementById('site-prompt').classList.toggle('hidden', !(onSite && !state.spikePlanted));
+            const canPlant = onSite && !state.spikePlanted && state.team === 'attack';
+            const canDefuse = onSite && state.spikePlanted && state.team === 'defend';
+            document.getElementById('site-prompt').classList.toggle('hidden', !(canPlant || canDefuse));
 
-            if (onSite && !state.spikePlanted && moveState.holdPlant) {
+            if ((canPlant || canDefuse) && moveState.holdPlant) {
                 document.getElementById('spike-progress-box').classList.remove('hidden');
+                document.getElementById('spike-action-label').textContent = canPlant
+                    ? '正在部署輻能核心 SPIKE (按住 4 或 F)...'
+                    : '正在拆除輻能核心 DEFUSING (按住 4 或 F)...';
                 state.plantingProgress += dt / 3.0;
                 document.getElementById('spike-progress-bar').style.width = `${Math.min(100, state.plantingProgress * 100)}%`;
 
                 if (state.plantingProgress >= 1) {
-                    state.spikePlanted = true;
                     state.plantingProgress = 0;
                     document.getElementById('spike-progress-box').classList.add('hidden');
-                    document.getElementById('spike-hud-badge').classList.remove('hidden');
-                    document.getElementById('round-phase-label').textContent = 'SPIKE ACTIVE';
 
-                    spikeGroup.position.set(yawObject.position.x, 0, yawObject.position.z);
-                    spikeGroup.visible = true;
-                    sfx.playSpikeBeep(true);
-                    showCenterBanner('SPIKE PLANTED // 輻能核心已部署', '守住 A 據點直到輻能引爆！', 2400);
+                    if (canPlant) {
+                        state.spikePlanted = true;
+                        document.getElementById('spike-hud-badge').classList.remove('hidden');
+                        spikeGroup.position.set(yawObject.position.x, 0, yawObject.position.z);
+                        spikeGroup.visible = true;
+                        sfx.playSpikeBeep(true);
+                        showCenterBanner('SPIKE PLANTED // 輻能核心已部署', '守住 A 據點直到輻能引爆！', 2400);
+
+                        if (currentRoomId && db) {
+                            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
+                            setDoc(roomDocRef, {
+                                spikePlanted: true,
+                                spikeX: yawObject.position.x,
+                                spikeZ: yawObject.position.z,
+                                planterName: state.playerName,
+                                updatedAt: Date.now()
+                            }, { merge: true }).catch(() => {});
+                        }
+                    } else if (canDefuse) {
+                        state.spikePlanted = false;
+                        spikeGroup.visible = false;
+                        document.getElementById('spike-hud-badge').classList.add('hidden');
+                        endRound(false, `${state.playerName} 成功拆除輻能核心 DEFUSED！`, true);
+                    }
                 }
             }
 
@@ -2697,6 +3541,7 @@
             updateViewmodelAnimations(dt, isMoving);
             updateBotsAndVFX(dt);
             updateTimersAndSpike(dt);
+            pushMyStateToFirestore(false);
             drawRadar();
 
             renderer.render(scene, camera);
