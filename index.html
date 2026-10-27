@@ -31,6 +31,7 @@
             font-family: 'Noto Sans TC', sans-serif;
             color: var(--val-white);
         }
+        #buy-menu-modal.hidden { display: none !important; }
         .font-val {
             font-family: 'Oswald', 'Rajdhani', 'Noto Sans TC', sans-serif;
             letter-spacing: 0.05em;
@@ -517,101 +518,60 @@
             </div>
         </div>
 
-        <!-- Grid Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 my-auto py-1">
-                            <div class="text-[11px] text-white/60">消音高射速步槍 • 穩定壓槍與青光槍管</div>
-                        </div>
-                        <div class="my-2.5 h-11 flex items-center justify-center bg-black/40 border border-[#00F5D4]/40">
-                            <svg class="w-32 h-8 text-[#00F5D4] fill-current" viewBox="0 0 120 32">
-                                <path d="M5 13h98v5H75l-4 9h-8l2-9H32l-5 9h-8l3-9H5v-5zm25-3h40v2H30v-2z"/>
-                            </svg>
-                        </div>
-                        <div class="grid grid-cols-3 text-[10px] text-white/80 bg-black/50 p-1 text-center">
-                            <div>爆頭 <span class="text-[#FF4655] font-bold">140</span></div>
-                            <div>身體 <span class="font-bold">39</span></div>
-                            <div>射速 <span class="font-bold">11 發/秒</span></div>
-                        </div>
-                    </div>
-
-                    <!-- Operator -->
-                    <div id="wpn-card-operator" onclick="buyWeapon('operator')" class="val-card p-3.5 val-clip-sm cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-base text-white">龍火重狙・間諜 OPERATOR</span>
-                                <span class="font-val text-sm text-[#00F5D4]">¤ 4700</span>
-                            </div>
-                            <div class="text-[11px] text-white/60">重型雙腳架狙擊槍 • [右鍵] 開啟高倍率瞄準鏡</div>
-                        </div>
-                        <div class="my-2.5 h-11 flex items-center justify-center bg-black/40 border border-[#FF4655]/40">
-                            <svg class="w-36 h-8 text-[#FF4655] fill-current" viewBox="0 0 130 32">
-                                <path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/>
-                            </svg>
-                        </div>
-                        <div class="grid grid-cols-3 text-[10px] text-white/80 bg-black/50 p-1 text-center">
-                            <div>爆頭 <span class="text-[#FF4655] font-bold">255</span></div>
-                            <div>身體 <span class="text-[#FF4655] font-bold">150</span></div>
-                            <div>開鏡 <span class="text-[#00F5D4] font-bold">2.5x 倍率</span></div>
-                        </div>
-                    </div>
-
-                    <!-- Classic & Melee Kunai -->
-                    <div id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card p-3.5 val-clip-sm cursor-pointer flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <span class="font-black text-base text-white">制式手槍 & 掠奪苦無 [3]</span>
-                                <span class="font-val text-sm text-[#00F5D4]">免費 FREE</span>
-                            </div>
-                            <div class="text-[11px] text-white/60">按 [2] 切換戰術手槍 / 按 [3] 切換近戰苦無轉刀奔跑</div>
-                        </div>
-                        <div class="my-2.5 h-11 flex items-center justify-center bg-black/40 border border-white/20">
-                            <svg class="w-24 h-8 text-[#FFBE0B] fill-current" viewBox="0 0 80 32">
-                                <path d="M22 10h36v6H36l-4 11h-9l3-11h-4v-6z"/>
-                            </svg>
-                        </div>
-                        <div class="grid grid-cols-3 text-[10px] text-white/80 bg-black/50 p-1 text-center">
-                            <div>手槍爆頭 <span class="text-[#FF4655] font-bold">78</span></div>
-                            <div>苦無重擊 <span class="text-[#FFBE0B] font-bold">150</span></div>
-                            <div>切刀移速 <span class="text-[#00F5D4] font-bold">120%</span></div>
-                        </div>
-                    </div>
+        <!-- All armory content must remain inside this modal. -->
+        <div id="armory-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-4 my-3">
+            <section class="lg:col-span-3 space-y-3">
+                <h2 class="font-black text-[#00F5D4]">特務與訓練模式</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active p-3 text-left"><strong>JETT</strong><br><span class="text-xs">氣流竄升・逐風衝刺</span></button>
+                    <button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card p-3 text-left"><strong>SAGE</strong><br><span class="text-xs">閃光・結晶冰牆</span></button>
                 </div>
-            </div>
-
-            <!-- Right 3 Cols: Shields & Pro Controls -->
-            <div class="lg:col-span-3 flex flex-col space-y-3">
-                <div class="text-xs font-black tracking-widest text-[#FF4655] uppercase border-l-2 border-[#FF4655] pl-2">
-                    4. 護盾與戰術按鍵 (SHIELDS & KEYS)
+                <div class="grid gap-2">
+                    <button id="mode-tactical" onclick="setGameMode('tactical')" class="val-card active p-3 text-left">戰術攻防</button>
+                    <button id="mode-strafing" onclick="setGameMode('strafing')" class="val-card p-3 text-left">移動急停靶場</button>
+                    <button id="mode-stationary" onclick="setGameMode('stationary')" class="val-card p-3 text-left">定點壓槍靶場</button>
                 </div>
-
-                <div class="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
-                    <div id="shield-card-heavy" onclick="buyShield(50)" class="val-card active p-3 val-clip-sm cursor-pointer flex items-center justify-between">
-                        <div>
-                            <div class="font-black text-sm text-white">重型護盾 HEAVY SHIELD</div>
-                            <div class="text-[11px] text-[#00F5D4] font-bold">+50 護甲值 (吸收 66% 傷害)</div>
-                        </div>
-                        <div class="font-val text-lg font-bold text-[#00F5D4]">¤ 1000</div>
-                    </div>
-
-                    <div id="shield-card-light" onclick="buyShield(25)" class="val-card p-3 val-clip-sm cursor-pointer flex items-center justify-between">
-                        <div>
-                            <div class="font-black text-sm text-white">輕型護盾 LIGHT SHIELD</div>
-                            <div class="text-[11px] text-white/70 font-bold">+25 護甲值</div>
-                        </div>
-                        <div class="font-val text-lg font-bold text-[#00F5D4]">¤ 400</div>
-                    </div>
+                <p class="text-xs text-white/60">選好裝備後，點擊右上方「進入戰場」。按 B 返回購買頁，按 Esc 釋放滑鼠。</p>
+            </section>
+            <section class="lg:col-span-6 space-y-3">
+                <h2 class="font-black text-[#00F5D4]">武器庫</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-4 text-left space-y-3">
+                        <div class="flex justify-between gap-2"><strong>掠奪暴徒 VANDAL</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
+                        <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
+                        <div class="text-xs text-white/70">爆頭 160 · 身體 40 · 25 發</div>
+                    </button>
+                    <button id="wpn-card-phantom" onclick="buyWeapon('phantom')" class="val-card  p-4 text-left space-y-3">
+                        <div class="flex justify-between gap-2"><strong>奇點幻象 PHANTOM</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
+                        <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
+                        <div class="text-xs text-white/70">爆頭 140 · 身體 39 · 30 發</div>
+                    </button>
+                    <button id="wpn-card-operator" onclick="buyWeapon('operator')" class="val-card  p-4 text-left space-y-3">
+                        <div class="flex justify-between gap-2"><strong>龍火重狙・間諜 OPERATOR</strong><span class="text-[#00F5D4]">¤ 4700</span></div>
+                        <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
+                        <div class="text-xs text-white/70">爆頭 255 · 身體 150 · 右鍵開鏡</div>
+                    </button>
+                    <button id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card  p-4 text-left space-y-3">
+                        <div class="flex justify-between gap-2"><strong>制式手槍 CLASSIC</strong><span class="text-[#00F5D4]">¤ 0</span></div>
+                        <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
+                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換苦無</div>
+                    </button>
                 </div>
-
-                <div class="bg-black/45 border border-white/15 p-3.5 val-clip-sm space-y-1.5 text-xs">
-                    <div class="font-black text-[#00F5D4] tracking-wider uppercase mb-1">擬真操作總覽 PRO KEYBINDS</div>
-                    <div class="flex justify-between text-white/80"><span>切換主武器 / 手槍 / 近戰苦無</span><span class="font-bold text-[#FFBE0B]">1 / 2 / 3 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>檢視武器 / 苦無轉刀動畫</span><span class="font-bold text-[#00F5D4]">Y 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>雲爆煙霧 / 閃光 / 衝刺冰牆</span><span class="font-bold text-white">C / Q / E 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>暴風刃大招 (5把懸浮飛刀)</span><span class="font-bold text-[#FFBE0B]">X 鍵</span></div>
-                    <div class="flex justify-between text-white/80"><span>裝包 (攻方) / 拆包 (守方)</span><span class="font-bold text-[#FF4655]">按住 4 或 F</span></div>
-                    <div class="flex justify-between text-white/80"><span>戰績計分板 / 房間即時聊天</span><span class="font-bold text-[#00F5D4]">TAB 鍵 / Enter 鍵</span></div>
+            </section>
+            <section class="lg:col-span-3 space-y-3">
+                <h2 class="font-black text-[#00F5D4]">護盾與操作</h2>
+                <button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active p-3 w-full text-left"><strong>重型護盾 HEAVY SHIELD</strong><div class="text-xs text-[#00F5D4]">+50 護甲 · ¤ 1000</div></button>
+                <button id="shield-card-light" onclick="buyShield(25)" class="val-card p-3 w-full text-left"><strong>輕型護盾 LIGHT SHIELD</strong><div class="text-xs text-[#00F5D4]">+25 護甲 · ¤ 400</div></button>
+                <div class="val-card p-3 text-xs space-y-2">
+                    <div class="font-black text-[#00F5D4]">操作按鍵</div>
+                    <p>WASD 移動 · Shift 靜走 · Space 跳躍</p>
+                    <p>左鍵射擊 · 右鍵瞄準 · R 換彈</p>
+                    <p>1 / 2 / 3 切換武器 · Y 檢視武器</p>
+                    <p>C / Q / E 技能 · X 終極技能</p>
+                    <p>按住 4 / F 裝包或拆包</p>
+                    <p>B 購買頁 · Tab 計分板 · Enter 聊天</p>
                 </div>
-            </div>
-
+            </section>
         </div>
 
         <div class="border-t border-white/15 pt-2 flex justify-between items-center text-xs text-white/50">
@@ -2669,7 +2629,7 @@
 
             const ag = AGENTS[agentKey];
             document.getElementById('hud-agent-short').textContent = ag.short;
-            document.getElementById('top-ally-icon').textContent = ag.short;
+            updateAliveHUD();
             document.getElementById('skill-q-name').textContent = ag.qName;
             document.getElementById('skill-q-icon').textContent = ag.qIcon;
             document.getElementById('skill-e-name').textContent = ag.eName;
