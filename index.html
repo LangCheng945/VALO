@@ -949,6 +949,7 @@
             scoreAlly: 0,
             scoreEnemy: 0,
             roundTimeLeft: 100,
+            roundEnding: false,
             roundKills: 0,
             lastShotTime: 0,
             recoilAccum: 0,
@@ -2217,7 +2218,7 @@
         let isMouseDown = false;
 
         function fireWeapon() {
-            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0) return;
+            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
             if (now - state.lastShotTime < wpn.fireRate) return;
@@ -2249,9 +2250,10 @@
             spawnEjectedShell();
 
             // Calculate Accuracy Spread
-            const isMoving = moveState.forward || moveState.backward || moveState.left || moveState.right;
+            const isMoving = Math.hypot(playerVelocity.x, playerVelocity.z) > 0.25;
             const moveFactor = isMoving ? (moveState.walk ? wpn.spreadMove * 0.28 : wpn.spreadMove) : wpn.spreadBase;
-            const totalSpread = (state.isScoped ? 0.0001 : moveFactor) + state.recoilAccum * 0.35;
+            const totalSpread = (state.isScoped ? moveFactor * 0.25 : moveFactor)
+                + (!canJump ? 0.06 : 0) + state.recoilAccum * 0.35;
 
             const spreadX = (Math.random() - 0.5) * totalSpread;
             const spreadY = (Math.random() - 0.5) * totalSpread + state.recoilAccum * 0.4;
@@ -2429,7 +2431,7 @@
             updateAliveHUD();
             updateShopUI();
             pushMyStateToFirestore(true);
-            if (currentRoomId) {
+            if (currentRoomId || state.gameMode !== 'tactical') {
                 setTimeout(() => {
                     bot.hp = 100;
                     bot.hpFill.scale.x = 1;
@@ -2799,6 +2801,9 @@
         }
 
         function endRound(allyWon, reasonText, broadcast = true) {
+            if (state.roundEnding) return;
+            state.roundEnding = true;
+            resetMovementInput();
             if (allyWon) {
                 state.scoreAlly++;
                 state.creds = Math.min(9000, state.creds + 3000);
@@ -2830,6 +2835,8 @@
         }
 
         function resetRound(syncRoomDoc = true) {
+            state.roundEnding = false;
+            resetMovementInput();
             state.hp = 100;
             state.shield = 50;
             state.roundTimeLeft = 100;
@@ -2880,6 +2887,39 @@
             }
         }
 
+        function resetMovementInput() {
+            Object.keys(moveState).forEach(key => { moveState[key] = false; });
+            isMouseDown = false;
+            playerVelocity.x = 0;
+            playerVelocity.z = 0;
+        }
+
+        function showBuyMenu() {
+            resetMovementInput();
+            state.isLocked = false;
+            state.inBuyMenu = true;
+            document.getElementById('buy-menu-modal').classList.remove('hidden');
+        }
+
+        async function safeRequestPointerLock() {
+            if (document.pointerLockElement === renderer.domElement) return;
+            try {
+                if (!renderer.domElement.requestPointerLock) {
+                    throw new Error('Pointer lock unavailable');
+                }
+                await renderer.domElement.requestPointerLock();
+            } catch (err) {
+                showBuyMenu();
+                showCenterBanner('滑鼠尚未鎖定', '請使用電腦瀏覽器，點擊「進入戰場」再試一次', 4000);
+            }
+        }
+
+        window.addEventListener('blur', () => {
+            resetMovementInput();
+            safeExitPointerLock();
+            showBuyMenu();
+        });
+
         function safeExitPointerLock() {
             try {
                 if (document.pointerLockElement && document.exitPointerLock) {
@@ -2890,9 +2930,7 @@
 
         function lockPointerAndPlay() {
             sfx.init();
-            state.inBuyMenu = false;
-            state.isLocked = true;
-            document.getElementById('buy-menu-modal').classList.add('hidden');
+            resetMovementInput();
             safeRequestPointerLock();
         }
 
@@ -2902,9 +2940,7 @@
             setTimeout(() => triggerWeaponInspect(), 150);
         });
         document.getElementById('btn-open-buy').addEventListener('click', () => {
-            state.inBuyMenu = true;
-            state.isLocked = false;
-            document.getElementById('buy-menu-modal').classList.remove('hidden');
+            showBuyMenu();
             safeExitPointerLock();
         });
         document.getElementById('btn-reset-round').addEventListener('click', () => {
@@ -2919,15 +2955,13 @@
                 state.inBuyMenu = false;
                 document.getElementById('buy-menu-modal').classList.add('hidden');
             } else if (!state.inBuyMenu) {
-                isMouseDown = false;
-                state.isLocked = false;
-                state.inBuyMenu = true;
-                document.getElementById('buy-menu-modal').classList.remove('hidden');
+                showBuyMenu();
             }
         });
 
         document.addEventListener('pointerlockerror', () => {
-            // Silently handle browser pointer lock cooldown errors
+            showBuyMenu();
+            showCenterBanner('滑鼠尚未鎖定', '請再次點擊「進入戰場」', 2400);
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -3014,13 +3048,13 @@
             if (code === 'KeyB') {
                 if (state.inBuyMenu) lockPointerAndPlay();
                 else {
-                    state.inBuyMenu = true;
-                    state.isLocked = false;
-                    document.getElementById('buy-menu-modal').classList.remove('hidden');
+                    showBuyMenu();
                     safeExitPointerLock();
                 }
                 return;
             }
+            if (state.inBuyMenu || !state.isLocked) return;
+            if (['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(code)) e.preventDefault();
             if (code === 'KeyW') moveState.forward = true;
             if (code === 'KeyS') moveState.backward = true;
             if (code === 'KeyA') moveState.left = true;
@@ -3407,7 +3441,7 @@
                 }
             });
 
-            if (!state.isLocked) return;
+            if (!state.isLocked || state.roundEnding) return;
 
             const onSite = isPlayerOnSiteA();
             const canPlant = onSite && !state.spikePlanted && state.team === 'attack';
@@ -3525,9 +3559,9 @@
             const isMoving = moveState.forward || moveState.backward || moveState.left || moveState.right;
 
             // Player Movement Physics
-            if (state.isLocked && state.hp > 0) {
+            if (state.isLocked && state.hp > 0 && !state.roundEnding) {
                 const wpnMult = WEAPONS[state.weaponKey].moveSpeedMult || 1.0;
-                const speed = (moveState.walk ? 4.8 : 9.2) * wpnMult;
+                const speed = (moveState.walk ? 2.4 : 5.4) * wpnMult;
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
 
@@ -3539,8 +3573,10 @@
                 moveVec.addScaledVector(right, inputX);
                 if (moveVec.lengthSq() > 0) moveVec.normalize();
 
-                playerVelocity.x = playerVelocity.x * Math.max(0, 1 - dt * 10) + moveVec.x * speed;
-                playerVelocity.z = playerVelocity.z * Math.max(0, 1 - dt * 10) + moveVec.z * speed;
+                // Converge on a speed in world units/second, independent of frame rate.
+                const acceleration = 1 - Math.exp(-dt * 18);
+                playerVelocity.x += (moveVec.x * speed - playerVelocity.x) * acceleration;
+                playerVelocity.z += (moveVec.z * speed - playerVelocity.z) * acceleration;
                 playerVelocity.y -= 24.0 * dt;
 
                 const nextX = yawObject.position.clone();
