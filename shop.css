@@ -51,3 +51,5 @@
 #ability-hud>div>div:nth-child(2)>span,.ability-charge{display:block;transform:none;width:12px;height:3px;background:#86e4bd!important;box-shadow:0 0 3px #154836}.ability-charge{opacity:.2}.ability-charge.ready{opacity:1}#ability-hud [id$="-cd"]{background:#10211b99!important;color:#c6e9d7!important;font-size:13px}
 .shop-abilities svg{width:40px;height:40px;display:block;color:#e0efe8}.shop-abilities>div>span{font-size:0}
 @media(max-width:650px){#ability-hud{gap:6px;padding-inline:6px}#ability-hud>div{width:40px}}
+
+.shop-abilities svg[data-agent="sage"]{color:#35f4c4}.shop-abilities svg[data-agent="jett"]{color:#7aa7ae}

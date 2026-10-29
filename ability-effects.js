@@ -4,18 +4,28 @@ const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;
 const noise=`float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}`;
 function shader(fragment,extra={}){return new T.ShaderMaterial({uniforms:{time:{value:0},fade:{value:1}},vertexShader:vertex,fragmentShader:`uniform float time;uniform float fade;varying vec3 vP;varying vec3 vN;${noise}\n${fragment}`,transparent:true,depthWrite:false,...extra});}
 
+// Traced as clean silhouettes from the user's Sage / Jett reference sheets.
+// C / Q / E / X follow the existing bindings. Sticker borders are omitted for HUD legibility.
 const paths={
- jettC:'<path d="M34 6c-9-4-22 1-25 11l7-1c-4 6-2 16 5 20l-1-8c4 5 11 7 17 3l-7-3c9-1 14-8 11-16l-5 5c1-5 0-8-2-11Z"/>',
- jettQ:'<path d="m8 29 16-17 16 17-7 1-9-10-9 10Zm0 12 16-17 16 17-7 1-9-10-9 10ZM18 9l6-7 6 7-6-2Z"/>',
- jettE:'<path d="M3 22h24l-5-5 5-5 18 12-18 12-5-5 5-5H3Zm7-12h13l-4 5H7Zm0 23h9l4 5H13Z"/>',
- jettX:'<path d="m22 3 2 28 2-28 3 11-5 24-5-24ZM5 9l14 22-4-2-9-11Zm38 0L29 31l4-2 9-11ZM8 31l11 3-6 3Zm32 0-11 3 6 3ZM20 41l4-4 4 4-4 5Z"/>',
- sageC:'<path d="m3 14 8-3v26l-8-3Zm11-5 9-3v36l-9-3Zm12-3 9 3v30l-9 3Zm12 5 7 3v20l-7 3Z"/>',
- sageQ:'<path fill-rule="evenodd" d="M24 5C13 5 6 13 6 24s8 19 19 19c9 0 16-6 18-14-5 6-12 6-17 2-6-5-4-15 2-18l-5-2 6-5Zm-2 10c-8 3-9 14-1 20-10-1-14-17 1-20Z"/>',
- sageE:'<circle cx="24" cy="21" r="7"/><path d="M22 1h4v9h-4ZM4 18h9v4H4Zm31 0h9v4h-9ZM7 5l8 7-3 3-7-8Zm34 0 2 2-7 8-3-3ZM10 28l14 10 14-10-4 10-10 7-10-7Z"/>',
- sageX:'<path d="M24 12C19 2 7 3 5 12c-3 10 8 18 19 27 11-9 22-17 19-27-2-9-14-10-19 0Z"/><path d="m7 31 9 7-7-2Zm34 0-9 7 7-2ZM20 42h8l-4 5Z"/>'
-
+    sageC: `<path d="M3 22H22V40L12 33L22 48V79H3V59L12 65L3 50ZM28 22H47V79H28V61L34 66L28 50ZM53 22H59L63 37L68 22H72V79H53V58L60 64L53 48ZM78 22H97V42L89 37L97 52V79H78V61L86 67L78 52Z"/>`,
+    sageQ: `<circle cx="50" cy="50" r="43" fill="none" stroke="currentColor" stroke-width="7"/>
+        <path d="M48 20L57 25L58 45L64 33L61 17C79 22 89 41 81 61L72 53L67 39L67 61L56 55L43 68L63 71L53 81C35 83 20 72 17 59L28 63L43 51L34 51L18 55C15 42 22 28 35 21L43 25L36 40L47 33Z"/>`,
+    sageE: `<circle cx="50" cy="55" r="18"/><circle cx="50" cy="12" r="3.5"/><circle cx="60" cy="26" r="5"/><circle cx="39" cy="28" r="2"/>
+        <path d="M12 21L36 40L29 49L19 40L31 58L25 67L17 59L29 76L50 89L71 76L83 59L75 67L69 58L81 40L71 49L64 40L88 21L87 39L78 52L86 48L80 66L71 75L78 72L70 84L50 99L30 84L22 72L29 75L20 66L14 48L22 52L13 39Z"/>`,
+    sageX: `<path fill-rule="evenodd" d="M50 23C38 7 24 8 14 16C1 26 3 43 15 55L50 91L85 55C97 43 99 26 86 16C76 8 62 7 50 23ZM50 38C46 48 43 52 32 55C43 57 46 62 50 73C54 62 57 57 68 55C57 52 54 48 50 38Z"/>`,
+    jettC: `<path fill-rule="evenodd" d="M51 2C51 12 62 14 72 21C87 31 95 48 90 65C86 83 68 87 52 98C52 88 43 88 31 81C11 71 7 53 13 36C19 19 38 15 51 2ZM54 31C70 40 72 54 62 65C54 74 43 77 34 71C48 75 59 65 57 54C56 44 50 40 42 37C55 40 56 52 47 57C39 62 28 55 29 46C30 33 43 27 54 31Z"/>`,
+    jettQ: `<path d="M13 32L50 3L87 32V52L50 21L13 52ZM17 61L50 34L83 61V77L50 51L17 77ZM36 83L50 66L64 83V98L50 85L36 98Z"/>`,
+    jettE: `<path d="M30 10H46C58 10 64 16 71 23L97 50L71 77C64 84 58 90 46 90H30L37 79H24L18 72H47C54 72 57 68 60 64H7L2 56H62L70 50L62 44H2L7 36H60C57 32 54 28 47 28H18L24 21H37Z"/>`,
+    jettX: `<path d="M50 3C44 18 40 33 41 52L46 58H54L59 52C60 33 56 18 50 3ZM45 75H55L54 96H46Z"/>
+        <circle cx="50" cy="66" r="9" fill="none" stroke="currentColor" stroke-width="5"/>
+        <g transform="rotate(-22 25 67)"><path d="M25 16C19 29 17 40 18 55L22 59H28L32 55C33 40 31 29 25 16ZM21 75H29L28 92H22Z"/><circle cx="25" cy="67" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/></g>
+        <g transform="rotate(22 75 67)"><path d="M75 16C69 29 67 40 68 55L72 59H78L82 55C83 40 81 29 75 16ZM71 75H79L78 92H72Z"/><circle cx="75" cy="67" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/></g>`
 };
-export function abilityIcon(agent,key){const name=(agent==='jett'?'jett':'sage')+key.toUpperCase();return `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" fill="currentColor">${paths[name]||paths.jettC}</svg>`;}
+export function abilityIcon(agent,key){
+    const character=agent==='jett'?'jett':'sage';
+    const name=character+key.toUpperCase();
+    return `<svg viewBox="0 0 100 100" data-agent="${character}" aria-hidden="true" focusable="false" fill="currentColor">${paths[name]||paths.jettC}</svg>`;
+}
 
 export function makeCloudburst(){
  const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*5.+vec3(time*.22,0.,time*.17));float band=pow(max(0.,sin(p.y*18.+atan(p.z,p.x)*2.7+n*3.-time*2.)),18.);float wisps=noise(p*19.+vec3(time*.5,-time*.15,0.));vec3 col=mix(vec3(.38,.52,.61),vec3(.78,.87,.90),n*.7+band*.15);col+=band*.07+wisps*.045;gl_FragColor=vec4(col,fade);}`,{side:T.DoubleSide,depthWrite:true});
