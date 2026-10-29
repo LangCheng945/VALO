@@ -669,7 +669,7 @@
 
                 </aside>
             </div>
-            <footer class="trainer-footer"><div><kbd>B</kbd> 購買／暫停 <span>·</span> <kbd>Esc</kbd> 釋放滑鼠 <small>地圖：Riot Games · 來源 open-aim / ishoutu</small></div><button id="btn-start-combat" disabled class="trainer-start">進入 Ascent <span>↗</span></button></footer>
+            <footer class="trainer-footer"><div><kbd>B</kbd> 購買／暫停 <span>·</span> <kbd>Esc</kbd> 退出全螢幕／釋放滑鼠 <small>地圖：Riot Games · 來源 open-aim / ishoutu</small></div><button id="btn-start-combat" title="開始遊玩：全螢幕並鎖定滑鼠" disabled class="trainer-start">進入 Ascent <span>↗</span></button></footer>
         </div>
     </div>
 
@@ -682,6 +682,7 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
+        import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
@@ -3273,7 +3274,9 @@
             playerVelocity.z = 0;
         }
 
+        let immersiveEntryPending=false,immersiveEntryCancelled=false;
         function showBuyMenu(view = state.training.finished ? 'training' : 'buy') {
+            if(immersiveEntryPending)immersiveEntryCancelled=true;
             setMenuView(view);
             updateShopUI();
             resetMovementInput();
@@ -3283,24 +3286,26 @@
             document.getElementById('buy-menu-modal').classList.remove('hidden');
         }
 
-        async function safeRequestPointerLock() {
-            if (document.pointerLockElement === renderer.domElement) return;
-            try {
-                if (!renderer.domElement.requestPointerLock) {
-                    throw new Error('Pointer lock unavailable');
-                }
-                await renderer.domElement.requestPointerLock();
-            } catch (err) {
-                showBuyMenu();
-                showCenterBanner('滑鼠尚未鎖定', '請使用電腦瀏覽器，點擊「進入戰場」再試一次', 4000);
-            }
+        function syncGamePointerLock(){
+            const hasLock=document.pointerLockElement===renderer.domElement;
+            if(hasLock){
+                if(immersiveEntryPending&&immersiveEntryCancelled){safeExitPointerLock();return;}
+                state.pendingWeapon=null;state.pendingShield=null;updateShopUI();
+                state.isLocked=true;state.inBuyMenu=false;document.getElementById('buy-menu-modal').classList.add('hidden');
+            }else if(!state.inBuyMenu&&!immersiveEntryPending)showBuyMenu();
         }
-
-        window.addEventListener('blur', () => {
-            resetMovementInput();
-            safeExitPointerLock();
-            showBuyMenu();
+        async function safeRequestPointerLock(){
+            try{await requestGamePointerLock(document,renderer.domElement);syncGamePointerLock();}
+            catch(error){if(!immersiveEntryPending){showBuyMenu();abilityNotice('請點擊「進入戰場」重新鎖定滑鼠');}}
+        }
+        window.addEventListener('blur',()=>{
+            // Fullscreen transitions can briefly change focus; pause if focus stays away.
+            setTimeout(()=>{if(document.hasFocus()&&document.visibilityState==='visible')return;resetMovementInput();safeExitPointerLock();showBuyMenu();},0);
         });
+        document.addEventListener('fullscreenchange',()=>{
+            if(!document.fullscreenElement&&state.isLocked&&!immersiveEntryPending){safeExitPointerLock();showBuyMenu();}
+        });
+        document.addEventListener('keydown',event=>{if(event.code==='Escape'&&immersiveEntryPending){immersiveEntryCancelled=true;safeExitPointerLock();}},true);
 
         function safeExitPointerLock() {
             try {
@@ -3310,13 +3315,19 @@
             } catch (err) {}
         }
 
-        function lockPointerAndPlay() {
+        async function lockPointerAndPlay() {
+            if(immersiveEntryPending)return;
             if(currentRoomId&&!roomSocket?.connected){networkFeedback('尚未重新連上房間，請稍候');return;}
             if(!realMap.ready)return;
             if (state.training.finished) resetRound();
             sfx.init();sfx.preloadSamples();
-            resetMovementInput();
-            safeRequestPointerLock();
+            resetMovementInput();immersiveEntryPending=true;immersiveEntryCancelled=false;
+            const result=await enterGameSession(document,renderer.domElement);
+            const cancelled=immersiveEntryCancelled;immersiveEntryPending=false;
+            if(cancelled){safeExitPointerLock();showBuyMenu();return;}
+            syncGamePointerLock();
+            if(!result.locked){showBuyMenu();abilityNotice('請再次點擊「進入戰場」鎖定滑鼠');}
+            else if(!result.fullscreen)abilityNotice('滑鼠已鎖定；瀏覽器未允許全螢幕，可按 F11');
         }
 
         document.getElementById('btn-start-combat').addEventListener('click', lockPointerAndPlay);
@@ -3334,23 +3345,8 @@
             showCenterBanner('ROUND RESET', '戰場與特務靶位已重置', 1400);
         });
 
-        document.addEventListener('pointerlockchange', () => {
-            const hasLock = (document.pointerLockElement === renderer.domElement);
-            if (hasLock) {
-                state.pendingWeapon=null;state.pendingShield=null;
-                updateShopUI();
-                state.isLocked = true;
-                state.inBuyMenu = false;
-                document.getElementById('buy-menu-modal').classList.add('hidden');
-            } else if (!state.inBuyMenu) {
-                showBuyMenu();
-            }
-        });
-
-        document.addEventListener('pointerlockerror', () => {
-            showBuyMenu();
-            showCenterBanner('滑鼠尚未鎖定', '請再次點擊「進入戰場」', 2400);
-        });
+        document.addEventListener('pointerlockchange',syncGamePointerLock);
+        document.addEventListener('pointerlockerror',()=>{if(!immersiveEntryPending){showBuyMenu();abilityNotice('請再次點擊「進入戰場」鎖定滑鼠');}});
 
         document.addEventListener('mousemove', (e) => {
             if (!state.isLocked || state.inBuyMenu) return;

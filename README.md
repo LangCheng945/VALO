@@ -276,3 +276,9 @@ Q 裝備，再按 Q 或換武器取消，左鍵才投擲並消耗一次（每回
 `thrown-slow` 後端驗證角色、兩次技能額度、投擲起點／速度、飛行更新速度／距離／擁有者及落地法線，指派 ID 並同步軌跡、落點、絕對到期時間。welcome 回播未到期的球／冰面；下一回合清除。暫停操作或開啟購買頁不會暫停冰面的壽命。斷線且無法回報落地的球至多 5 秒後移除，不會在半空憑空生成緩速區。牆面碰撞仍由前端地圖判斷，Worker 不持有完整地圖網格，移動速度也尚非完整伺服器權威。
 
 驗證：`node tests/test_slow_browser.cjs`、`node tests/test_skill_multiplayer.cjs`、`cd multiplayer && npm test`。瀏覽器測試包含實際 Q／滑鼠操作、薄牆低幀率反彈、移速、音訊輸出、購買頁到期清理，以及三人端落點／壽命一致。
+
+## 全螢幕與滑鼠鎖定
+
+點擊「進入戰場」時，`play-session.mjs` 在同一次使用者操作中先請求滑鼠鎖定、再請求整個遊戲文件全螢幕，保留 HUD 與選單。B 釋放滑鼠以購買，保持全螢幕，再點進場或按 B 繼續可重新鎖定。Esc／瀏覽器退出全螢幕、解除滑鼠鎖定或切換視窗時暫停遊戲，不會循環強制鎖回。瀏覽器拒絕全螢幕時，滑鼠鎖定成功仍可繼續遊玩；拒絕滑鼠鎖定則返回選單並顯示簡短提示。
+
+Sites 的 iframe 已允許 fullscreen 且沒有 pointer-lock sandbox 限制。測試：`node --test tests/test_play_session.mjs` 與 `node tests/test_play_session_browser.cjs`，涵蓋原生 Chromium 全螢幕／滑鼠 API、購買後繼續、既有鎖定狀態、退出、iframe 和權限拒絕。
