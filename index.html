@@ -680,14 +680,15 @@
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
-        import {loadWeaponModel} from './weapon-models.js';
+        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,disposeViewmodel} from './first-person-view.js?v=hands1';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=slow1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=hands1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=slow1';
         import {makeSpray,removeSpray,sprayHiss} from './spray.js?v=skills2';
         import {SpikeModel} from './spike-model.js?v=spike1';
@@ -1430,9 +1431,12 @@
         /********************************************************************
          * 6. DETAILED FIRST-PERSON HANDS + MULTI-PART 3D WEAPON & KUNAI
          ********************************************************************/
-        const gunGroup = new THREE.Group();
+        const VIEWMODEL_REST_Z=-.14;
+        const gunGroup = new THREE.Group();gunGroup.position.z=VIEWMODEL_REST_Z;
         camera.add(gunGroup);
         const abilityCast=new AbilityCastView(camera);
+        const viewEnvironmentTarget=createViewEnvironment(renderer);
+        let firstPersonHands=null;
 
         let gunMagazineMesh = null;
         let muzzleFlashGroup = null;
@@ -1441,9 +1445,7 @@
 
         const WEAPON_LENGTHS={vandal:.79,phantom:.75,classic:.225,operator:1.195,odin:1.21};
         function buildFirstPersonViewmodel() {
-            while (gunGroup.children.length > 0) {
-                gunGroup.remove(gunGroup.children[0]);
-            }
+            disposeViewmodel(gunGroup);firstPersonHands=null;
             gunMagazineMesh = null;
             muzzleFlashGroup = null;
             knifeSpinGroup = null;
@@ -1453,12 +1455,12 @@
             const wpn = WEAPONS[wpnKey];
 
             // Materials
-            const darkMetal = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.32, metalness: 0.4, roughness: 0.3 });
-            const gunSteel = new THREE.MeshStandardMaterial({ color: SMITE_SKIN.gold, metalness: 0.85, roughness: 0.2 });
-            const skinAccent = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.4, metalness: 0.35, roughness: 0.25 });
+            const darkMetal = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.055, metalness: 0.48, roughness: 0.39, envMap:viewEnvironmentTarget.texture, envMapIntensity:.65 });
+            const gunSteel = new THREE.MeshStandardMaterial({ color: 0x657986, metalness: 0.78, roughness: 0.29, envMap:viewEnvironmentTarget.texture, envMapIntensity:.75 });
+            const skinAccent = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.07, metalness: 0.42, roughness: 0.42, envMap:viewEnvironmentTarget.texture, envMapIntensity:.55 });
             const glowMat = new THREE.MeshBasicMaterial({ color: wpn.glowColor });
-            const gloveMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
-            const skinMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69, roughness: 0.6 });
+            const rubberMat=new THREE.MeshStandardMaterial({color:0x02060b,roughness:.9,metalness:.03,envMap:viewEnvironmentTarget.texture,envMapIntensity:.15});
+            firstPersonHands=new FirstPersonHands(state.agent,wpnKey,viewEnvironmentTarget.texture);gunGroup.add(firstPersonHands.root);
 
             // 1. BLADE STORM ULTIMATE (5 Floating Glowing Kunai Daggers around screen)
             if (wpnKey === 'bladestorm') {
@@ -1517,10 +1519,7 @@
                 const pommel = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.031, 0.045, 8), gunSteel);
                 pommel.position.y = -0.26;
                 knifeSpinGroup.add(pommel);
-                const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.09, 0.38), gloveMat);
-                rightArm.position.set(0.30, -0.30, -0.28);
-                rightArm.rotation.x = 0.25;
-                gunGroup.add(knifeSpinGroup, rightArm);
+                gunGroup.add(knifeSpinGroup);
                 return;
             }
 
@@ -1587,6 +1586,7 @@
             );
             gunMagazineMesh.position.set(0.25, -0.34, isPistol ? -0.38 : -0.50);
             gunMagazineMesh.rotation.x = isPistol ? 0.15 : -0.22;
+            gunMagazineMesh.userData.basePosition=gunMagazineMesh.position.clone();
             rig.add(gunMagazineMesh);
 
             if (isOdin) {
@@ -1608,23 +1608,6 @@
             grip.rotation.x = 0.28;
             rig.add(grip);
 
-            // First-Person Tactical Gloved Hands (Left supporting handguard + Right trigger hand)
-            const rightForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.038,0.055,0.34,12).rotateX(Math.PI/2), gloveMat);
-            rightForearm.position.set(0.30, -0.32, -0.18);
-            rightForearm.rotation.y = -0.15;
-            const rightWrist = new THREE.Mesh(new THREE.SphereGeometry(0.045,12,8), skinMat);
-            rightWrist.position.set(0.27, -0.30, -0.32);
-            rightForearm.userData.keepArm=true;rightWrist.userData.keepArm=true;
-            rig.add(rightForearm, rightWrist);
-
-            if (!isPistol) {
-                const leftForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.052,0.42,12).rotateX(Math.PI/2), gloveMat);
-                leftForearm.position.set(0.08, -0.31, -0.38);
-                leftForearm.rotation.y = 0.42;
-                leftForearm.rotation.x = 0.18;
-                leftForearm.userData.keepArm=true;rig.add(leftForearm);
-            }
-
             // 3D Star-Cross Muzzle Flash Mesh
             muzzleFlashGroup = new THREE.Group();
             const flashMat = new THREE.MeshBasicMaterial({
@@ -1644,8 +1627,9 @@
             const placeholder=rig.children.filter(child=>child!==muzzleFlashGroup && !child.userData.keepArm);
             loadWeaponModel(wpnKey,darkMetal).then(mesh=>{
                 if(!mesh || state.weaponKey!==wpnKey || !gunGroup.children.includes(rig))return;
-                placeholder.forEach(child=>rig.remove(child));
-                rig.add(mesh);gunMagazineMesh=null;
+                for(const child of placeholder){rig.remove(child);child.geometry?.dispose();if(child.material&&![darkMetal,gunSteel,skinAccent,glowMat].includes(child.material))child.material.dispose();}
+                const originalBox=styleWeaponMesh(mesh,wpnKey,{paint:darkMetal,steel:gunSteel,rubber:rubberMat});
+                rig.add(mesh);gunMagazineMesh=originalBox||createMagazine(wpnKey,skinAccent,gunSteel);rig.add(gunMagazineMesh);
                 muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
             }).catch(error=>console.warn('Weapon model fallback',error));
         }
@@ -2366,7 +2350,7 @@
                 muzzleFlashGroup.rotation.z = Math.random() * Math.PI;
                 muzzlePointLight.intensity = 2.8;
             }
-            gunGroup.position.z = wpn.isMelee ? -0.22 : 0.11;
+            gunGroup.position.z = VIEWMODEL_REST_Z+(wpn.isMelee ? -0.22 : 0.11);
             gunGroup.rotation.x = wpn.isMelee ? -0.75 : 0.075;
             spawnEjectedShell();
 
@@ -2519,7 +2503,7 @@
                 state.mag += loaded;
                 state.reserve -= loaded;
                 state.isReloading = false;
-                if (gunMagazineMesh) gunMagazineMesh.position.y = -0.34;
+                updateMagazine(gunMagazineMesh,0,state.weaponKey);
                 updateAmmoHUD();
             }, wpn.reloadTimeMs || 1350);
         }
@@ -2956,7 +2940,7 @@
         }
 
         window.selectAgent = function(agentKey) {
-            state.agent = agentKey;resetAbilities();state.healRemaining=0;updateShopUI();
+            state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             document.getElementById('agent-card-jett').classList.toggle('active', agentKey === 'jett');
             document.getElementById('agent-card-phoenix').classList.toggle('active', agentKey === 'phoenix');
@@ -3646,6 +3630,10 @@
             const show=active;document.getElementById('rope-hint').textContent=!show?'':attached?'W／S 攀爬 · F／空白鍵離開':realMap.nearestRope(yawObject.position)?'[F] 使用繩索':'';
         }
         function updateViewmodelAnimations(dt, isMoving) {
+            if(state.isReloading)state.reloadTimer+=dt;
+            const reloadProgress=state.isReloading?Math.min(.999,state.reloadTimer/((WEAPONS[state.weaponKey].reloadTimeMs||1350)/1000)):0;
+            updateMagazine(gunMagazineMesh,reloadProgress,state.weaponKey);
+            firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Walk bobbing & breathing sway
             if (isMoving && canJump) {
                 state.walkBobTime += dt * (moveState.walk ? 6 : 11);
@@ -3659,9 +3647,7 @@
 
             // Reload Magazine Drop & Insert Animation
             if (state.isReloading) {
-                state.reloadTimer += dt;
                 const phase = Math.sin((state.reloadTimer / ((WEAPONS[state.weaponKey].reloadTimeMs || 1350) / 1000)) * Math.PI);
-                if(gunMagazineMesh)gunMagazineMesh.position.y = -0.34 - phase * 0.28;
                 gunGroup.rotation.z = phase * 0.26;
                 gunGroup.rotation.x = phase * 0.18;
             } else if (state.isInspecting) {
@@ -3672,8 +3658,7 @@
                     knifeSpinGroup.rotation.z = -0.16 + Math.sin(state.inspectTimer / 2.2 * Math.PI) * 0.35;
                 } else {
                     const p = Math.sin((state.inspectTimer / 2.2) * Math.PI);
-                    gunGroup.rotation.z = p * 0.52;
-                    gunGroup.rotation.y = p * 0.38;
+                    gunGroup.rotation.x=-p*.08;gunGroup.rotation.z=p*.20;gunGroup.rotation.y=p*.48;gunGroup.position.x-=p*.04;gunGroup.position.y+=p*.025;
                 }
                 if (state.inspectTimer >= 2.2) {
                     state.isInspecting = false;
@@ -3681,6 +3666,7 @@
                     if (knifeSpinGroup) knifeSpinGroup.rotation.set(0, 0, -0.16);
                 }
             } else {
+                gunGroup.rotation.x += (0 - gunGroup.rotation.x) * Math.min(1,12*dt);
                 gunGroup.rotation.z += (0 - gunGroup.rotation.z) * 10 * dt;
                 gunGroup.rotation.y += (0 - gunGroup.rotation.y) * 10 * dt;
             }
@@ -3695,7 +3681,7 @@
 
         function updateBotsAndVFX(dt) {
             const playerPos = yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active;
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active&&!(state.isScoped&&state.weaponKey==='operator');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
@@ -3917,7 +3903,7 @@
 
             // Recoil & Muzzle Flash Recovery
             state.recoilAccum = Math.max(0, state.recoilAccum - dt * 0.26);
-            gunGroup.position.z += (0 - gunGroup.position.z) * 14 * dt;
+            gunGroup.position.z += (VIEWMODEL_REST_Z - gunGroup.position.z) * Math.min(1,14*dt);
             if (!state.isReloading) {
                 gunGroup.rotation.x += (0 - gunGroup.rotation.x) * 14 * dt;
             }

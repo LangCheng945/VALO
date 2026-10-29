@@ -1,3 +1,4 @@
+import {FirstPersonHands} from './first-person-view.js?v=hands1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -62,8 +63,7 @@ export function disposeEffect(mesh){const geometries=new Set(),materials=new Set
 export class AbilityCastView {
  constructor(camera){
   this.root=new T.Group();this.root.name='ability-cast-hands';camera.add(this.root);this.root.visible=false;this.remaining=0;this.elapsed=0;this.hands=new T.Group();this.root.add(this.hands);
-  const skin=shader(`void main(){float light=.68+.32*max(0.,dot(normalize(vN),normalize(vec3(-.4,.7,.6))));gl_FragColor=vec4(vec3(.69,.49,.38)*light,1.);}`,{transparent:false,depthWrite:true}),sleeve=new T.MeshBasicMaterial({color:0x071e20,toneMapped:false});
-  for(const side of [-1,1]){const hand=new T.Group();hand.position.set(side*.30,-.31,-.62);hand.rotation.z=side*-.35;const arm=new T.Mesh(new T.CylinderGeometry(.048,.067,.36,12),sleeve);arm.rotation.x=Math.PI/2;arm.position.set(side*.04,-.12,.16);hand.add(arm);const palm=new T.Mesh(new T.SphereGeometry(.065,12,8),skin);palm.scale.set(.8,.45,1.25);hand.add(palm);for(let i=0;i<4;i++){const finger=new T.Mesh(new T.CylinderGeometry(.010,.013,.09,8),skin);finger.rotation.x=.75;finger.rotation.z=side*(i-1)*.12;finger.position.set((i-1.5)*.026,.028,-.047);hand.add(finger);}const thumb=new T.Mesh(new T.SphereGeometry(.025,8,6),skin);thumb.scale.set(1,1.6,1);thumb.position.set(side*-.065,.02,.015);hand.add(thumb);this.hands.add(hand);}
+  this.handsRig=new FirstPersonHands('jett','orb',null);this.root.remove(this.hands);this.hands=this.handsRig.root;this.root.add(this.hands);
   const orbMat=shader(`void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);gl_FragColor=vec4(c,.65+rim*.32);}`,{side:T.FrontSide});
   this.orb=new T.Group();this.orb.position.set(.10,-.15,-.75);this.root.add(this.orb);
   this.orb.add(new T.Mesh(new T.SphereGeometry(.145,32,24),orbMat));
@@ -71,9 +71,10 @@ export class AbilityCastView {
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
+ setAgent(agent){this.handsRig.setAgent(agent);}
  get active(){return this.held||this.remaining>0;}
  play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
  holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}
  cancel(){this.held=false;this.remaining=0;this.root.visible=false;}
- update(dt,enabled){if(!enabled)this.cancel();if(!this.active)return;this.elapsed+=dt;if(this.held){this.root.position.y=0;this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);return;}this.remaining=Math.max(0,this.remaining-dt);const t=this.elapsed/this.duration;this.root.position.y=-.32*(Math.max(0,1-t*6)+Math.max(0,(t-.7)/.3));this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);this.wind.rotation.z+=dt*1.8;for(const w of this.wind.children)w.material.opacity=.3*Math.sin(Math.PI*t);this.root.visible=this.active;}
+ update(dt,enabled){this.handsRig.update({dt});if(!enabled)this.cancel();if(!this.active)return;this.elapsed+=dt;if(this.held){this.root.position.y=0;this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);return;}this.remaining=Math.max(0,this.remaining-dt);const t=this.elapsed/this.duration;this.root.position.y=-.32*(Math.max(0,1-t*6)+Math.max(0,(t-.7)/.3));this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);this.wind.rotation.z+=dt*1.8;for(const w of this.wind.children)w.material.opacity=.3*Math.sin(Math.PI*t);this.root.visible=this.active;}
 }
