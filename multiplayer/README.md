@@ -71,3 +71,11 @@ Worker 測試實際連到本機 workerd 的 WebSocket，檢查兩人同步、房
 
 部署完成後，`/health` 應回傳包含 `ok: true`、`protocol: 1`、`service: valo-multiplayer` 的 JSON。
 若仍回傳 404，應檢查 Cloudflare 的儲存庫、根目錄與部署指令，而不是將房號當作連線成功。
+
+
+## 房間地圖
+
+POST /rooms 接受 JSON `{ "map": "ascent" }` 或 `{ "map": "haven" }`，未指定時使用 Ascent。
+welcome 回傳房間 map；地圖是房間固定屬性，重連與重生沿用該地圖出生點。
+Haven 要求 join 具有 mapVersion:1，避免舊客戶端載入 Ascent 造成位置錯位。
+公開 PUBLIC 房維持 Ascent。/health 的 maps 列出目前支援地圖。

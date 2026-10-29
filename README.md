@@ -134,3 +134,20 @@ Jett 按住空白鍵可降低下降速度。
 連線檢查：先啟動靜態伺服器與 `npm run dev --prefix multiplayer`，再執行
 `npm test --prefix multiplayer`、`node tests/test_multiplayer_browser.cjs`。
 瀏覽器測試使用獨立儲存空間的兩個 context；保留真實地圖、碰撞、射線與遊戲 callback，省略 CI 中的 GPU 繪圖。
+
+
+## Haven（遺落境地）
+
+新增地圖選單，可在 Ascent 與 Haven 之間切換；也可直接開啟 `?map=haven`。
+Haven 使用完整 `triad` 場景 GLB、內嵌貼圖、原始碰撞與小地圖，約 11.6 MB 模型。
+已設定雙方出生點、A／B／C 據點標示與訓練靶位置。
+切換地圖會重新載入頁面，釋放上一張地圖資源並重置本次訓練。
+安全落點只接受預期樓層附近的地板，遇到箱子會向四周找位置，避免落到地圖下方的底層碰撞面。
+
+好友房間建立時固定地圖，加入者若正在另一張地圖會自動載入房間地圖並重新加入。
+舊房間預設 Ascent；公共房間仍固定 Ascent。Haven 房需更新 Cloudflare 後端與遊戲客戶端，
+後端未更新時會明確提示，不會把各人放在不同地圖。
+素材來源與 SHA256 記錄在 `assets/haven/provenance.json`；Riot 素材不包含於來源程式的 MIT 授權。
+
+檢查：`node tests/test_haven_assets.cjs`、`node tests/test_haven_browser.cjs`、
+`node tests/test_haven_multiplayer.cjs`（後兩項需本機遊戲與連線伺服器）。

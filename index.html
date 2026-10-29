@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=net1">
+    <link rel="stylesheet" href="./shop.css?v=haven1">
 </head>
 <body class="relative select-none">
 
@@ -230,7 +230,7 @@
     </div>
 
     <!-- ==================== AUTHENTIC VALORANT IN-GAME HUD ==================== -->
-    <div id="trainer-live" class="trainer-live pointer-events-none"><div><span>ASCENT / TRAINING</span><strong id="trainer-live-mode">預瞄定位</strong></div><div><span>擊殺</span><strong id="trainer-live-kills">0</strong></div><div><span>命中率</span><strong id="trainer-live-accuracy">0%</strong></div><div><span>爆頭率</span><strong id="trainer-live-headshots">0%</strong></div><div class="trainer-live-time"><span>剩餘時間</span><strong id="trainer-live-time">01:00</strong></div></div>
+    <div id="trainer-live" class="trainer-live pointer-events-none"><div><span data-map-label="TRAINING">ASCENT / TRAINING</span><strong id="trainer-live-mode">預瞄定位</strong></div><div><span>擊殺</span><strong id="trainer-live-kills">0</strong></div><div><span>命中率</span><strong id="trainer-live-accuracy">0%</strong></div><div><span>爆頭率</span><strong id="trainer-live-headshots">0%</strong></div><div class="trainer-live-time"><span>剩餘時間</span><strong id="trainer-live-time">01:00</strong></div></div>
     <div id="hud" class="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 sm:p-5">
 
         <!-- TOP BAR: Minimap Radar | Top Agent Rosters & Round Timer | Killfeed -->
@@ -241,7 +241,7 @@
                 <div class="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-[#0a1219]/90 border-2 border-[#ECE8E1]/35 shadow-[0_0_25px_rgba(0,0,0,0.75)] overflow-hidden flex items-center justify-center">
                     <canvas id="radar-canvas" width="176" height="176" class="w-full h-full"></canvas>
                     <div class="absolute top-1.5 text-[9px] font-val font-bold tracking-widest text-[#00F5D4]">N ▲</div>
-                    <div class="absolute bottom-1.5 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-[#ECE8E1]/90 tracking-wider">
+                    <div data-map-label="TRAINING" class="absolute bottom-1.5 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-[#ECE8E1]/90 tracking-wider">
                         ASCENT // TRAINING
                     </div>
                 </div>
@@ -502,22 +502,23 @@
         </aside>
         <div class="trainer-workspace">
             <header class="trainer-topbar" id="training-home">
-                <div class="trainer-brand">VALO<span>／</span><small>ASCENT / FIELD TRAINING</small></div>
+                <div class="trainer-brand">VALO<span>／</span><small data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</small></div>
                 <nav class="menu-tabs" aria-label="選單頁面"><button id="tab-training" onclick="setMenuView('training')">訓練</button><button id="tab-buy" onclick="setMenuView('buy')">購買裝備</button><button onclick="openNetworkMenu()">好友連線</button></nav>
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
+                    <div class="map-picker"><label for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option></select><small>切換會重置訓練；加入好友房間會自動切到房主選擇的地圖。</small></div>
                     <section class="range-hero">
                         <div class="range-hero-copy">
-                            <p class="range-eyebrow">ASCENT <span>／</span> FIELD TRAINING</p>
-                            <h1>義境空島。<br><em>從轉角開始。</em></h1>
-                            <p class="hero-description">探索 A、B 點與中路，練習準星定位與進點路線。載入 Ascent 完整模型、場景貼圖、原始碰撞與小地圖。</p>
+                            <p class="range-eyebrow" data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</p>
+                            <h1 id="map-hero-title">義境空島。<br><em>從轉角開始。</em></h1>
+                            <p class="hero-description" id="map-description">探索 A、B 點與中路，練習準星定位與進點路線。載入 Ascent 完整模型、場景貼圖、原始碰撞與小地圖。</p>
                             <p class="map-load-status" id="map-load-status" role="status">準備載入 Ascent…</p><button id="map-retry" class="hidden" onclick="retryAscentLoad()">重新載入地圖</button>
                             <button class="free-roam-button" disabled onclick="startFreeRoam()">自由跑圖 <span>↗</span></button>
                             <div class="hero-tags"><span>01　準星定位</span><span>02　急停射擊</span><span>03　壓槍控制</span></div>
                         </div>
-                        <div class="range-blueprint" aria-hidden="true">
-                            <svg viewBox="0 0 300 230" fill="none">
+                        <div class="range-blueprint" aria-hidden="true"><img id="map-cover" hidden alt="Haven 場景預覽">
+                            <svg id="map-blueprint-svg" viewBox="0 0 300 230" fill="none">
                                 <path d="M40 180V35h70v45h80V35h70v145H40Z" stroke="currentColor" opacity=".4"/>
                                 <path d="M70 175V70h25m135 105V70h-25M150 175V65M70 175h160M90 100h120" stroke="#ff6570" stroke-dasharray="4 6" opacity=".65"/>
                                 <rect x="48" y="40" width="52" height="44" fill="#8bb6af18" stroke="#8bb6af"/>
@@ -527,7 +528,7 @@
                                 <circle cx="150" cy="175" r="4" fill="#ff6570"/>
                                 <text x="94" y="205" fill="currentColor" font-size="8" letter-spacing="2">ATTACKER SPAWN</text>
                             </svg>
-                            <span class="blueprint-label">ASCENT / FULL MAP MODEL</span>
+                            <span class="blueprint-label" data-map-label="FULL MAP MODEL">ASCENT / FULL MAP MODEL</span>
                         </div>
                     </section>
                     <div class="trainer-summary">
@@ -557,7 +558,7 @@
                         </div>
                     </section>
                     <details class="trainer-network" id="network-panel"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
-        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://你的伺服器.workers.dev" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人自由練習。雙方都按「進入 Ascent」後即可互打；選單中暫停參戰。好友房停用單機靶與裝拆包計時。</small></div>
+        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://你的伺服器.workers.dev" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人自由練習。雙方都按「進入地圖」後即可互打；選單中暫停參戰。好友房停用單機靶與裝拆包計時。</small></div>
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
@@ -676,11 +677,11 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
-        import {AscentMapRuntime} from './ascent-map.js';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=haven1';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=haven1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1347,7 +1348,19 @@
         const arenaRoot = new THREE.Group();
         scene.add(arenaRoot);
 
-        const realMap = new AscentMapRuntime(renderer);
+        const requestedMap=new URLSearchParams(location.search).get('map');
+        const selectedMap=Object.hasOwn(MAPS,requestedMap)?requestedMap:'ascent';
+        const mapDefinition=MAPS[selectedMap];
+        const realMap = new AscentMapRuntime(renderer,selectedMap);
+        const mapSelect=document.getElementById('map-select');mapSelect.value=selectedMap;
+        window.changeTrainingMap=function(id){if(!Object.hasOwn(MAPS,id)||id===selectedMap)return;if(currentRoomId){mapSelect.value=selectedMap;networkFeedback('請先離開房間，再切換地圖');return;}const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('room');location.assign(url.href);};
+        document.title=`VALO ${mapDefinition.name.toUpperCase()} | ${mapDefinition.title}地圖訓練`;
+        document.getElementById('map-hero-title').innerHTML=mapDefinition.title+'。<br><em>從轉角開始。</em>';
+        document.getElementById('map-description').textContent=selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
+        for(const el of document.querySelectorAll('[data-map-label]'))el.textContent=mapDefinition.name.toUpperCase()+' / '+el.dataset.mapLabel;
+        document.getElementById('btn-start-combat').innerHTML='進入 '+mapDefinition.name+' <span>↗</span>';
+        if(selectedMap==='haven'){document.getElementById('map-cover').src='./assets/haven/cover.webp';document.getElementById('map-cover').hidden=false;document.getElementById('map-blueprint-svg').hidden=true;}
+
         function buildArena() {
             shootableMeshes.length=0;mapColliders.length=0;mapRadarRects.length=0;
             if(realMap.ready)shootableMeshes.push(realMap.collisionMesh);
@@ -1372,9 +1385,9 @@
                 const loadout={creds:state.creds,primaryWeaponKey:state.primaryWeaponKey,weaponKey:state.weaponKey,shield:state.shield,pendingWeapon:state.pendingWeapon,pendingShield:state.pendingShield};
                 buildArena();resetRound();Object.assign(state,loadout);equipWeaponSlot(state.weaponKey);updateShopUI();updateHealthHUD();button.disabled=false;document.querySelector('.free-roam-button').disabled=false;
                 realMap.updateCulling(camera);renderer.render(scene,camera);
-                label.textContent='Ascent 模型與碰撞已就緒';document.getElementById('map-retry').classList.add('hidden');
+                label.textContent=mapDefinition.name+' 模型與碰撞已就緒';document.getElementById('map-retry').classList.add('hidden');
             } catch(error) {
-                realMap.ready=false;console.error('Ascent loading failed:',error);label.textContent='Ascent 載入失敗，請重試或重新整理頁面';
+                realMap.ready=false;console.error('Ascent loading failed:',error);label.textContent=mapDefinition.name+' 載入失敗，請重試或重新整理頁面';
                 document.getElementById('map-retry').classList.remove('hidden');
             }
         }
@@ -1941,12 +1954,12 @@
             applyRoomTeam(state.team==='attack'?'defend':'attack');placePlayerAtSpawn(state.team);
         };
         window.toggleBotsInMatch=function(enabled){if(currentRoomId){networkFeedback('好友房間停用單機靶');return;}state.enableBots=enabled;spawnBots();};
-        window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom();await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
-        window.joinQuickPublicLobby=()=>connectToMultiplayerRoom('PUBLIC');
+        window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap);await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
+        window.joinQuickPublicLobby=()=>{if(selectedMap==='haven'){networkFeedback('公開房固定使用 Ascent；Haven 請建立好友房間');return;}return connectToMultiplayerRoom('PUBLIC');};
         window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
         window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
         window.leaveMultiplayerRoom=function(){
-            roomSocket?.leave();clearInterval(roomPingTimer);currentRoomId=null;currentUser=null;clearAllRemotePlayers();
+            roomSocket?.leave();mapSelect.disabled=false;const cleanURL=new URL(location.href);if(cleanURL.searchParams.has('room')){cleanURL.searchParams.delete('room');history.replaceState(null,'',cleanURL.href);}clearInterval(roomPingTimer);currentRoomId=null;currentUser=null;clearAllRemotePlayers();
             document.getElementById('lobby-room-status').textContent='單人模式';document.getElementById('lobby-uid-display').textContent='尚未加入房間';
             for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.add('hidden');
             document.getElementById('round-phase-label').textContent='SOLO // LOCAL';document.getElementById('chk-enable-bots').disabled=false;
@@ -1964,6 +1977,10 @@
                     if(status==='reconnecting'||status==='disconnected'){clearAllRemotePlayers();updateLobbyPlayersUI();updateAliveHUD();resetMovementInput();safeExitPointerLock();showBuyMenu('training');document.getElementById('network-panel').open=true;}if(status==='disconnected'&&currentRoomId){leaveMultiplayerRoom();networkFeedback(messages[status]);}
                 },
                 welcome(message){
+                    const roomMap=message.map||'ascent';
+                    if(roomMap!==selectedMap){const code=roomSocket.desiredRoom;roomSocket.leave();if(!MAPS[roomMap]){networkFeedback('房間地圖版本不相容，請重新整理');return;}const url=new URL(location.href);url.searchParams.set('map',roomMap);url.searchParams.set('room',code);location.replace(url.href);return;}
+                    mapSelect.disabled=true;
+
                     currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;
                     if(!previousSolo)previousSolo={enableBots:state.enableBots,gameMode:state.gameMode};
                     state.enableBots=false;state.gameMode='tactical';for(const mode of ['stationary','strafing','tactical'])document.getElementById('mode-'+mode).disabled=true;spawnBots();document.body.classList.remove('is-training');
@@ -1971,8 +1988,8 @@
                     document.getElementById('input-room-code').value=currentRoomId;document.getElementById('lobby-uid-display').textContent=message.uid;document.getElementById('sb-my-uid').textContent=message.uid;
                     document.getElementById('lobby-room-status').textContent='房間 #'+currentRoomId+' · 自由練習';
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
-                    document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent='ROOM #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
-                    document.getElementById('sb-room-title').textContent='ASCENT // ROOM #'+currentRoomId;
+                    document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
+                    document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
                     applyServerSpawn(message.player);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,
@@ -1981,7 +1998,7 @@
             });return roomSocket;
         }
         async function connectToMultiplayerRoom(code){
-            try{const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey});}catch(error){networkFeedback(error.message);}
+            try{const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
@@ -3236,7 +3253,7 @@
             rCtx.stroke();
 
             const toRadar=(wx,wz)=>realMap.ready?realMap.toRadar(wx,wz):{x:88+wx/62*76,y:88+wz/74*76};
-            if(realMap.ready && realMap.minimapImage.complete)rCtx.drawImage(realMap.minimapImage,0,0,W,H);
+            if(realMap.ready && realMap.minimapImage.complete){rCtx.drawImage(realMap.minimapImage,0,0,W,H);rCtx.fillStyle='#f3f5df';rCtx.font='bold 12px sans-serif';rCtx.textAlign='center';for(const site of mapDefinition.sites){const p=toRadar((site.minX+site.maxX)/2*realMap.scale,(site.minZ+site.maxZ)/2*realMap.scale);rCtx.fillText(site.name,p.x,p.y);}rCtx.textAlign='left';}
 
             // Plant zones for both A and B in the authored Ascent layout.
             for(const site of (realMap.ready?[]:[{x:34,z:-26,name:'A'},{x:-34,z:-27,name:'B'}])) {
@@ -3776,7 +3793,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        window.onload = function () {
+        window.onload = async function () {
             document.body.classList.toggle('is-training',state.gameMode!=='tactical');
             document.getElementById('sensitivity-input').value=state.sensitivity;
             document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);
@@ -3784,7 +3801,9 @@
             renderTrainingStats();
             updateShopUI();
             animate();
-            loadActualMap();
+            await loadActualMap();
+            const room=new URLSearchParams(location.search).get('room');
+            if(realMap.ready&&/^(?:[A-Z2-9]{6}|PUBLIC)$/.test(room||'')){openNetworkMenu();await connectToMultiplayerRoom(room);}
         };
     </script>
 </body>

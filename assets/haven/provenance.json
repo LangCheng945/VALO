@@ -1,0 +1,30 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourcePath": "site/aim-maps",
+  "sourceMapId": "triad",
+  "displayName": "Haven",
+  "upstreamCredit": "ishoutu aim trainer; VALORANT assets belong to Riot Games. MIT code license excludes game assets.",
+  "files": {
+    "haven.glb": {
+      "bytes": 11627132,
+      "sha256": "63b136d74cbdb9a0bcb5872ea2ed89807b511e0180c89dd5b88a3fa466c8b110"
+    },
+    "collision.json": {
+      "bytes": 928987,
+      "sha256": "a254ea52d498feb0a76dccaf410c3c0f459057e363618c195c5b5a38fb502299"
+    },
+    "minimap.json": {
+      "bytes": 1098,
+      "sha256": "d97ea7ada89f5059182934f5a57e580dbf078c2e80b6b9434837972b5ad8a2e0"
+    },
+    "minimap.png": {
+      "bytes": 33099,
+      "sha256": "f8ccc9cfffaf3eeed0b735cf3ecffc1ce46f0fbb54bdb69d9ba72b63d32b4936"
+    },
+    "cover.webp": {
+      "bytes": 124672,
+      "sha256": "c5c42a1184a001f58d243179a7281b666a7d0b41c1163d4caccfe15f92bd5894"
+    }
+  }
+}

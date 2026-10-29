@@ -5,7 +5,7 @@ const json=(body,status=200,headers={})=>Response.json(body,{status,headers});
 export default {
  async fetch(request,env){
   const url=new URL(request.url),origin=request.headers.get('Origin');
-  if((url.pathname==='/'||url.pathname==='/health')&&request.method==='GET')return json({ok:true,protocol:VERSION,service:'valo-multiplayer'});
+  if((url.pathname==='/'||url.pathname==='/health')&&request.method==='GET')return json({ok:true,protocol:VERSION,service:'valo-multiplayer',maps:['ascent','haven']});
   if(!allowed(request,env))return json({error:'ORIGIN_NOT_ALLOWED'},403);
   const cors={'Access-Control-Allow-Origin':origin,'Vary':'Origin','Access-Control-Allow-Methods':'POST,GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Cache-Control':'no-store'};
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
@@ -13,11 +13,12 @@ export default {
    const lobby=env.ROOMS.get(env.ROOMS.idFromName('__creation_rate__'));
    const gate=await lobby.fetch(new Request('https://internal/rate',{method:'POST',body:request.headers.get('CF-Connecting-IP')||'local'}));
    if(!gate.ok)return json({error:'CREATE_RATE_LIMIT'},429,cors);
+   let body={};try{body=await request.json();}catch{}if(!body||typeof body!=='object'||Array.isArray(body))return json({error:'INVALID_MAP'},400,cors);if(body.map&&!['ascent','haven'].includes(body.map))return json({error:'INVALID_MAP'},400,cors);const map=body.map||'ascent';
    const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
    for(let attempt=0;attempt<5;attempt++){
     const bytes=crypto.getRandomValues(new Uint8Array(6));const code=[...bytes].map(b=>chars[b%chars.length]).join('');
-    const room=env.ROOMS.get(env.ROOMS.idFromName(code));const result=await room.fetch(new Request('https://internal/create',{method:'POST'}));
-    if(result.ok)return json({code,protocol:VERSION},201,cors);
+    const room=env.ROOMS.get(env.ROOMS.idFromName(code));const result=await room.fetch(new Request('https://internal/create',{method:'POST',body:JSON.stringify({map})}));
+    if(result.ok)return json({code,protocol:VERSION,map},201,cors);
    }
    return json({error:'CREATE_FAILED'},503,cors);
   }
@@ -49,7 +50,7 @@ export class GameRoom {
   }
   if(path==='/create'){
    if(this.meta)return json({error:'EXISTS'},409);
-   this.meta={createdAt:Date.now()};await this.ctx.storage.put('meta',this.meta);await this.ctx.storage.setAlarm(Date.now()+120000);return json({ok:true});
+   let body={};try{body=await request.json();}catch{}this.meta={createdAt:Date.now(),map:body.map==='haven'?'haven':'ascent'};await this.ctx.storage.put('meta',this.meta);await this.ctx.storage.setAlarm(Date.now()+120000);return json({ok:true});
   }
   if(path!=='/connect'||!this.meta)return json({error:'ROOM_NOT_FOUND'},404);
   if(this.sockets().length>=10)return json({error:'ROOM_FULL'},409);
@@ -65,17 +66,17 @@ export class GameRoom {
   p.lastSeen=now;this.save(ws,p);
   if(!m||typeof m.type!=='string')return;
   if(m.type==='join'){
-   if(p.joined)return;
+   if(p.joined)return;if(this.meta?.map==='haven'&&m.mapVersion!==1){ws.close(1008,'Update client for Haven');return;}
    if(typeof m.resumeToken==='string'&&/^[a-f0-9]{64}$/.test(m.resumeToken)){
     let saved;await this.ctx.blockConcurrencyWhile(async()=>{saved=await this.ctx.storage.get('resume:'+m.resumeToken);if(saved)await this.ctx.storage.delete('resume:'+m.resumeToken);});
     if(!saved||saved.expires<now){ws.close(1008,'Resume expired');return;}
     Object.assign(p,saved,{active:false,lastSeen:now,windowAt:now,messages:0});delete p.expires;
-    if(p.hp===0&&now>=p.respawnAt)Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team));
-    this.save(ws,p);this.send(ws,{type:'welcome',protocol:VERSION,uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
+    if(p.hp===0&&now>=p.respawnAt)Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team,this.meta?.map));
+    this.save(ws,p);this.send(ws,{type:'welcome',protocol:VERSION,map:this.meta.map||'ascent',uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
    }
    const members=this.players(),attack=members.filter(x=>x.team==='attack').length,defend=members.length-attack;
-   Object.assign(p,{joined:true,name:cleanText(m.name)||'特務',team:attack<=defend?'attack':'defend',agent:m.agent==='phoenix'?'phoenix':'jett',weapon:isWeapon(m.weapon)&&m.weapon!=='bladestorm'?m.weapon:'vandal',hp:100,shield:50,kills:0,deaths:0,active:false,resumeToken:[...crypto.getRandomValues(new Uint8Array(32))].map(x=>x.toString(16).padStart(2,'0')).join(''),lastShot:0,lastChat:0,lastAbility:0,cUsed:0,qUsed:0},spawn(attack<=defend?'attack':'defend'));
-   this.save(ws,p);this.send(ws,{type:'welcome',protocol:VERSION,uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+15000);return;
+   Object.assign(p,{joined:true,name:cleanText(m.name)||'特務',team:attack<=defend?'attack':'defend',agent:m.agent==='phoenix'?'phoenix':'jett',weapon:isWeapon(m.weapon)&&m.weapon!=='bladestorm'?m.weapon:'vandal',hp:100,shield:50,kills:0,deaths:0,active:false,resumeToken:[...crypto.getRandomValues(new Uint8Array(32))].map(x=>x.toString(16).padStart(2,'0')).join(''),lastShot:0,lastChat:0,lastAbility:0,cUsed:0,qUsed:0},spawn(attack<=defend?'attack':'defend',this.meta?.map));
+   this.save(ws,p);this.send(ws,{type:'welcome',protocol:VERSION,map:this.meta.map||'ascent',uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+15000);return;
   }
   if(!p.joined)return;
   if(m.type==='ping'){this.send(ws,{type:'pong',at:m.at});return;}
@@ -83,7 +84,7 @@ export class GameRoom {
    if(p.hp>0){if(!p.active&&[0,25,50].includes(m.shield))p.shield=m.shield;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
    this.save(ws,p);this.queueSnapshot();return;
   }
-  if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){p.team=m.team;Object.assign(p,spawn(p.team));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});this.snapshot();return;}
+  if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){p.team=m.team;Object.assign(p,spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});this.snapshot();return;}
   if(m.type==='chat'&&now-p.lastChat>=500){p.lastChat=now;this.save(ws,p);this.broadcast({type:'event',event:{type:'chat',senderUid:p.uid,senderName:p.name,senderTeam:p.team,text:cleanText(m.text,240)}});return;}
   if(m.type==='shot'&&p.hp>0&&p.active){
    const w=WEAPONS[p.weapon];if(!w||now-p.lastShot<w.interval*.8)return;
@@ -115,7 +116,7 @@ export class GameRoom {
   await this.ready;const sockets=this.sockets(),now=Date.now();if(sockets.length===0){await this.ctx.storage.deleteAll();this.meta=null;return;}
   let pending=false;
   const stale=await this.ctx.storage.list({prefix:'resume:',limit:1000});for(const [key,value]of stale)if(value.expires<now)await this.ctx.storage.delete(key);
-  for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal){const amount=Math.min(3,p.healRemaining,100-p.hp);p.hp+=amount;p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,active:false},spawn(p.team));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
+  for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal){const amount=Math.min(3,p.healRemaining,100-p.hp);p.hp+=amount;p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,active:false},spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
   this.snapshot();await this.ctx.storage.setAlarm(now+(pending?1000:15000));
  }
 }

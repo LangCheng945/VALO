@@ -1,7 +1,18 @@
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
-const BASE=new URL('./assets/ascent/',import.meta.url);
+export const MAPS=Object.freeze({
+    ascent:{id:'ascent',name:'Ascent',title:'義境空島',bytes:13058488,
+        spawns:{attack:[.5,-.6,2,.65],defend:[-97.45,-19.95,3,-1.7]},
+        training:[[-12,-8,2],[-21,-27.5,2],[-30,-44.8,4],[-47,-53,4],[-58,19,1]],
+        tactical:[[-47.1,-53.22,4],[-66,-60,5],[-58.4,19.8,1],[-72,25,1],[-45.8,-12.2,1]],
+        sites:[{name:'A',minX:-79,maxX:-54,minZ:-73,maxZ:-48},{name:'B',minX:-87,maxX:-64,minZ:15,maxZ:39}]},
+    haven:{id:'haven',name:'Haven',title:'遺落境地',bytes:11627132,
+        spawns:{attack:[-26.43,-17.42,3,1.57],defend:[-127.15,-29.46,3,-1.57]},
+        training:[[-45,-24,3],[-57,-33,3],[-69,-62,1],[-80,-1.8,1],[-87,28,2]],
+        tactical:[[-92,-64,3],[-90,-16,3],[-90,26,2],[-80,-1.8,1],[-67,-18,1]],
+        sites:[{name:'A',minX:-105,maxX:-79,minZ:-75,maxZ:-52},{name:'B',minX:-105,maxX:-81,minZ:-31,maxZ:-7},{name:'C',minX:-106,maxX:-77,minZ:14,maxZ:38}]}
+});
 export const MAP_SCALE=4/3; // Preserve the existing game's 2.2-unit eye height.
 
 function worldPositions(mesh,target,offset) {
@@ -62,8 +73,9 @@ function batchVisuals(meshes) {
 }
 
 export class AscentMapRuntime {
-    constructor(renderer) {
-        this.renderer=renderer;this.ready=false;this.root=new T.Group();this.root.name='actual-ascent';
+    constructor(renderer,mapId='ascent') {
+        this.definition=MAPS[mapId];if(!this.definition)throw Error('Unknown map');this.id=mapId;this.base=new URL(`./assets/${mapId}/`,import.meta.url);
+        this.renderer=renderer;this.ready=false;this.root=new T.Group();this.root.name='actual-'+this.id;
         this.scale=MAP_SCALE;this.frustum=new T.Frustum();this.viewMatrix=new T.Matrix4();
         this.raycaster=new T.Raycaster();this.raycaster.firstHitOnly=true;
         this.segment=new T.Line3();this.capsuleBox=new T.Box3();this.trianglePoint=new T.Vector3();this.capsulePoint=new T.Vector3();
@@ -71,12 +83,12 @@ export class AscentMapRuntime {
         this.spawnCache=new Map();
     }
     async load(progress=()=>{}) {
-        progress('下載 Ascent 模型…');
+        const BASE=this.base,name=this.definition.name;progress(`下載 ${name} 模型…`);
         const ktx=new KTX2Loader().setTranscoderPath(new URL('./vendor/basis/',import.meta.url).href).setWorkerLimit(4).detectSupport(this.renderer);
         const loader=new T.GLTFLoader().setMeshoptDecoder(globalThis.MeshoptDecoder).setKTX2Loader(ktx);
         const readJSON=async name=>{const response=await fetch(new URL(name,BASE));if(!response.ok)throw Error(`${name}: HTTP ${response.status}`);return response.json()};
         const [gltf,collision,minimap]=await Promise.all([
-            new Promise((resolve,reject)=>loader.load(new URL('ascent.glb',BASE).href,resolve,event=>progress(`下載 Ascent 模型 ${Math.min(100,Math.round(event.loaded/13058488*100))}% · 正在解碼貼圖`),reject)),
+            new Promise((resolve,reject)=>loader.load(new URL(this.id+'.glb',BASE).href,resolve,event=>progress(`下載 ${name} 模型 ${Math.min(100,Math.round(event.loaded/this.definition.bytes*100))}% · 正在解碼貼圖`),reject)),
             readJSON('collision.json'),readJSON('minimap.json')
         ]);
         progress('建立地圖碰撞與繪圖批次…');
@@ -93,13 +105,13 @@ export class AscentMapRuntime {
         const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(positions,3));
         geometry.boundsTree=new globalThis.MeshBVHLib.MeshBVH(geometry,{maxLeafTris:12});
         this.collisionMesh=new T.Mesh(geometry,new T.MeshBasicMaterial({side:T.DoubleSide}));
-        this.collisionMesh.name='ascent-collision';this.collisionMesh.raycast=globalThis.MeshBVHLib.acceleratedRaycast;
+        this.collisionMesh.name=this.id+'-collision';this.collisionMesh.raycast=globalThis.MeshBVHLib.acceleratedRaycast;
         this.collisionMesh.updateMatrixWorld(true);
         const batches=batchVisuals(meshes);this.root.add(batches.group);this.batches=batches.items;
         this.metadata=minimap;this.minimapImage.src=new URL('minimap.png',BASE).href;
         await this.minimapImage.decode();
         this.info={sourceMeshes:meshes.length,batches:this.batches.length,collisionTriangles:positions.length/9,triangles:meshes.reduce((n,m)=>n+(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3,0)};
-        this.ready=true;ktx.dispose();progress('Ascent 地圖已就緒');
+        this.ready=true;ktx.dispose();progress(name+' 地圖已就緒');
         return this;
     }
     updateCulling(camera) {
@@ -136,9 +148,9 @@ export class AscentMapRuntime {
         return ys;
     }
     safePoint(sourceX,sourceZ,sourceFloor=1) {
-        for(const radius of [0,.8,1.6,2.8,4]) for(let i=0;i<(radius?8:1);i++) {
+        for(const radius of [0,.8,1.6,2.8,4,6]) for(let i=0;i<(radius?8:1);i++) {
             const x=(sourceX+Math.cos(i*Math.PI/4)*radius)*this.scale,z=(sourceZ+Math.sin(i*Math.PI/4)*radius)*this.scale;
-            const floors=this.floorCandidates(x,z).filter(y=>Math.abs(y-sourceFloor*this.scale)<7*this.scale).sort((a,b)=>Math.abs(a-sourceFloor*this.scale)-Math.abs(b-sourceFloor*this.scale));
+            const floors=this.floorCandidates(x,z).filter(y=>Math.abs(y-sourceFloor*this.scale)<.8*this.scale).sort((a,b)=>Math.abs(a-sourceFloor*this.scale)-Math.abs(b-sourceFloor*this.scale));
             for(const floor of floors) {
                 const point=new T.Vector3(x,floor+2.2,z);
                 if(!this.collides(point))return point;
@@ -148,20 +160,18 @@ export class AscentMapRuntime {
     }
     getSpawn(team='attack') {
         if(!this.spawnCache.has(team)) {
-            const position=team==='attack'?this.safePoint(.5,-.6,2):this.safePoint(-97.45,-19.95,3);
-            this.spawnCache.set(team,{position,yaw:team==='attack'?.65:-1.7});
+            const [x,z,floor,yaw]=this.definition.spawns[team]||this.definition.spawns.attack;const position=this.safePoint(x,z,floor);
+            this.spawnCache.set(team,{position,yaw});
         }
         const spawn=this.spawnCache.get(team);return {position:spawn.position.clone(),yaw:spawn.yaw};
     }
     getBotSpawns(tactical=false) {
-        const sources=tactical?[[-47.1,-53.22,4],[-66,-60,5],[-58.4,19.8,1],[-72,25,1],[-45.8,-12.2,1]]
-            :[[-12,-8,2],[-21,-27.5,2],[-30,-44.8,4],[-47,-53,4],[-58,19,1]];
+        const sources=tactical?this.definition.tactical:this.definition.training;
         return sources.map(([x,z,y])=>{const p=this.safePoint(x,z,y);return{x:p.x,y:p.y-2.2,z:p.z,patrol:1.2}});
     }
     getPlantSite(position) {
         const x=position.x/this.scale,z=position.z/this.scale;
-        if(x>-79&&x<-54&&z>-73&&z<-48)return 'A';
-        if(x>-87&&x<-64&&z>15&&z<39)return 'B';
+        for(const site of this.definition.sites)if(x>site.minX&&x<site.maxX&&z>site.minZ&&z<site.maxZ)return site.name;
         return null;
     }
     toRadar(x,z,size=176) {
