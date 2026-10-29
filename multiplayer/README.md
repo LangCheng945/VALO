@@ -133,3 +133,9 @@ Cloudflare → langcheng.uk → DNS → valonow：保持原 DNS 目標，將代�
 牆段初始 400 HP，3.3 秒後存活段強化至 800 HP，40 秒到期；`wall_state` 同步損傷／破壞，`wall_remove` 同步移除。
 Durable Object storage 保存牆體、welcome 回播剩餘段，新回合清除；玩家快照中的 barrierUsed 保留重連／復活後的已用次數。
 前端預覽另檢查地圖支撐及障礙三角形；Worker 尚不持有完整地圖網格。更新部署時請包含兩個新增 mjs 模組。
+
+## 投擲緩速球
+
+`slow-events.mjs` 與共用 `slow-rules.mjs` 實作 `thrown-slow` 功能。`slow_launch` 包含起點與速度 vx/vy/vz，伺服器驗證 Sage／存活參戰／兩次額度及 20 單位速度，分配唯一 id 後廣播。
+`slow_step` 最多 12.5 Hz 驗證擁有者、位置／速度和時間相關位移上限，客戶端通常約 8 Hz 更新；`slow_land` 需同一個有效 id、合理距離及向上的單位法線。接受後只產生一次同 id 的 `slow` 冰面，expiresAt 固定為落地後 7 秒。
+房間 storage 保存未到期 flight／field，welcome 回播；快照 slowCharges 保留重連與復活後的次數。超時球以 slow_remove 移除，不推測地圖上的落地點。新回合刪除資料；舊版直接 slow 落點請求會提示更新網頁。落地碰撞回報依前端地圖，驗證並非完整伺服器地圖物理。

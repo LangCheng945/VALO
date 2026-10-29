@@ -682,15 +682,18 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
+        import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
+        import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
+        import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=barrier1';
-        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=barrier1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=slow1';
+        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=slow1';
         import {makeSpray,removeSpray,sprayHiss} from './spray.js?v=skills2';
         import {SpikeModel} from './spike-model.js?v=spike1';
         import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=skills2';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=slow1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1100,6 +1103,7 @@
             spikeAction: null,
             holdingSpike: false,
             healingEquipped: false,
+            slowEquipped:false,slowPendingUntil:0,
             barrierEquipped:false,barrierPendingUntil:0,
             sprayDesign: 'agent',
             plantingProgress: 0,
@@ -1889,14 +1893,14 @@
         }
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
-            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent!=='jett'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
+            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent!=='jett'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent!=='jett'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
             equipWeaponSlot(state.primaryWeaponKey);updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0)ensureOwnCorpse();continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0)ensureOwnCorpse();continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2075,6 +2079,7 @@
                 welcome(message){
                     const roomMap=message.map||'ascent';
                     if(roomMap!==selectedMap){const code=roomSocket.desiredRoom;roomSocket.leave();if(!MAPS[roomMap]){networkFeedback('房間地圖版本不相容，請重新整理');return;}const url=new URL(location.href);url.searchParams.set('map',roomMap);url.searchParams.set('room',code);location.replace(url.href);return;}
+                    slowClockOffset=Number.isFinite(message.serverNow)?message.serverNow-Date.now():0;
                     roomMode=message.mode||'practice';receiveRoomRound(message.round);mapSelect.disabled=true;
 
                     currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
@@ -2086,9 +2091,9 @@
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
-                    applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                    applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
-                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
+                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
                 damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();showCenterBanner('遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
@@ -2149,7 +2154,7 @@
             if(ev.type==='wall_state'){receiveIceBarrier(ev);return;}
             if(ev.type==='wall_remove'){removeIceBarrier(ev.id);return;}
 
-            if(ev.type==='slow'&&ev.senderUid!==currentUser.uid){spawnSlowField(new THREE.Vector3(ev.x,ev.y,ev.z));return;}
+            if(['slow','slow_launch','slow_step','slow_remove'].includes(ev.type)){receiveSlowEvent(ev);return;}
             if (ev.type === 'flash' && ev.senderUid !== currentUser.uid && ev.senderTeam !== state.team) {
                 const flashEl = document.getElementById('flash-overlay');
                 flashEl.style.opacity = '0.9';
@@ -2325,7 +2330,7 @@
 
         function fireWeapon() {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
-            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped)return;
+            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
@@ -2494,7 +2499,7 @@
         }
 
         function reloadWeapon() {
-            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped)return;
+            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             const wpn = WEAPONS[state.weaponKey];
             if (wpn.isMelee || state.weaponKey === 'bladestorm') return;
             setScope(false);
@@ -2732,23 +2737,69 @@
             const entry=iceBarriers.get(mesh.userData.barrierId);if(!entry)return;advanceBarrier(entry.data,Date.now());const i=mesh.userData.segment;entry.data.hp[i]=Math.max(0,entry.data.hp[i]-damage);updateIceBarrier(entry,Date.now());
         }
 
-        const slowFields=[];
+        const slowFields=[],slowFlights=new Map();let slowClockOffset=0;
+        function slowNow(){return Date.now()+(currentRoomId?slowClockOffset:0);}
         let abilityNoticeTimeout;
         function abilityNotice(text) {
             const el=document.getElementById('ability-notice');el.textContent=text;
             clearTimeout(abilityNoticeTimeout);abilityNoticeTimeout=setTimeout(()=>el.textContent='',1800);
         }
-        function aimedPoint(distance=16) {
-            const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-            const origin=camera.getWorldPosition(new THREE.Vector3());
-            const ray=new THREE.Raycaster(origin,dir,0,distance);
-            const hit=ray.intersectObjects(shootableMeshes,false)[0];
-            const point=hit?hit.point.clone().addScaledVector(dir,-.5):origin.addScaledVector(dir,distance);
-            point.y=realMap.ready?realMap.getGroundHeight(point.clone().add(new THREE.Vector3(0,2.2,0))):0;
-            return point;
+        function spawnSlowField(p,event={}){
+            const id=event.id||crypto.randomUUID();if(slowFields.some(f=>f.id===id))return;
+            const now=slowNow(),createdAt=event.createdAt??now,expiresAt=event.expiresAt??now+SLOW.durationMs;if(expiresAt<=now)return;
+            const mesh=makeSlowField();mesh.position.copy(p);mesh.position.y+=.06;mesh.scale.setScalar(.05);scene.add(mesh);
+            slowFields.push({id,x:p.x,y:p.y,z:p.z,mesh,life:(expiresAt-now)/1000,age:Math.max(0,(now-createdAt)/1000),createdAt,expiresAt});
+            if(now-createdAt<1000){
+                for(let i=0;i<10;i++){const shard=new THREE.Mesh(new THREE.IcosahedronGeometry(.09,0),new THREE.MeshBasicMaterial({color:0x8dffe4,transparent:true,opacity:.9}));shard.scale.set(.5,1.5,.6);shard.position.copy(p).add(new THREE.Vector3(0,.18,0));scene.add(shard);ejectedShells.push({mesh:shard,vel:new THREE.Vector3((Math.random()-.5)*5,2+Math.random()*3,(Math.random()-.5)*5),life:.45});}
+                const distance=mesh.position.distanceTo(yawObject.position);if(distance<40){sfx.init();playIce(sfx.ctx,'shatter',.35*(1-distance/40));}
+            }
         }
-        function spawnSlowField(p){const mesh=makeSlowField();mesh.position.copy(p);mesh.position.y+=.06;scene.add(mesh);slowFields.push({mesh,life:7,age:0});}
-        function slowMultiplier(point) {return slowFields.some(f=>Math.hypot(point.x-f.mesh.position.x,point.z-f.mesh.position.z)<5 && Math.abs(point.y-f.mesh.position.y)<3)?.5:1;}
+        function slowMultiplier(point,feetOffset=2.2){return slowAt(point,slowFields,slowNow(),feetOffset);}
+        function removeSlowFlight(id){const f=slowFlights.get(id);if(f){disposeEffect(f.mesh);slowFlights.delete(id);}}
+        function clearSlowObjects(){for(const id of [...slowFlights.keys()])removeSlowFlight(id);for(const f of slowFields)disposeEffect(f.mesh);slowFields.length=0;state.slowPendingUntil=0;}
+        function createSlowFlight(e,remote=false){
+            if(slowFlights.has(e.id))return;const mesh=makeSlowOrb();mesh.position.set(e.x,e.y,e.z);scene.add(mesh);
+            slowFlights.set(e.id,{id:e.id,mesh,remote,createdAt:e.createdAt??slowNow(),velocity:new THREE.Vector3(e.vx,e.vy,e.vz),lastNet:0,bounces:0});
+        }
+        function equipSlowOrb(){
+            if(state.slowEquipped){cancelSlowEquip();return;}
+            if(currentRoomId&&!roomSocket.serverFeatures?.includes('thrown-slow')){abilityNotice('連線後端尚待更新緩速球功能');return;}
+            beginAbilityCast('orb',1);abilityCast.holdOrb();state.slowEquipped=true;
+        }
+        function cancelSlowEquip(){const held=state.slowEquipped;state.slowEquipped=false;if(held)abilityCast.cancel();}
+        function throwSlowOrb(){
+            if(!state.slowEquipped||state.qCharges<=0||Date.now()<state.slowPendingUntil)return;
+            scene.updateMatrixWorld(true);const p=camera.getWorldPosition(new THREE.Vector3()),v=camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(SLOW.speed);
+            // Launch at the camera, avoiding an origin pushed through a nearby wall.
+            const e={type:'slow_launch',x:p.x,y:p.y,z:p.z,vx:v.x,vy:v.y,vz:v.z};
+            if(currentRoomId){state.slowPendingUntil=Date.now()+2500;pushMyNetworkState(true);broadcastRoomEvent(e);}else{e.id=crypto.randomUUID();e.createdAt=Date.now();createSlowFlight(e);state.qCharges--;}
+            beginAbilityCast('orb',.35);updateAbilityHUD();
+        }
+        function receiveSlowEvent(e){
+            if(e.type==='slow_launch'){
+                const own=e.senderUid===currentUser?.uid;createSlowFlight(e,!own);if(own){state.slowPendingUntil=0;if(state.agent!=='jett')state.qCharges=e.remaining;updateAbilityHUD();}return;
+            }
+            if(e.type==='slow_step'){const f=slowFlights.get(e.id);if(f?.remote){f.mesh.position.set(e.x,e.y,e.z);f.velocity.set(e.vx,e.vy,e.vz);f.awaiting=false;}return;}
+            if(e.type==='slow_remove'){removeSlowFlight(e.id);return;}
+            removeSlowFlight(e.id);spawnSlowField(new THREE.Vector3(e.x,e.y,e.z),e);
+        }
+        function updateSlowObjects(dt){
+            const now=slowNow();
+            if(state.slowEquipped&&(!state.isLocked||state.inBuyMenu||state.hp<=0||state.roundEnding))cancelSlowEquip();
+            for(const [id,f]of [...slowFlights]){
+                if(now-f.createdAt>SLOW.flightMs+300){removeSlowFlight(id);continue;}
+                if(f.awaiting)continue;const before=f.bounces,hit=stepSlowProjectile(f,dt,[realMap.collisionMesh,...temporaryWalls]);
+                f.mesh.rotation.x+=dt*4;f.mesh.rotation.z+=dt*3;updateEffect(f.mesh,(now-f.createdAt)/1000);
+                if(f.bounces>before){const distance=f.mesh.position.distanceTo(yawObject.position);if(distance<30){sfx.init();playIce(sfx.ctx,'bounce',.16*(1-distance/30));}}
+                if(hit){
+                    if(f.remote){f.awaiting=true;continue;}
+                    if(currentRoomId){f.awaiting=true;f.mesh.visible=false;broadcastRoomEvent({type:'slow_land',id,x:hit.land.x,y:hit.land.y,z:hit.land.z,nx:hit.normal.x,ny:hit.normal.y,nz:hit.normal.z});}
+                    else{removeSlowFlight(id);spawnSlowField(hit.land,{id});}continue;
+                }
+                if(!f.remote&&currentRoomId&&(f.bounces>before||now-f.lastNet>=120)){f.lastNet=now;const p=f.mesh.position,v=f.velocity;broadcastRoomEvent({type:'slow_step',id,x:p.x,y:p.y,z:p.z,vx:v.x,vy:v.y,vz:v.z});}
+            }
+            for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life=(f.expiresAt-now)/1000;f.age=Math.max(0,(now-f.createdAt)/1000);if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);continue;}f.mesh.scale.setScalar(Math.max(.01,fieldRadius(f,now)/SLOW.fieldRadius));updateEffect(f.mesh,f.age,Math.min(1,f.life*2));}
+        }
         const cloudFlights=new Map(),cloudIds=new Set(),sprays=new Map();let lastSpray=0;
         function deployCloud(position,id,expiresAt){if(id&&cloudIds.has(id)){const existing=smokeSpheres.find(s=>s.id===id);if(existing&&expiresAt)existing.expiresAt=expiresAt;return;}if(id){cloudIds.add(id);if(cloudIds.size>128)cloudIds.delete(cloudIds.values().next().value);}spawnSmokeAtPosition(position,id,expiresAt||Date.now()+2500);}
         function removeCloudFlight(id){const f=cloudFlights.get(id);if(f){disposeEffect(f.mesh);cloudFlights.delete(id);}}
@@ -2761,7 +2812,7 @@
             beginAbilityCast('wind',.25);const p=camera.getWorldPosition(new THREE.Vector3()),d=camera.getWorldDirection(new THREE.Vector3());p.addScaledVector(d,.4);
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
-        function clearFieldObjects(){clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        function clearFieldObjects(){clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -2795,6 +2846,7 @@
         }
         function confirmHealing(){state.healPendingUntil=0;state.eCooldown=45;beginAbilityCast('orb',.8);sfx.playAbilitySound('smoke');updateAbilityHUD();}
         function updateSkillObjects(dt){
+            updateSlowObjects(dt);
             updateBarrierPlacement();
             for(const [id,entry]of iceBarriers){updateIceBarrier(entry,Date.now());if(!entry.data.hp.some(hp=>hp>0))removeIceBarrier(id);}
             for(const [id,f]of [...cloudFlights]){
@@ -2808,11 +2860,11 @@
                 if(currentRoomId&&f.age-f.lastNet>=.15){f.lastNet=f.age;const p=f.mesh.position,d=f.velocity.clone().normalize();broadcastRoomEvent({type:'smoke_guide',id,x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z});}
             }
             for(const [uid,s]of sprays)if(Date.now()>=s.expiresAt){removeSpray(s.mesh);sprays.delete(uid);}
-            if(state.healingEquipped){const target=healTarget();document.getElementById('ability-target-hint').textContent=target?'左鍵：治療 '+(target.actor.name||target.actor.data.name)+' · '+Math.ceil(target.hp)+' HP ／ 右鍵：自補':'左鍵：瞄準受傷隊友 ／ 右鍵：自補';}else document.getElementById('ability-target-hint').textContent=state.barrierEquipped?'左鍵：放置冰牆 ／ 右鍵：旋轉 90° ／ C：取消':'';
+            if(state.healingEquipped){const target=healTarget();document.getElementById('ability-target-hint').textContent=target?'左鍵：治療 '+(target.actor.name||target.actor.data.name)+' · '+Math.ceil(target.hp)+' HP ／ 右鍵：自補':'左鍵：瞄準受傷隊友 ／ 右鍵：自補';}else document.getElementById('ability-target-hint').textContent=state.barrierEquipped?'左鍵：放置冰牆 ／ 右鍵：旋轉 90° ／ C：取消':state.slowEquipped?'左鍵：投擲緩速靈球 ／ Q：取消':'';
         }
 
         let abilityIconAgent=null,abilityChargeSignature=null;
-        function beginAbilityCast(kind,duration){state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
+        function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent!=='jett';
             const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃'};
@@ -2832,7 +2884,7 @@
             document.getElementById('skill-x-box').style.opacity=state.xCharges>0?'1':'.3';
         }
         function resetAbilities() {
-            cancelBarrierPlacement();state.barrierPendingUntil=0;
+            cancelSlowEquip();cancelBarrierPlacement();state.slowPendingUntil=0;state.barrierPendingUntil=0;
             state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
             state.eCharges=1;state.xCharges=1;state.cCooldown=state.qCooldown=state.eCooldown=0;
             state.dashReadyUntil=0;state.dashArmedAt=0;updateAbilityHUD();
@@ -2849,10 +2901,7 @@
         function triggerAbilityQ() {
             if(state.qCharges<=0||state.inBuyMenu||state.hp<=0)return;
             if(state.agent==='jett'){beginAbilityCast('wind',.55);state.climbingRope=null;playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
-            else {
-                beginAbilityCast('orb');const p=aimedPoint(24);spawnSlowField(p);broadcastRoomEvent({type:'slow',x:p.x,y:p.y,z:p.z});
-                sfx.playAbilitySound('smoke');
-            }
+            else {equipSlowOrb();return;}
             state.qCharges--;updateAbilityHUD();
         }
         function triggerAbilityE() {
@@ -2888,6 +2937,7 @@
          * 11. WEAPON SWITCHING, SHOP & UI HELPERS
          ********************************************************************/
         function equipWeaponSlot(slotKey) {
+            cancelSlowEquip();
             cancelBarrierPlacement();abilityCast.cancel();
             state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;
             clearTimeout(state.reloadTimeout);
@@ -3213,6 +3263,7 @@
         }
 
         function resetMovementInput() {
+            cancelSlowEquip();
             cancelBarrierPlacement();
             state.healingEquipped=false;state.healPendingUntil=0;abilityCast.cancel();cancelSpikeAction();
             state.climbingRope=null;
@@ -3315,6 +3366,7 @@
             if (document.pointerLockElement !== renderer.domElement && e.target === renderer.domElement) {
                 safeRequestPointerLock();
             }
+            if(state.slowEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)throwSlowOrb();return;}
             if(state.barrierEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)placeBarrier();else rotateBarrier();return;}
             if(state.healingEquipped&&(e.button===0||e.button===2)){e.preventDefault();castHealing(e.button===2);return;}
             if (e.button === 0) {
@@ -3421,7 +3473,7 @@
             if (code === 'Digit1') equipWeaponSlot(state.primaryWeaponKey);
             if (code === 'Digit2') equipWeaponSlot('classic');
             if (code === 'Digit3') equipWeaponSlot('melee');
-            if(code==='Digit4'){cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=true;setScope(false);abilityCast.cancel();}
+            if(code==='Digit4'){cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=true;setScope(false);abilityCast.cancel();}
             if (code === 'Digit4' || code === 'KeyF') moveState.holdPlant = true;
             if(code==='Space')moveState.glide=true;
             if (code === 'Space' && canJump && state.isLocked) {
@@ -3699,12 +3751,12 @@
                 }
 
                 if (state.gameMode !== 'stationary'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
-                    if(moveRoamingBot(b,dt,realMap,checkPlayerCollision)){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;}
+                    if(moveRoamingBot(b,dt,realMap,checkPlayerCollision,slowMultiplier(b.group.position,0))){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;}
                 }else{b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;}
 
                 b.footsteps ||= new FootstepTracker();
                 const footfall=b.footsteps.update(b.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:true,quiet:false});
-                if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);sfx.playFootstep(false,.35*(1-distance/36)**2,delta.normalize().dot(right));}}
+                if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);const pan=delta.normalize().dot(right),volume=.35*(1-distance/36)**2;sfx.playFootstep(false,volume,pan);if(slowMultiplier(b.group.position,0)<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
                 if (state.gameMode==='tactical'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
                     const targets=bots.filter(t=>t.alive&&t.team!==b.team).map(t=>({pos:t.group.position.clone().add(new THREE.Vector3(0,2,0)),bot:t}));
                     if(state.hp>0&&b.team!==state.team)targets.push({pos:playerPos.clone(),bot:null});
@@ -3726,7 +3778,7 @@
                 if ((rp.data.hp ?? 100) <= 0) return;
                 const distMove = rp.group.position.distanceTo(rp.targetPos);
                 rp.group.position.lerp(rp.targetPos, Math.min(1, dt * 12));
-                rp.footsteps ||= new FootstepTracker();const footfall=rp.footsteps.update(rp.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:realMap.ready?Math.abs(realMap.getGroundHeight(rp.targetPos.clone().add(new THREE.Vector3(0,2.2,0)))-rp.group.position.y)<.4:true,quiet:rp.data.walking||rp.data.crouching});if(footfall){const delta=rp.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36)sfx.playFootstep(footfall==='land',.35*(1-distance/36)**2,delta.normalize().dot(new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y)));}
+                rp.footsteps ||= new FootstepTracker();const footfall=rp.footsteps.update(rp.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:realMap.ready?Math.abs(realMap.getGroundHeight(rp.targetPos.clone().add(new THREE.Vector3(0,2.2,0)))-rp.group.position.y)<.4:true,quiet:rp.data.walking||rp.data.crouching});if(footfall){const delta=rp.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const pan=delta.normalize().dot(new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y)),volume=.35*(1-distance/36)**2;sfx.playFootstep(footfall==='land',volume,pan);if(slowMultiplier(rp.group.position,0)<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
                 rp.group.rotation.y = rp.targetYaw;
                 rp.group.scale.y += ((rp.data.crouching ? 0.68 : 1) - rp.group.scale.y) * Math.min(1, dt * 18);
                 rp.hpBg.lookAt(playerPos);
@@ -3780,7 +3832,7 @@
             if(state.isLocked&&!state.inBuyMenu) {
                 if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
                 for(const b of bots)if(b.alive&&b.healRemaining>0&&performance.now()-(b.lastDamage||0)>=2000){const amount=Math.min(b.healRemaining,(b.healRate||20)*dt,100-b.hp);b.hp+=amount;b.healRemaining-=amount;b.hpFill.scale.x=b.hp/100;if(b.hp>=100)b.healRemaining=0;}
-                for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life-=dt;f.age+=dt;updateEffect(f.mesh,f.age,Math.min(1,f.life*2));if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);}}
+
 
             }
             updateAbilityHUD();
@@ -3944,7 +3996,7 @@
             }
 
             const footfall=playerFootsteps.update(yawObject.position,{active:state.isLocked&&!state.inBuyMenu&&state.hp>0,grounded:canJump,quiet:moveState.walk||state.crouchAmount>.5,verticalSpeed:playerVelocity.y});
-            if(footfall)sfx.playFootstep(footfall==='land',footfall==='land'?.5:.38);
+            if(footfall){sfx.playFootstep(footfall==='land',footfall==='land'?.5:.38);if(slowMultiplier(yawObject.position)<1)playIce(sfx.ctx,'step',.28);}
 
             // Dynamic Crosshair Expansion
             const gap = (state.isScoped ? 3 : state.crouchAmount > 0.5 ? 4 : 7)

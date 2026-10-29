@@ -42,11 +42,16 @@ export function makeBarrierPreview(){
  for(let i=0;i<4;i++){const mesh=new T.Mesh(new T.BoxGeometry(1.66,3.6,1.2),new T.MeshBasicMaterial({color:0x65ffd0,transparent:true,opacity:.17,depthWrite:false}));mesh.position.set((i-1.5)*1.7,1.8,0);const lines=new T.LineSegments(new T.EdgesGeometry(mesh.geometry),new T.LineBasicMaterial({color:0x65ffd0,transparent:true,opacity:.8,depthWrite:false}));mesh.add(lines);root.add(mesh);}
  return root;
 }
+export function makeSlowOrb(){
+ const root=new T.Group();root.name='sage-thrown-slow-orb';
+ const shell=new T.Mesh(new T.SphereGeometry(.16,20,16),shader(`void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float veins=pow(1.-abs(sin(vP.x*50.+vP.y*35.+noise(vP*20.)*3.)),12.);gl_FragColor=vec4(vec3(.05,.65,.58)+rim*vec3(.25,.35,.3)+veins*.25,.83);}`,{depthWrite:true}));root.add(shell);
+ const core=new T.Mesh(new T.IcosahedronGeometry(.08,0),new T.MeshBasicMaterial({color:0xabffe2}));core.rotation.z=.4;root.add(core);return root;
+}
 export function makeSlowField(){
- const material=shader(`void main(){vec2 p=vP.xy;float edge=1.-smoothstep(4.4,5.,length(p));vec2 cell=floor(p*3.);float crystal=hash(vec3(cell,0.));float lines=pow(1.-min(fract(p.x*3.),fract(p.y*3.)),14.);float shimmer=pow(max(0.,sin(crystal*22.+time*2.)),12.);vec3 c=mix(vec3(.04,.33,.36),vec3(.22,.84,.76),crystal);gl_FragColor=vec4(c+lines*.25+shimmer*.18,edge*.76*fade);}`,{side:T.DoubleSide});
+ const material=shader(`void main(){vec2 p=vP.xy;float edge=1.-smoothstep(4.35,5.,length(p));vec2 grid=floor(p*2.7),f=fract(p*2.7);float first=10.,second=10.;for(int y=-1;y<=1;y++){for(int x=-1;x<=1;x++){vec2 cell=vec2(float(x),float(y));vec2 jitter=vec2(hash(vec3(grid+cell,1.)),hash(vec3(grid+cell,3.)));float d=length(cell+jitter-f);if(d<first){second=first;first=d;}else{second=min(second,d);}}}float cracks=1.-smoothstep(.012,.065,second-first);float frost=noise(vec3(p*11.,0.));float glint=pow(max(0.,sin(frost*20.+time*.7)),18.);vec3 c=mix(vec3(.035,.28,.29),vec3(.20,.65,.55),noise(vec3(p*2.,1.)));c+=cracks*vec3(.18,.34,.30)+glint*.045;gl_FragColor=vec4(c,edge*.56*fade);}`,{side:T.DoubleSide});
  const mesh=new T.Mesh(new T.CircleGeometry(5,64),material);mesh.rotation.x=-Math.PI/2;mesh.name='sage-crystal-slow-field';
  let seed=7;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
- const g=new T.IcosahedronGeometry(.13,0),m=new T.MeshStandardMaterial({color:0x9ff5dd,emissive:0x116b68,roughness:.2,transparent:true,opacity:.85});
+ const g=new T.IcosahedronGeometry(.13,0),m=new T.MeshBasicMaterial({color:0x8ee8d4,transparent:true,opacity:.65});
  for(let i=0;i<65;i++){const r=Math.sqrt(rand())*4.7,a=rand()*Math.PI*2,c=new T.Mesh(g,m);c.position.set(Math.cos(a)*r,Math.sin(a)*r,.05);c.scale.set(.5+rand(),.6+rand(),.3+rand());c.rotation.set(rand(),rand(),rand());mesh.add(c);}
  return mesh;
 }

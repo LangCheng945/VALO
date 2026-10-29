@@ -17,14 +17,14 @@ export function resurrectionEffect(){
 export function disposeCombatEffect(root){if(!root)return;root.parent?.remove(root);root.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}
 
 // Random local steering with floor/ledge and capsule checks at every step.
-export function moveRoamingBot(bot,dt,map,extraCollision=()=>false){
+export function moveRoamingBot(bot,dt,map,extraCollision=()=>false,speedMultiplier=1){
  bot.roamTime=(bot.roamTime||0)-dt;
  if(bot.roamTime<=0){
   const home=Math.hypot(bot.group.position.x-bot.baseX,bot.group.position.z-bot.baseZ)>24;
   const angle=home?Math.atan2(bot.baseZ-bot.group.position.z,bot.baseX-bot.group.position.x)+(Math.random()-.5):Math.random()*Math.PI*2;
   bot.roamDirection=new T.Vector3(Math.cos(angle),0,Math.sin(angle));bot.roamTime=1.2+Math.random()*2.5;
  }
- const next=bot.group.position.clone().addScaledVector(bot.roamDirection,bot.speed*dt),eye=next.clone();eye.y+=2.2;
+ const next=bot.group.position.clone().addScaledVector(bot.roamDirection,bot.speed*dt*speedMultiplier),eye=next.clone();eye.y+=2.2;
  if(map.ready){const floor=map.getGroundHeight(eye);if(floor-bot.group.position.y>.5||floor-bot.group.position.y<-.75){bot.roamTime=0;return false;}eye.y=floor+2.2;if(map.collides(eye)){bot.roamTime=0;return false;}next.y=floor;}
  if(extraCollision(eye)){bot.roamTime=0;return false;}
  bot.group.position.copy(next);return true;
