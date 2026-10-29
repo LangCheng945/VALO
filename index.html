@@ -682,8 +682,9 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeSlowField,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=skills2';
-        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=rounds1';
+        import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=barrier1';
+        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=barrier1';
         import {makeSpray,removeSpray,sprayHiss} from './spray.js?v=skills2';
         import {SpikeModel} from './spike-model.js?v=spike1';
         import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
@@ -1099,6 +1100,7 @@
             spikeAction: null,
             holdingSpike: false,
             healingEquipped: false,
+            barrierEquipped:false,barrierPendingUntil:0,
             sprayDesign: 'agent',
             plantingProgress: 0,
             beepAccumulator: 0,
@@ -1357,6 +1359,8 @@
         const mapColliders = [];
         const shootableMeshes = [];
         const temporaryWalls = [];
+        const iceBarriers=new Map();
+        let barrierPreview=null,barrierPlacement=null,barrierRotation=0,barrierPreviewTick=0;
         const mapRadarRects = []; // For 2D minimap accurate rendering
 
         const arenaRoot = new THREE.Group();
@@ -1885,14 +1889,14 @@
         }
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
-            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
+            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent!=='jett'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
             equipWeaponSlot(state.primaryWeaponKey);updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0)ensureOwnCorpse();continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0)ensureOwnCorpse();continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2082,9 +2086,9 @@
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
-                    applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                    applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
-                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.healPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
+                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
                 damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();showCenterBanner('遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
@@ -2141,10 +2145,9 @@
                 return;
             }
 
-            if (ev.type === 'wall' && ev.senderUid !== currentUser.uid) {
-                spawnIceWallAtPosition(new THREE.Vector3(ev.x, ev.y, ev.z), ev.yaw || 0);
-                return;
-            }
+            if(ev.type==='wall'){receiveIceBarrier(ev);if(ev.ownerUid===currentUser.uid){if(state.barrierPendingUntil)confirmBarrier();else{state.cCharges=0;updateAbilityHUD();}}return;}
+            if(ev.type==='wall_state'){receiveIceBarrier(ev);return;}
+            if(ev.type==='wall_remove'){removeIceBarrier(ev.id);return;}
 
             if(ev.type==='slow'&&ev.senderUid!==currentUser.uid){spawnSlowField(new THREE.Vector3(ev.x,ev.y,ev.z));return;}
             if (ev.type === 'flash' && ev.senderUid !== currentUser.uid && ev.senderTeam !== state.team) {
@@ -2322,7 +2325,7 @@
 
         function fireWeapon() {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
-            if(state.holdingSpike||state.spikeAction||state.healingEquipped)return;
+            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped)return;
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
@@ -2448,9 +2451,9 @@
                         }
                     }
                 } else {
-                    if(hit.object.userData.barrierHP!==undefined)hit.object.userData.barrierHP-=wpn.bodyDmg;
+                    if(hit.object.userData.barrierId)damageBarrier(hit.object,wpn.bodyDmg);
                     // Hit wall/floor: spawn bullet hole decal + yellow sparks
-                    if (hit.face) {
+                    if (hit.face && !hit.object.userData.barrierId) {
                         const worldNormal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
                         spawnBulletDecal(hit.point, worldNormal);
                     }
@@ -2491,7 +2494,7 @@
         }
 
         function reloadWeapon() {
-            if(state.holdingSpike||state.spikeAction||state.healingEquipped)return;
+            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped)return;
             const wpn = WEAPONS[state.weaponKey];
             if (wpn.isMelee || state.weaponKey === 'bladestorm') return;
             setScope(false);
@@ -2667,13 +2670,66 @@
             smokeSpheres.push({ mesh: smokeMesh, life: 2.5, age:0,id,expiresAt });
         }
 
-        function spawnIceWallAtPosition(wallPos, yawAngle) {
-            const iceMesh=makeBarrier();
-            iceMesh.position.set(wallPos.x, wallPos.y-2.2+1.8, wallPos.z);
-            iceMesh.rotation.y = yawAngle;
-            scene.add(iceMesh);
-            shootableMeshes.push(iceMesh);
-            iceMesh.userData.barrierHP=800;iceMesh.userData.life=40;iceMesh.userData.age=0;iceMesh.userData.baseY=wallPos.y-2.2;iceMesh.scale.y=.04;iceMesh.position.y=iceMesh.userData.baseY+1.8*.04;temporaryWalls.push(iceMesh);
+        function removeBarrierSegment(mesh,shatter=false){
+            if(shatter){const p=mesh.position.clone();for(let i=0;i<3;i++)createImpactBurst(p.clone().add(new THREE.Vector3((Math.random()-.5)*1.2,(Math.random()-.5)*2.5,0)),false,false);}
+            const a=temporaryWalls.indexOf(mesh);if(a>=0)temporaryWalls.splice(a,1);const b=shootableMeshes.indexOf(mesh);if(b>=0)shootableMeshes.splice(b,1);disposeEffect(mesh);
+        }
+        function removeIceBarrier(id){const entry=iceBarriers.get(id);if(!entry)return;for(const m of entry.meshes)if(m)removeBarrierSegment(m);iceBarriers.delete(id);}
+        function receiveIceBarrier(event){
+            if(event.createdAt+BARRIER.lifetimeMs<=Date.now())return;
+            let entry=iceBarriers.get(event.id);if(!entry){entry={data:{...event,hp:[...event.hp]},meshes:Array(4).fill(null)};iceBarriers.set(event.id,entry);}else entry.data={...event,hp:[...event.hp]};
+            updateIceBarrier(entry,Date.now());
+        }
+        function updateIceBarrier(entry,now){
+            const w=entry.data;advanceBarrier(w,now);const age=(now-w.createdAt)/1000,growth=Math.min(1,.04+Math.max(0,age)*2.5);
+            for(let i=0;i<4;i++){
+                let m=entry.meshes[i];if(w.hp[i]<=0){if(m){removeBarrierSegment(m,true);entry.meshes[i]=null;}continue;}
+                if(!m){m=makeBarrier();m.userData.barrierId=w.id;m.userData.segment=i;m.rotation.y=w.yaw;scene.add(m);shootableMeshes.push(m);temporaryWalls.push(m);entry.meshes[i]=m;}
+                const p=segmentPosition(w,i);m.position.set(p.x,p.y+BARRIER.height*.5*growth,p.z);m.scale.y=growth;m.userData.barrierHP=w.hp[i];m.userData.life=Math.max(0,(w.createdAt+BARRIER.lifetimeMs-now)/1000);
+                m.material.uniforms.damage.value=1-w.hp[i]/(w.fortified?BARRIER.maxHP:BARRIER.initialHP);m.material.uniforms.fortified.value=w.fortified?1:0;updateEffect(m,age);
+            }
+        }
+        function clearIceBarriers(){cancelBarrierPlacement();for(const id of [...iceBarriers.keys()])removeIceBarrier(id);}
+        function cancelBarrierPlacement(){state.barrierEquipped=false;barrierPlacement=null;if(barrierPreview){disposeEffect(barrierPreview);barrierPreview=null;}if(abilityCast.held&&!state.healingEquipped)abilityCast.cancel();}
+        function updateBarrierPlacement(force=false){
+            if(!state.barrierEquipped)return;if(!state.isLocked||state.inBuyMenu||state.hp<=0||state.roundEnding){cancelBarrierPlacement();return;}
+            const now=performance.now();if(!force&&now-barrierPreviewTick<60)return;barrierPreviewTick=now;
+            scene.updateMatrixWorld(true);const origin=camera.getWorldPosition(new THREE.Vector3()),dir=camera.getWorldDirection(new THREE.Vector3());
+            const ray=new THREE.Raycaster(origin,dir,0,BARRIER.range),hit=ray.intersectObjects([realMap.collisionMesh,...temporaryWalls],false)[0];
+            const p=hit?hit.point.clone().addScaledVector(dir,-.7):origin.clone().addScaledVector(dir,BARRIER.range-.2);
+            const w={x:p.x,z:p.z,y:0,yaw:yawObject.rotation.y+barrierRotation};let valid=realMap.ready;
+            const floors=Array.from({length:4},(_,i)=>{const c=segmentPosition(w,i);return realMap.getGroundHeight(new THREE.Vector3(c.x,yawObject.position.y+2,c.z));});
+            w.y=Math.max(...floors);if(Math.max(...floors)-Math.min(...floors)>.65||Math.abs(w.y-(yawObject.position.y-2.2))>4||Math.hypot(w.x-origin.x,w.z-origin.z)>BARRIER.range)valid=false;
+            const actors=[{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z},...bots.filter(b=>b.alive).map(b=>({x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z})),...Array.from(remotePlayers.values()).filter(r=>r.data.hp>0).map(r=>({x:r.data.x,y:r.data.y-1,z:r.data.z}))];
+            for(let i=0;i<4&&valid;i++){
+                const c=segmentPosition(w,i);if(actors.some(a=>insideSegment(w,i,a,.45))){valid=false;break;}
+                // Test the oriented wall volume against map triangles, leaving a small floor margin.
+                const inv=new THREE.Matrix4().makeRotationY(-w.yaw).multiply(new THREE.Matrix4().makeTranslation(-c.x,-c.y,-c.z));
+                const localBox=new THREE.Box3(new THREE.Vector3(-.79,.22,-.56),new THREE.Vector3(.79,3.55,.56));
+                const worldBox=localBox.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(c.x,c.y,c.z).multiply(new THREE.Matrix4().makeRotationY(w.yaw)));
+                const tri=new THREE.Triangle();if(realMap.collisionMesh.geometry.boundsTree.shapecast({intersectsBounds:b=>b.intersectsBox(worldBox),intersectsTriangle:t=>{tri.a.copy(t.a).applyMatrix4(inv);tri.b.copy(t.b).applyMatrix4(inv);tri.c.copy(t.c).applyMatrix4(inv);return localBox.intersectsTriangle(tri);}})){valid=false;break;}
+                if(temporaryWalls.some(m=>new THREE.Box3().setFromObject(m).intersectsBox(worldBox))){valid=false;break;}
+            }
+            barrierPlacement={...w,valid};barrierPreview.position.set(w.x,w.y,w.z);barrierPreview.rotation.y=w.yaw;barrierPreview.visible=w.y>-90;
+            barrierPreview.traverse(m=>{if(m.material)m.material.color.setHex(valid?0x65ffd0:0xff5b69);});
+        }
+        function equipBarrier(){
+            if(state.barrierEquipped){cancelBarrierPlacement();return;}
+            if(currentRoomId&&!roomSocket.serverFeatures?.includes('segmented-barrier')){abilityNotice('連線後端尚待更新冰牆功能');return;}
+            beginAbilityCast('orb',1);abilityCast.holdOrb();state.barrierEquipped=true;barrierRotation=0;barrierPreview=makeBarrierPreview();scene.add(barrierPreview);updateBarrierPlacement(true);
+        }
+        function rotateBarrier(){barrierRotation=(barrierRotation+Math.PI/2)%(Math.PI*2);updateBarrierPlacement(true);}
+        function placeBarrier(){
+            if(!state.barrierEquipped||state.cCharges<=0||Date.now()<(state.barrierPendingUntil||0))return;updateBarrierPlacement(true);
+            if(!barrierPlacement?.valid){abilityNotice('此處無法放置：請選擇平坦、無障礙的空地');return;}
+            const {x,y,z,yaw}=barrierPlacement;
+            if(currentRoomId){state.barrierPendingUntil=Date.now()+2500;pushMyNetworkState(true);broadcastRoomEvent({type:'wall',x,y,z,yaw});return;}
+            receiveIceBarrier({id:crypto.randomUUID(),x,y,z,yaw,createdAt:Date.now(),fortified:false,hp:Array(4).fill(BARRIER.initialHP)});confirmBarrier();
+        }
+        function confirmBarrier(){state.barrierPendingUntil=0;state.cCharges=Math.max(0,state.cCharges-1);cancelBarrierPlacement();beginAbilityCast('orb',.7);sfx.playAbilitySound('smoke');updateAbilityHUD();}
+        function damageBarrier(mesh,damage){
+            if(currentRoomId){broadcastRoomEvent({type:'wall_hit',id:mesh.userData.barrierId,segment:mesh.userData.segment});return;}
+            const entry=iceBarriers.get(mesh.userData.barrierId);if(!entry)return;advanceBarrier(entry.data,Date.now());const i=mesh.userData.segment;entry.data.hp[i]=Math.max(0,entry.data.hp[i]-damage);updateIceBarrier(entry,Date.now());
         }
 
         const slowFields=[];
@@ -2705,7 +2761,7 @@
             beginAbilityCast('wind',.25);const p=camera.getWorldPosition(new THREE.Vector3()),d=camera.getWorldDirection(new THREE.Vector3());p.addScaledVector(d,.4);
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
-        function clearFieldObjects(){for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        function clearFieldObjects(){clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -2739,6 +2795,8 @@
         }
         function confirmHealing(){state.healPendingUntil=0;state.eCooldown=45;beginAbilityCast('orb',.8);sfx.playAbilitySound('smoke');updateAbilityHUD();}
         function updateSkillObjects(dt){
+            updateBarrierPlacement();
+            for(const [id,entry]of iceBarriers){updateIceBarrier(entry,Date.now());if(!entry.data.hp.some(hp=>hp>0))removeIceBarrier(id);}
             for(const [id,f]of [...cloudFlights]){
                 f.age+=dt;updateEffect(f.mesh,f.age);
                 if(f.remote){f.mesh.position.addScaledVector(f.velocity,dt);if(f.syncPosition)f.mesh.position.lerp(f.syncPosition,Math.min(1,dt*15));if(f.age>2.5)removeCloudFlight(id);continue;}
@@ -2750,11 +2808,11 @@
                 if(currentRoomId&&f.age-f.lastNet>=.15){f.lastNet=f.age;const p=f.mesh.position,d=f.velocity.clone().normalize();broadcastRoomEvent({type:'smoke_guide',id,x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z});}
             }
             for(const [uid,s]of sprays)if(Date.now()>=s.expiresAt){removeSpray(s.mesh);sprays.delete(uid);}
-            if(state.healingEquipped){const target=healTarget();document.getElementById('ability-target-hint').textContent=target?'左鍵：治療 '+(target.actor.name||target.actor.data.name)+' · '+Math.ceil(target.hp)+' HP ／ 右鍵：自補':'左鍵：瞄準受傷隊友 ／ 右鍵：自補';}else document.getElementById('ability-target-hint').textContent='';
+            if(state.healingEquipped){const target=healTarget();document.getElementById('ability-target-hint').textContent=target?'左鍵：治療 '+(target.actor.name||target.actor.data.name)+' · '+Math.ceil(target.hp)+' HP ／ 右鍵：自補':'左鍵：瞄準受傷隊友 ／ 右鍵：自補';}else document.getElementById('ability-target-hint').textContent=state.barrierEquipped?'左鍵：放置冰牆 ／ 右鍵：旋轉 90° ／ C：取消':'';
         }
 
         let abilityIconAgent=null,abilityChargeSignature=null;
-        function beginAbilityCast(kind,duration){state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
+        function beginAbilityCast(kind,duration){state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent!=='jett';
             const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃'};
@@ -2774,6 +2832,7 @@
             document.getElementById('skill-x-box').style.opacity=state.xCharges>0?'1':'.3';
         }
         function resetAbilities() {
+            cancelBarrierPlacement();state.barrierPendingUntil=0;
             state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
             state.eCharges=1;state.xCharges=1;state.cCooldown=state.qCooldown=state.eCooldown=0;
             state.dashReadyUntil=0;state.dashArmedAt=0;updateAbilityHUD();
@@ -2783,10 +2842,7 @@
             if(state.agent==='jett') {
                 if(!throwCloudburst())return;
             } else {
-                beginAbilityCast('orb');
-                const wallPos=aimedPoint(6);wallPos.y+=2.2;
-                spawnIceWallAtPosition(wallPos,yawObject.rotation.y);
-                broadcastRoomEvent({type:'wall',x:wallPos.x,y:wallPos.y,z:wallPos.z,yaw:yawObject.rotation.y});
+                equipBarrier();return;
             }
             state.cCharges--;sfx.playAbilitySound('smoke');updateAbilityHUD();
         }
@@ -2832,6 +2888,7 @@
          * 11. WEAPON SWITCHING, SHOP & UI HELPERS
          ********************************************************************/
         function equipWeaponSlot(slotKey) {
+            cancelBarrierPlacement();abilityCast.cancel();
             state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;
             clearTimeout(state.reloadTimeout);
             state.reloadTimeout = null;
@@ -3156,6 +3213,7 @@
         }
 
         function resetMovementInput() {
+            cancelBarrierPlacement();
             state.healingEquipped=false;state.healPendingUntil=0;abilityCast.cancel();cancelSpikeAction();
             state.climbingRope=null;
             Object.keys(moveState).forEach(key => { moveState[key] = false; });
@@ -3257,6 +3315,7 @@
             if (document.pointerLockElement !== renderer.domElement && e.target === renderer.domElement) {
                 safeRequestPointerLock();
             }
+            if(state.barrierEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)placeBarrier();else rotateBarrier();return;}
             if(state.healingEquipped&&(e.button===0||e.button===2)){e.preventDefault();castHealing(e.button===2);return;}
             if (e.button === 0) {
                 isMouseDown = true;
@@ -3362,7 +3421,7 @@
             if (code === 'Digit1') equipWeaponSlot(state.primaryWeaponKey);
             if (code === 'Digit2') equipWeaponSlot('classic');
             if (code === 'Digit3') equipWeaponSlot('melee');
-            if(code==='Digit4'){state.holdingSpike=true;setScope(false);abilityCast.cancel();}
+            if(code==='Digit4'){cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=true;setScope(false);abilityCast.cancel();}
             if (code === 'Digit4' || code === 'KeyF') moveState.holdPlant = true;
             if(code==='Space')moveState.glide=true;
             if (code === 'Space' && canJump && state.isLocked) {
@@ -3499,9 +3558,9 @@
         const playerFootsteps=new FootstepTracker();
 
         function getGroundHeight(position) {
-            if(realMap.ready)return realMap.getGroundHeight(position);
             const feet=position.y-2.2;
-            let ground=0;
+            let ground=realMap.ready?realMap.getGroundHeight(position):0;
+            for(const w of temporaryWalls){const entry=iceBarriers.get(w.userData.barrierId),top=w.position.y+BARRIER.height*.5*w.scale.y;if(entry&&top<=feet+.45&&top>ground&&distanceToSegmentXZ(entry.data,w.userData.segment,position)<.3)ground=top;}
             for(const box of mapColliders) {
                 if(position.x+.61>box.min.x && position.x-.61<box.max.x
                     && position.z+.61>box.min.z && position.z-.61<box.max.z
@@ -3517,7 +3576,7 @@
                 new THREE.Vector3(nextPos.x - 0.6, nextPos.y - 2.0, nextPos.z - 0.6),
                 new THREE.Vector3(nextPos.x + 0.6, nextPos.y + 0.3 - crouchAmount * 0.75, nextPos.z + 0.6)
             );
-            for(const wall of temporaryWalls){if(playerBox.intersectsBox(new THREE.Box3().setFromObject(wall)))return true;}
+            for(const wall of temporaryWalls){const entry=iceBarriers.get(wall.userData.barrierId);if(entry&&nextPos.y-2.15<wall.position.y+BARRIER.height*.5*wall.scale.y&&nextPos.y+.28-crouchAmount*.75>entry.data.y&&distanceToSegmentXZ(entry.data,wall.userData.segment,nextPos)<.45)return true;}
             for (let i = 0; i < mapColliders.length; i++) {
                 if (playerBox.intersectsBox(mapColliders[i])) return true;
             }
@@ -3640,7 +3699,7 @@
                 }
 
                 if (state.gameMode !== 'stationary'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
-                    if(moveRoamingBot(b,dt,realMap)){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;}
+                    if(moveRoamingBot(b,dt,realMap,checkPlayerCollision)){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;}
                 }else{b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;}
 
                 b.footsteps ||= new FootstepTracker();
@@ -3722,7 +3781,7 @@
                 if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
                 for(const b of bots)if(b.alive&&b.healRemaining>0&&performance.now()-(b.lastDamage||0)>=2000){const amount=Math.min(b.healRemaining,(b.healRate||20)*dt,100-b.hp);b.hp+=amount;b.healRemaining-=amount;b.hpFill.scale.x=b.hp/100;if(b.hp>=100)b.healRemaining=0;}
                 for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life-=dt;f.age+=dt;updateEffect(f.mesh,f.age,Math.min(1,f.life*2));if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);}}
-                for(let i=temporaryWalls.length-1;i>=0;i--){const w=temporaryWalls[i];w.userData.life-=dt;w.userData.age+=dt;w.scale.y=Math.min(1,.04+w.userData.age*2.5);w.position.y=w.userData.baseY+1.8*w.scale.y;updateEffect(w,w.userData.age);if(w.userData.life<=0||w.userData.barrierHP<=0){scene.remove(w);const j=shootableMeshes.indexOf(w);if(j>=0)shootableMeshes.splice(j,1);temporaryWalls.splice(i,1);disposeEffect(w);}}
+
             }
             updateAbilityHUD();
             // Cooldowns C, Q, E

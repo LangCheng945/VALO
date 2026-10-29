@@ -32,11 +32,15 @@ export function makeCloudburst(){
  const mesh=new T.Mesh(new T.SphereGeometry(3.8,48,32),material);mesh.name='cloudburst-wind-shell';return mesh;
 }
 export function makeBarrier(){
- const mat=shader(`void main(){float n=noise(vP*2.5);float seam=pow(1.-abs(sin(vP.x*8.+vP.y*3.+n*3.)),18.);float frost=noise(vP*18.);vec3 col=mix(vec3(.10,.46,.47),vec3(.47,.94,.79),smoothstep(-1.8,1.8,vP.y));col+=seam*vec3(.3,.35,.4)+frost*.09;gl_FragColor=vec4(col,fade*.95);}`,{depthWrite:true});
- const wall=new T.Mesh(new T.BoxGeometry(6.8,3.6,1.2),mat);wall.name='sage-four-segment-barrier';
- // Four distinct sections share one collision and health volume.
- for(let i=0;i<4;i++){const cap=new T.Mesh(new T.IcosahedronGeometry(.6,0),new T.MeshStandardMaterial({color:0x9af5d8,emissive:0x0c4945,roughness:.25}));cap.scale.set(1.3,.22,.75);cap.position.set(-2.55+i*1.7,1.78,0);wall.add(cap);if(i<3){const seam=new T.Mesh(new T.BoxGeometry(.055,3.58,1.21),new T.MeshBasicMaterial({color:0x143d43}));seam.position.x=-1.7+i*1.7;wall.add(seam);}}
- return wall;
+ const mat=shader(`uniform float damage;uniform float fortified;void main(){float n=noise(vP*2.5);float vein=pow(1.-abs(sin(vP.x*8.+vP.y*3.+n*3.)),18.);float cracks=pow(1.-abs(sin(vP.x*17.-vP.y*8.+n*5.)),26.);float frost=noise(vP*18.);vec3 col=mix(vec3(.10,.46,.47),vec3(.47,.94,.79),smoothstep(-1.8,1.8,vP.y));col+=vein*vec3(.3,.35,.4)+frost*.09;col=mix(col,col*.25,cracks*damage*.85);col+=vec3(.05,.17,.14)*fortified;gl_FragColor=vec4(col,fade*.95);}`,{depthWrite:true});
+ mat.uniforms.damage={value:0};mat.uniforms.fortified={value:0};
+ const section=new T.Mesh(new T.BoxGeometry(1.66,3.6,1.2),mat);section.name='sage-barrier-segment';
+ const cap=new T.Mesh(new T.IcosahedronGeometry(.6,0),new T.MeshStandardMaterial({color:0x9af5d8,emissive:0x0c4945,roughness:.25}));cap.scale.set(1.3,.22,.75);cap.position.y=1.78;section.add(cap);return section;
+}
+export function makeBarrierPreview(){
+ const root=new T.Group();root.name='sage-barrier-placement-preview';
+ for(let i=0;i<4;i++){const mesh=new T.Mesh(new T.BoxGeometry(1.66,3.6,1.2),new T.MeshBasicMaterial({color:0x65ffd0,transparent:true,opacity:.17,depthWrite:false}));mesh.position.set((i-1.5)*1.7,1.8,0);const lines=new T.LineSegments(new T.EdgesGeometry(mesh.geometry),new T.LineBasicMaterial({color:0x65ffd0,transparent:true,opacity:.8,depthWrite:false}));mesh.add(lines);root.add(mesh);}
+ return root;
 }
 export function makeSlowField(){
  const material=shader(`void main(){vec2 p=vP.xy;float edge=1.-smoothstep(4.4,5.,length(p));vec2 cell=floor(p*3.);float crystal=hash(vec3(cell,0.));float lines=pow(1.-min(fract(p.x*3.),fract(p.y*3.)),14.);float shimmer=pow(max(0.,sin(crystal*22.+time*2.)),12.);vec3 c=mix(vec3(.04,.33,.36),vec3(.22,.84,.76),crystal);gl_FragColor=vec4(c+lines*.25+shimmer*.18,edge*.76*fade);}`,{side:T.DoubleSide});

@@ -100,10 +100,9 @@ node tests/test_ascent_assets.cjs
 
 - Jett：2 次短煙、1 次上升氣流；E 先準備再按 E 衝刺，方向依 WASD，
   使用小步碰撞檢查；2 次擊殺重新取得衝刺；X 為 5 把飛刀。
-- Sage：C 冰牆、Q 緩速區、E 自我治療 30 HP／10 秒，45 秒冷卻。
-  不再施放閃光、Jett 煙霧或飛刀。復活需連線倒地隊友，目前尚未實作。
-- 重置訓練時補充技能／大絕；這是近似訓練行為，包含立即指定落點、單段冰牆，
-  尚未重現完整投擲、裝備動畫、隊友治療與完整原版角色規則。
+- Sage：C 裝備冰牆，右鍵旋轉、左鍵確認、再按 C 取消；Q 緩速區；E 左鍵補隊友／右鍵自補，45 秒冷卻；X 復活附近倒地隊友。
+- 冰牆四段各自承受傷害與阻擋通行，升起時每段 400 HP，3.3 秒後存活段強化為 800 HP，40 秒後消失。破壞一段會留下可通行缺口，強化不會補回已毀段。
+- 重置訓練／下一回合補充技能與大絕。動畫與部分技能規則仍為本專案的近似實作。
 
 ## ChatGPT Sites
 
@@ -261,3 +260,11 @@ Cloudflare 的 langcheng.uk zone 必須將 valonow DNS 記錄設為代理（橘�
 
 此環境沒有 Cloudflare 帳號管理憑證，不能代為確認或修改 DNS／正式路由。
 本機驗證：`node tests/test_server_discovery.mjs`、`node tests/test_server_discovery_browser.cjs`、Worker dry-run。
+
+## Sage 冰牆放置與連線同步
+
+按 C 裝備，綠色表示可放置、紅色表示地面不平／與玩家或障礙物重疊；右鍵旋轉 90°，左鍵確認。取消、換槍、切換技能或開啟選單不扣次數。預覽檢查地面支撐及地圖三角網格；冰牆四段獨立血量、裂紋、升起與破碎效果，機器人也會避開未破壞的段。
+
+好友房需後端宣告 `segmented-barrier`，舊後端會提示更新，避免兩端各自算出不同冰牆。新版 Worker 分配牆 ID、扣次數、驗證射擊與傷害並保存剩餘牆段；重連／後加入玩家會取得同一個牆體狀態；下一回合清除。地圖障礙與地面支撐檢查在前端，Worker 另驗證距離與玩家重疊，尚無完整伺服器地圖碰撞。
+
+驗證：`node tests/test_barrier_browser.cjs`、`cd multiplayer && node --test tests/barriers.test.mjs`；另以三個獨立 Chromium 分頁驗證既有技能與冰牆同步。

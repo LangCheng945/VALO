@@ -124,3 +124,12 @@ Cloudflare → langcheng.uk → DNS → valonow：保持原 DNS 目標，將代�
 若自動部署顯示 route／zone 權限錯誤，可在 Workers & Pages → valo → 設定 → 網域與路由
 手動新增上述兩個 Route，zone 選 langcheng.uk；請勿將首頁根網域設為整站 Worker Custom Domain。
 `/health` 回傳遊戲服務 JSON 後，網頁會自動切換；404 或 HTML 不會被誤當成已完成連線設定。
+
+## 分段冰牆
+
+`segmented-barrier` 功能使用 `barriers.mjs` 和前後端共用的 `barrier-rules.mjs`。
+`wall` 請求以地面座標 x/y/z、yaw 放置，Worker 驗證 Sage／存活／參戰、10 單位距離、玩家重疊及一次使用限制，分配唯一 ID 並廣播四段血量。
+`wall_hit` 只傳 id／segment；遠程武器須有 400 ms 內尚未使用、落點命中對應旋轉牆段的 shot，傷害依伺服器武器資料；近戰檢查距離與攻擊間隔。
+牆段初始 400 HP，3.3 秒後存活段強化至 800 HP，40 秒到期；`wall_state` 同步損傷／破壞，`wall_remove` 同步移除。
+Durable Object storage 保存牆體、welcome 回播剩餘段，新回合清除；玩家快照中的 barrierUsed 保留重連／復活後的已用次數。
+前端預覽另檢查地圖支撐及障礙三角形；Worker 尚不持有完整地圖網格。更新部署時請包含兩個新增 mjs 模組。
