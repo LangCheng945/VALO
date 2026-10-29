@@ -5,7 +5,7 @@ export const MAPS=Object.freeze({
     ascent:{id:'ascent',name:'Ascent',title:'義境空島',bytes:13058488,
         spawns:{attack:[.5,-.6,2,.65],defend:[-97.45,-19.95,3,-1.7]},
         training:[[-12,-8,2],[-21,-27.5,2],[-30,-44.8,4],[-47,-53,4],[-58,19,1]],
-        tactical:[[-47.1,-53.22,4],[-66,-60,5],[-58.4,19.8,1],[-72,25,1],[-45.8,-12.2,1]],
+        tactical:[[-47.1,-53.22,4],[-66,-60,5],[-58.4,19.8,1],[-72,25,1],[-45.8,-12.2,2]],
         sites:[{name:'A',minX:-79,maxX:-54,minZ:-73,maxZ:-48},{name:'B',minX:-87,maxX:-64,minZ:15,maxZ:39}]},
     haven:{id:'haven',name:'Haven',title:'遺落境地',bytes:11627132,
         spawns:{attack:[-26.43,-17.42,3,1.57],defend:[-127.15,-29.46,3,-1.57]},

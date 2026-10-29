@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import{savedGameDuration,GAME_DURATIONS,SPIKE_RULES}from '../game-rules.mjs';
+assert.equal(savedGameDuration(),300);
+assert.equal(savedGameDuration({duration:60}),300);
+assert.equal(savedGameDuration({duration:0}),0);
+assert.equal(savedGameDuration({durationVersion:2,duration:600}),600);
+assert.equal(savedGameDuration({durationVersion:2,duration:90}),90);
+assert.equal(savedGameDuration({durationVersion:2,duration:-1}),300);
+assert(GAME_DURATIONS.includes(600)&&GAME_DURATIONS.includes(0));
+assert.equal(SPIKE_RULES.checkpointSeconds,SPIKE_RULES.defuseSeconds/2);
+console.log('PASS five-minute default/migration, saved selections, unlimited mode and defuse checkpoint rules');

@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=icons2">
+    <link rel="stylesheet" href="./shop.css?v=rounds2">
 </head>
 <body class="relative select-none">
 
@@ -210,6 +210,7 @@
     </div>
 
     <div id="ability-notice" role="status" aria-live="polite"></div>
+    <div id="revive-hint" class="rope-hint" style="bottom:180px" role="status"></div>
     <div id="rope-hint" class="rope-hint" role="status"></div>
     <!-- Dynamic Crosshair + Hitmarker -->
     <div id="crosshair" class="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
@@ -274,7 +275,7 @@
                         </div>
                         <div class="px-4 flex flex-col items-center min-w-[96px]">
                             <div id="round-phase-label" class="text-[9px] font-bold tracking-[0.2em] text-[#00F5D4] uppercase">SOLO // LOCAL</div>
-                            <div id="round-timer" class="font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight">1:40</div>
+                            <div id="round-timer" class="font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight">5:00</div>
                         </div>
                         <div class="flex flex-col items-center pl-3 border-l border-white/15">
                             <span class="text-[9px] font-bold text-[#00F5D4] tracking-widest">DEFEND</span>
@@ -552,12 +553,12 @@
                         <div class="section-heading"><h2><span>02</span> 調整手感</h2><small>MAKE IT YOURS</small></div>
                         <div class="trainer-settings-grid">
                             <label>滑鼠靈敏度 <output id="sensitivity-value">0.35</output><input id="sensitivity-input" type="range" min="0.1" max="1" step="0.01" value="0.35" oninput="setTrainerSensitivity(this.value)"><small>固定 DPI，找到適合自己的手感。</small></label>
-                            <label>訓練時間<select id="trainer-duration" onchange="setTrainerDuration(this.value)"><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">120 秒</option><option value="0">自由練習 · 不限時</option></select><small>開啟購買頁時暫停計時。</small></label>
+                            <label>遊戲時間<select id="trainer-duration" onchange="setTrainerDuration(this.value)"><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">2 分鐘</option><option value="180">3 分鐘</option><option value="300">5 分鐘 · 預設</option><option value="600">10 分鐘</option><option value="0">自由練習 · 不限時</option></select><small>單人訓練與戰術回合共用；開啟購買頁時暫停。</small></label>
                             <div>準星顏色<div class="crosshair-swatches"><button style="--swatch:#00f5d4" onclick="setCrosshairColor('#00f5d4')" aria-label="青色準星"></button><button style="--swatch:#ffffff" onclick="setCrosshairColor('#ffffff')" aria-label="白色準星"></button><button style="--swatch:#ff4655" onclick="setCrosshairColor('#ff4655')" aria-label="紅色準星"></button><button style="--swatch:#b5ff62" onclick="setCrosshairColor('#b5ff62')" aria-label="綠色準星"></button></div><small>選擇與場景對比清楚的顏色。</small></div>
                         </div>
                     </section>
                     <details class="trainer-network" id="network-panel"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
-        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://你的伺服器.workers.dev" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人自由練習。雙方都按「進入地圖」後即可互打；選單中暫停參戰。好友房停用單機靶與裝拆包計時。</small></div>
+        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://你的伺服器.workers.dev" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房為自由練習。Spike 安拆目前在單人戰術模式。</small></div>
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
@@ -676,12 +677,15 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=summit-paths1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
         import {abilityIcon,makeCloudburst,makeBarrier,makeSlowField,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=sage-icons3';
+        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=rounds1';
+        import {SpikeModel} from './spike-model.js?v=spike1';
+        import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=abyss1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=rounds1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1072,7 +1076,7 @@
             climbingRope: null,
             scoreAlly: 0,
             scoreEnemy: 0,
-            roundTimeLeft: 100,
+            roundTimeLeft: DEFAULT_GAME_DURATION,
             roundEnding: false,
             roundKills: 0,
             lastShotTime: 0,
@@ -1086,7 +1090,10 @@
             eCooldown: 0,
             bladeStormActive: false,
             spikePlanted: false,
-            spikeTimer: 45,
+            spikeTimer: SPIKE_RULES.fuseSeconds,
+            defuseCheckpoint: 0,
+            spikeAction: null,
+            holdingSpike: false,
             plantingProgress: 0,
             beepAccumulator: 0,
             walkBobTime: 0
@@ -1105,13 +1112,13 @@
         }
         const trainingData = readTrainingData();
         state.sensitivity = Number.isFinite(trainingData.sensitivity) ? Math.max(.1,Math.min(1,trainingData.sensitivity)) : .35;
-        state.trainingDuration = [0,60,90,120].includes(trainingData.duration) ? trainingData.duration : 60;
+        state.trainingDuration = savedGameDuration(trainingData);
         state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
         state.trainingSessions = Number.isInteger(trainingData.sessions) ? Math.max(0,trainingData.sessions) : 0;
         state.trainingBest = Number.isFinite(trainingData.best) ? Math.max(0,trainingData.best) : null;
         let lastTrainingRender = '';
         function saveTrainingData() {
-            try {localStorage.setItem('valo-range-v1',JSON.stringify({sensitivity:state.sensitivity,duration:state.trainingDuration,sessions:state.trainingSessions,best:state.trainingBest}));}
+            try {localStorage.setItem('valo-range-v1',JSON.stringify({sensitivity:state.sensitivity,duration:state.trainingDuration,durationVersion:2,sessions:state.trainingSessions,best:state.trainingBest}));}
             catch { /* Practice continues when browser storage is unavailable. */ }
         }
         function isTraining() { return state.gameMode !== 'tactical' && !currentRoomId; }
@@ -1158,12 +1165,12 @@
         };
         window.setTrainerDuration=function(value) {
             if(currentRoomId){networkFeedback('請先離開好友房間，再設定單人訓練');return;}
-            const parsed=Number(value);if(![0,60,90,120].includes(parsed))return;
+            const parsed=Number(value);if(!GAME_DURATIONS.includes(parsed))return;
             state.trainingDuration=parsed;saveTrainingData();resetRound();
         };
         window.resetTraining=function(){if(currentRoomId)return;resetRound();lockPointerAndPlay();};
         window.startFreeRoam=function(){
-            if(currentRoomId){openNetworkMenu();networkFeedback('你已在好友自由練習房間');return;}
+            if(currentRoomId){openNetworkMenu();networkFeedback('你已在好友房間');return;}
             setGameMode('stationary');state.freeRoam=true;state.trainingDuration=0;
             document.getElementById('trainer-duration').value='0';
             toggleBotsInMatch(false);document.getElementById('chk-enable-bots').checked=false;
@@ -1398,25 +1405,12 @@
 
         const smiteTexture = createSmiteTexture();
 
-        // 3D Animated Spike Model
-        const spikeGroup = new THREE.Group();
-        const spikeBase = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.45, 0.55, 0.3, 6),
-            new THREE.MeshStandardMaterial({ color: 0x1a242f, metalness: 0.7, roughness: 0.3 })
-        );
-        const spikePillar = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.28, 0.35, 1.3, 6),
-            new THREE.MeshStandardMaterial({ color: 0x2b3947, metalness: 0.6 })
-        );
-        spikePillar.position.y = 0.65;
-        const spikeCrystal = new THREE.Mesh(
-            new THREE.OctahedronGeometry(0.48, 0),
-            new THREE.MeshBasicMaterial({ color: 0x00F5D4 })
-        );
-        spikeCrystal.position.y = 1.35;
-        spikeGroup.add(spikeBase, spikePillar, spikeCrystal);
-        spikeGroup.visible = false;
-        scene.add(spikeGroup);
+        const plantedSpike=new SpikeModel();
+        const spikeGroup=plantedSpike.root;spikeGroup.scale.setScalar(.7);spikeGroup.visible=false;scene.add(spikeGroup);
+        const carriedSpike=new SpikeModel();
+        const spikeCarryRoot=new THREE.Group();spikeCarryRoot.name='carried-spike';
+        spikeCarryRoot.position.set(.22,-.36,-.72);spikeCarryRoot.rotation.set(.12,-.45,.05);
+        carriedSpike.root.scale.setScalar(.28);spikeCarryRoot.add(carriedSpike.root);spikeCarryRoot.visible=false;camera.add(spikeCarryRoot);
 
         /********************************************************************
          * 6. DETAILED FIRST-PERSON HANDS + MULTI-PART 3D WEAPON & KUNAI
@@ -1645,6 +1639,78 @@
         /********************************************************************
          * 7. ARTICULATED HUMANOID AGENT BOTS WITH VALORANT RED OUTLINE
          ********************************************************************/
+        const corpses=new Map(),resurrections=new Map();
+        function markCorpse(uid,position,team,actor,ownBody=false){
+            if(corpses.has(uid))return corpses.get(uid);const marker=soulMarker(team===state.team);marker.position.copy(position);scene.add(marker);
+            const c={uid,position:position.clone(),team,actor,marker,ownBody};corpses.set(uid,c);return c;
+        }
+        function removeCorpse(uid){
+            const c=corpses.get(uid);if(c){disposeCombatEffect(c.marker);if(c.ownBody)disposeActor(c.actor.group);corpses.delete(uid);}
+            const r=resurrections.get(uid);if(r){disposeCombatEffect(r.effect);resurrections.delete(uid);}
+        }
+        function clearCorpses(){for(const uid of [...corpses.keys()])removeCorpse(uid);for(const r of resurrections.values())disposeCombatEffect(r.effect);resurrections.clear();}
+        function ensureOwnCorpse(){
+            const uid=currentUser?.uid||'self';if(corpses.has(uid)||state.hp>0)return;
+            const floor=realMap.getGroundHeight(yawObject.position),actor=createHumanoidBot(-1,{x:yawObject.position.x,y:floor,z:yawObject.position.z,patrol:0},state.team);
+            actor.alive=false;actor.hp=0;actor.group.rotation.x=-Math.PI/2;actor.group.position.y=floor+.18;actor.hpBg.visible=actor.hpFill.visible=false;
+            markCorpse(uid,new THREE.Vector3(yawObject.position.x,floor,yawObject.position.z),state.team,actor,true);
+        }
+        function updateRemoteCorpse(rp,p){
+            if(p.hp<=0){rp.group.visible=true;rp.group.rotation.x=-Math.PI/2;rp.group.scale.y=1;rp.group.position.set(p.x,p.y-2.2+.18,p.z);rp.hpBg.visible=rp.hpFill.visible=rp.nameSprite.visible=false;markCorpse(p.uid,new THREE.Vector3(p.x,p.y-2.2,p.z),p.team,rp);}
+            else{rp.group.rotation.x=0;rp.hpBg.visible=rp.hpFill.visible=rp.nameSprite.visible=true;removeCorpse(p.uid);}
+        }
+        function reviveTarget(){
+            if(state.hp<=0||state.agent==='jett'||state.inBuyMenu||!state.isLocked||state.xCharges<=0||state.roundEnding)return null;
+            scene.updateMatrixWorld(true);const origin=camera.getWorldPosition(new THREE.Vector3()),direction=camera.getWorldDirection(new THREE.Vector3());let chosen=null,best=Infinity;
+            for(const c of corpses.values()){
+                if(c.team!==state.team||c.uid===(currentUser?.uid||'self')||resurrections.has(c.uid))continue;
+                const target=c.position.clone().add(new THREE.Vector3(0,.35,0)),delta=target.clone().sub(origin),along=delta.dot(direction);
+                if(delta.length()>8||along<0||delta.clone().addScaledVector(direction,-along).length()>.85)continue;
+                const ray=new THREE.Raycaster(origin,delta.clone().normalize(),0,Math.max(0,delta.length()-.45));
+                if(ray.intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length)continue;
+                if(delta.length()<best){best=delta.length();chosen=c;}
+            }
+            return chosen;
+        }
+        function startResurrection(uid,actor,until=Date.now()+2500,network=false){
+            const c=corpses.get(uid);if(!c||resurrections.has(uid))return;const effect=resurrectionEffect();effect.position.copy(c.position);scene.add(effect);resurrections.set(uid,{actor,effect,until,network});
+        }
+        function updateCorpses(dt){
+            for(const c of corpses.values())c.marker.children[2].rotation.y+=dt;
+            for(const [uid,r]of [...resurrections]){
+                r.effect.children.forEach((mesh,i)=>{if(i)mesh.position.y=(mesh.position.y+dt*.9)%2.5;});
+                if(Date.now()<r.until||r.network)continue;
+                if(!state.roundEnding&&bots.includes(r.actor)){
+                    const bot=r.actor;bot.alive=true;bot.hp=100;bot.dyingTimer=0;bot.deathGround=undefined;bot.group.rotation.x=0;bot.group.position.copy(corpses.get(uid).position);bot.hpBg.visible=bot.hpFill.visible=true;bot.hpFill.scale.x=1;bot.roamTime=0;
+                }
+                removeCorpse(uid);updateAliveHUD();
+            }
+            const c=reviveTarget();document.getElementById('revive-hint').textContent=c?'[X] 復活 '+(c.actor?.name||c.actor?.data?.name||'隊友'):'';
+        }
+        function checkSoloElimination(){
+            if(currentRoomId||state.gameMode!=='tactical'||state.roundEnding)return;
+            const allies=state.hp>0||bots.some(b=>b.alive&&b.team===state.team)||resurrections.size>0;
+            const enemies=bots.some(b=>b.alive&&b.team!==state.team);
+            if(!enemies){if(state.spikePlanted&&state.team==='defend')return;endRound(true,state.roundKills>=5?'ACE':'敵方已全數倒地');}
+            else if(!allies){if(state.spikePlanted&&state.team==='attack')return;endRound(false,'我方已全數倒地');}
+        }
+        function receiveRoomRound(round){
+            if(!round){roomRound=null;return;}
+            const previous=roomRound;roomRound={...round,clockOffset:round.serverNow-Date.now()};
+            if(!previous||previous.number!==round.number){clearCorpses();state.roundEnding=false;}
+            if(round.phase==='ending'&&previous?.phase!=='ending'){state.roundEnding=true;resetMovementInput();showCenterBanner('回合結束',round.reason+' · 下一回合重生',3100);}
+            if(round.phase!=='ending')state.roundEnding=false;
+            state.scoreAlly=round.scoreAttack;state.scoreEnemy=round.scoreDefend;
+            document.getElementById('score-ally').textContent=round.scoreAttack;document.getElementById('score-enemy').textContent=round.scoreDefend;renderRoomRound();
+        }
+        function renderRoomRound(){
+            if(!roomRound){document.getElementById('round-timer').textContent='∞';return;}
+            const now=Date.now()+roomRound.clockOffset,deadline=roomRound.phase==='ending'?roomRound.nextAt:roomRound.endsAt;
+            const remaining=Math.max(0,Math.ceil((deadline-now)/1000));
+            document.getElementById('round-timer').textContent=roomRound.phase==='waiting'?'準備':deadline?Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0'):'∞';
+            document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' // ROUND '+roomRound.number;
+        }
+
         const bots = [];
         const BOT_SPAWNS = [
             { x: 34, z: -18, patrol: 2 },
@@ -1654,13 +1720,14 @@
             { x: 18, z: -17, patrol: 1.5 }
         ];
 
-        function createHumanoidBot(idx, sp) {
+        function createHumanoidBot(idx, sp,team=state.team==='attack'?'defend':'attack') {
             const group = new THREE.Group();
             group.position.set(sp.x, sp.y||0, sp.z);
 
             const armorMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.5 });
-            const outlineRedMat = new THREE.MeshBasicMaterial({ color: 0xFF4655, side: THREE.BackSide });
-            const chestTrimMat = new THREE.MeshStandardMaterial({ color: 0xd93848, roughness: 0.4 });
+            const ally=team===state.team;
+            const outlineRedMat = new THREE.MeshBasicMaterial({ color: ally?0x00F5D4:0xFF4655, side: THREE.BackSide });
+            const chestTrimMat = new THREE.MeshStandardMaterial({ color: ally?0x278b81:0xd93848, roughness: 0.4 });
             const headHelmetMat = new THREE.MeshStandardMaterial({ color: 0x2b3648, roughness: 0.3 });
             const visorMat = new THREE.MeshBasicMaterial({ color: 0xFFBE0B }); // High-visibility glowing visor
 
@@ -1735,8 +1802,8 @@
             scene.add(group);
 
             return {
-                index: idx,
-                name: `AI 特務-0${idx + 1}`,
+                index: idx,team,
+                name: ally?`友軍 AI-${idx-4}`:`敵方 AI-${idx+1}`,
                 group,
                 bodyMesh,
                 headMesh,
@@ -1761,7 +1828,7 @@
         }
 
         function spawnBots() {
-            bots.forEach(b => scene.remove(b.group));
+            bots.forEach(b => disposeActor(b.group));clearCorpses();
             bots.length = 0;
             if (!state.enableBots) {
                 updateAliveHUD();
@@ -1773,14 +1840,18 @@
             points.forEach((sp, idx) => {
                 bots.push(createHumanoidBot(idx, sp));
             });
+            if(state.gameMode==='tactical'&&!currentRoomId&&realMap.ready){
+                const [x,z,floor]=realMap.definition.spawns[state.team];
+                for(const [dx,dz]of [[1.5,1.5],[-1.5,1.5],[3,2],[-3,2]]){try{const p=realMap.safePoint(x+dx,z+dz,floor);const ally=createHumanoidBot(bots.length,{x:p.x,y:p.y-2.2,z:p.z,patrol:12},state.team);bots.push(ally);}catch{}}
+            }
             updateAliveHUD();
         }
 
         /********************************************************************
-         * 7B. FIREBASE MULTIPLAYER ENGINE (REALTIME ROOMS, PLAYERS & EVENTS)
+         * 7B. WEBSOCKET MULTIPLAYER ROOMS, PLAYERS & EVENTS
          ********************************************************************/
         let currentUser=null,currentRoomId=null,roomSocket=null,lastNetSyncTime=0;
-        let previousSolo=null,roomPingTimer=null;
+        let previousSolo=null,roomPingTimer=null;let roomMode='practice',roomRound=null;
         const remotePlayers=new Map();
         let serverAddress='';
         try{serverAddress=localStorage.getItem('valo-multiplayer-server')||window.__multiplayer_server||'';}catch{}
@@ -1797,23 +1868,25 @@
             if(changed)for(const rp of remotePlayers.values()){const color=rp.data.team===team?0x00f5d4:0xff4655;rp.torsoOutline.material.color.setHex(color);rp.headOutline.material.color.setHex(color);rp.hpFill.material.color.setHex(color);rp.group.remove(rp.nameSprite);rp.nameSprite=createNameplateSprite(rp.data.name,rp.data.team,rp.data.agent);rp.group.add(rp.nameSprite);}
         }
         function applyServerSpawn(player){
-            if(!player)return;applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
-            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();
+            if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
+            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
             equipWeaponSlot(state.primaryWeaponKey);updateHealthHUD();pushMyNetworkState(true);
         }
-        function receivePlayerSnapshot(players){
+        function receivePlayerSnapshot(players,round){
+            if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'&&p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(p.hp<=0)ensureOwnCorpse();continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
-                else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=p.hp>0;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
+                else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
                     if(changed){const color=p.team===state.team?0x00f5d4:0xff4655;rp.torsoOutline.material.color.setHex(color);rp.headOutline.material.color.setHex(color);rp.hpFill.material.color.setHex(color);rp.group.remove(rp.nameSprite);rp.nameSprite=createNameplateSprite(p.name,p.team,p.agent);rp.group.add(rp.nameSprite);}}
+                const actor=remotePlayers.get(p.uid);updateRemoteCorpse(actor,p);
             }
-            for(const [uid,rp]of remotePlayers)if(!seen.has(uid)){scene.remove(rp.group);remotePlayers.delete(uid);}
+            for(const [uid,rp]of remotePlayers)if(!seen.has(uid)){removeCorpse(uid);disposeActor(rp.group);remotePlayers.delete(uid);}
             updateHealthHUD();updateLobbyPlayersUI();updateAliveHUD();updateScoreboardUI();
-            const attack=players.filter(p=>p.team==='attack').reduce((sum,p)=>sum+p.kills,0),defend=players.filter(p=>p.team==='defend').reduce((sum,p)=>sum+p.kills,0);
-            document.getElementById('score-ally').textContent=attack;document.getElementById('score-enemy').textContent=defend;
+            if(!roomRound){const attack=players.filter(p=>p.team==='attack').reduce((sum,p)=>sum+p.kills,0),defend=players.filter(p=>p.team==='defend').reduce((sum,p)=>sum+p.kills,0);
+            document.getElementById('score-ally').textContent=attack;document.getElementById('score-enemy').textContent=defend;}
         }
 
         function createNameplateSprite(nameText, team, agentKey) {
@@ -1922,7 +1995,7 @@
 
             group.add(bodyMesh, leftLeg, rightLeg, leftArm, rightArm, gunMesh, headMesh, hpBg, hpFill, nameSprite);
             group.position.set(pData.x ?? 0, (pData.y ?? 2.2) - 2.2, pData.z ?? 20);
-            group.visible=(pData.hp??100)>0;
+            group.visible=true;
             scene.add(group);
 
             return {
@@ -1947,16 +2020,17 @@
         }
 
         function clearAllRemotePlayers() {
-            remotePlayers.forEach(rp => scene.remove(rp.group));
+            clearCorpses();roomRound=null;roomMode='practice';
+            remotePlayers.forEach(rp => disposeActor(rp.group));
             remotePlayers.clear();
         }
 
         window.toggleMyTeam=function(){
             if(currentRoomId){if(state.isLocked){networkFeedback('請先按 B 開啟選單再切換陣營');return;}pushMyNetworkState(true);roomSocket?.send({type:'team',team:state.team==='attack'?'defend':'attack'});return;}
-            applyRoomTeam(state.team==='attack'?'defend':'attack');placePlayerAtSpawn(state.team);
+            applyRoomTeam(state.team==='attack'?'defend':'attack');resetRound();
         };
         window.toggleBotsInMatch=function(enabled){if(currentRoomId){networkFeedback('好友房間停用單機靶');return;}state.enableBots=enabled;spawnBots();};
-        window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap);await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
+        window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap,{duration:state.trainingDuration});await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
         window.joinQuickPublicLobby=()=>{if(selectedMap!=='ascent'){networkFeedback('公開房固定使用 Ascent；'+mapDefinition.name+' 請建立好友房間');return;}return connectToMultiplayerRoom('PUBLIC');};
         window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
         window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
@@ -1981,26 +2055,26 @@
                 welcome(message){
                     const roomMap=message.map||'ascent';
                     if(roomMap!==selectedMap){const code=roomSocket.desiredRoom;roomSocket.leave();if(!MAPS[roomMap]){networkFeedback('房間地圖版本不相容，請重新整理');return;}const url=new URL(location.href);url.searchParams.set('map',roomMap);url.searchParams.set('room',code);location.replace(url.href);return;}
-                    mapSelect.disabled=true;
+                    roomMode=message.mode||'practice';receiveRoomRound(message.round);mapSelect.disabled=true;
 
-                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;
+                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
                     if(!previousSolo)previousSolo={enableBots:state.enableBots,gameMode:state.gameMode};
                     state.enableBots=false;state.gameMode='tactical';for(const mode of ['stationary','strafing','tactical'])document.getElementById('mode-'+mode).disabled=true;spawnBots();document.body.classList.remove('is-training');
                     document.getElementById('chk-enable-bots').checked=false;document.getElementById('chk-enable-bots').disabled=true;
                     document.getElementById('input-room-code').value=currentRoomId;document.getElementById('lobby-uid-display').textContent=message.uid;document.getElementById('sb-my-uid').textContent=message.uid;
-                    document.getElementById('lobby-room-status').textContent='房間 #'+currentRoomId+' · 自由練習';
+                    document.getElementById('lobby-room-status').textContent='房間 #'+currentRoomId+(roomMode==='rounds'?' · 回合對戰':' · 自由練習');
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
                     applyServerSpawn(message.player);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
-                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,
-                damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',message.attacker+' · 5 秒後重生',4000);}},
+                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:abilityNotice,
+                damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();showCenterBanner('遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
         async function connectToMultiplayerRoom(code){
-            try{const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1});}catch(error){networkFeedback(error.message);}
+            try{const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
@@ -2010,6 +2084,12 @@
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
+            if(ev.type==='revive'){
+                if(ev.phase==='complete'){removeCorpse(ev.targetUid);return;}
+                const actor=remotePlayers.get(ev.targetUid);if(!corpses.has(ev.targetUid)&&actor)markCorpse(ev.targetUid,new THREE.Vector3(ev.x,ev.y,ev.z),actor.data.team,actor);
+                startResurrection(ev.targetUid,actor,ev.reviveAt,true);
+                if(ev.casterUid===currentUser.uid){state.xCharges=0;beginAbilityCast('orb',.8);updateAbilityHUD();}return;
+            }
 
             if (ev.type === 'chat') {
                 addChatMessage(ev.senderName || '特務', ev.text, ev.senderTeam);
@@ -2223,6 +2303,7 @@
 
         function fireWeapon() {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
+            if(state.holdingSpike||state.spikeAction)return;
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
@@ -2336,7 +2417,7 @@
                     }
                 } else if (isBot) {
                     const bot = bots[hit.object.userData.botIndex];
-                    if (bot && bot.alive) {
+                    if (bot && bot.alive && bot.team!==state.team) {
                         const dmg = isHead ? wpn.headDmg : wpn.bodyDmg;
                         bot.hp -= dmg;
                         showHitmarker(isHead);
@@ -2391,6 +2472,7 @@
         }
 
         function reloadWeapon() {
+            if(state.holdingSpike||state.spikeAction)return;
             const wpn = WEAPONS[state.weaponKey];
             if (wpn.isMelee || state.weaponKey === 'bladestorm') return;
             setScope(false);
@@ -2433,9 +2515,10 @@
             hm.timer = setTimeout(() => hm.classList.add('hidden'), 140);
         }
 
-        function handleBotKilled(bot, isHead) {
+        function handleBotKilled(bot, isHead,creditPlayer=true,killerName=state.playerName) {
             bot.alive = false;
-            bot.dyingTimer = 0.65; // Smooth fall-back death animation
+            bot.dyingTimer = .65;bot.hp=0;bot.hpBg.visible=bot.hpFill.visible=false;markCorpse('bot:'+bot.index,bot.group.position,bot.team,bot);
+            if(creditPlayer){
             state.roundKills++;
             if(state.agent==='jett'&&state.roundKills%2===0)state.eCharges=1;
             state.kills++;
@@ -2451,12 +2534,14 @@
 
             sfx.playHeadshotKill(state.roundKills);
             showKillEmblem(state.roundKills, isHead);
-            addKillfeedItem(state.playerName, bot.name, WEAPONS[state.weaponKey].name, isHead);
+            }
+            addKillfeedItem(killerName, bot.name,creditPlayer?WEAPONS[state.weaponKey].name:'VANDAL', isHead);
             updateAliveHUD();
             updateShopUI();
             pushMyNetworkState(true);
-            if (currentRoomId || state.gameMode !== 'tactical') {
+            if (isTraining()) {
                 setTimeout(() => {
+                    if(!bots.includes(bot)||state.roundEnding)return;removeCorpse('bot:'+bot.index);bot.hpBg.visible=bot.hpFill.visible=true;
                     bot.hp = 100;
                     bot.hpFill.scale.x = 1;
                     bot.group.rotation.x = 0;
@@ -2467,10 +2552,7 @@
                     updateAliveHUD();
                 }, 1500);
             } else {
-                const remaining = bots.filter(b => b.alive).length;
-                if (remaining === 0) {
-                    endRound(true, state.roundKills >= 5 ? '★ ACE 五連殺完美團滅 ★' : '殲滅全數守備軍！');
-                }
+                checkSoloElimination();
             }
         }
 
@@ -2593,7 +2675,7 @@
         function spawnSlowField(p){const mesh=makeSlowField();mesh.position.copy(p);mesh.position.y+=.06;scene.add(mesh);slowFields.push({mesh,life:7,age:0});}
         function slowMultiplier(point) {return slowFields.some(f=>Math.hypot(point.x-f.mesh.position.x,point.z-f.mesh.position.z)<5 && Math.abs(point.y-f.mesh.position.y)<3)?.5:1;}
         let abilityIconAgent=null,abilityChargeSignature=null;
-        function beginAbilityCast(kind,duration){setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
+        function beginAbilityCast(kind,duration){state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent!=='jett';
             const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃'};
@@ -2665,7 +2747,7 @@
         }
         function triggerUltimateX() {
             if(state.inBuyMenu||state.hp<=0||state.xCharges<=0)return;
-            if(state.agent!=='jett'){abilityNotice('復活需要可連線的倒地隊友');return;}
+            if(state.agent!=='jett'){const target=reviveTarget();if(!target){abilityNotice('瞄準附近倒地隊友，再按 X');return;}if(currentRoomId){roomSocket.send({type:'revive',targetUid:target.uid});}else{state.xCharges--;beginAbilityCast('orb',.8);startResurrection(target.uid,target.actor);}updateAbilityHUD();return;}
             state.xCharges--;equipWeaponSlot('bladestorm');sfx.playAbilitySound('updraft');updateAbilityHUD();
         }
 
@@ -2673,6 +2755,7 @@
          * 11. WEAPON SWITCHING, SHOP & UI HELPERS
          ********************************************************************/
         function equipWeaponSlot(slotKey) {
+            state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;
             clearTimeout(state.reloadTimeout);
             state.reloadTimeout = null;
             state.consecutiveShots = 0;
@@ -2897,8 +2980,8 @@
                         ? 'bg-[#FF4655]/25 border-[#FF4655] text-white'
                         : 'bg-black/60 border-white/10 text-white/25 line-through'
                 }`;
-                box.textContent = `B${i + 1}`;
-                strip.appendChild(box);
+                box.textContent = b.team===state.team?`A${i-4}`:`B${i+1}`;
+                if(b.team===state.team){box.style.borderColor='#00f5d4';allyStrip.appendChild(box);}else strip.appendChild(box);
             });
         }
 
@@ -2913,6 +2996,7 @@
         }
         function isPlayerOnSiteA() { return getPlantSite() !== null; }
 
+        let roundResetTimer=null;
         function endRound(allyWon, reasonText, broadcast = true) {
             if (state.roundEnding) return;
             state.roundEnding = true;
@@ -2926,15 +3010,17 @@
             }
             document.getElementById('score-ally').textContent = state.scoreAlly;
             document.getElementById('score-enemy').textContent = state.scoreEnemy;
-            const subTitle = allyWon ? 'ROUND WON // 攻擊方勝利' : 'ROUND WON // 守備方勝利';
+            const winningTeam=allyWon?state.team:state.team==='attack'?'defend':'attack';
+            const subTitle='ROUND WON // '+(winningTeam==='attack'?'攻擊方勝利':'守備方勝利');
             showCenterBanner(subTitle, reasonText, 3100);
 
 
 
-            setTimeout(() => resetRound(false), 3300);
+            clearTimeout(roundResetTimer);roundResetTimer=setTimeout(()=>{if(!currentRoomId)resetRound(false);},3300);
         }
 
         function resetRound(syncRoomDoc = true) {
+            clearTimeout(roundResetTimer);
             for(const prop of ['pendingWeapon','pendingShield']){const receipt=state[prop];if(receipt){state.creds+=receipt.cost;if(prop==='pendingWeapon')state.primaryWeaponKey=receipt.baseKey;state[prop]=null;}}
             state.roundEnding = false;
             state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
@@ -2946,11 +3032,13 @@
             setScope(false);
             state.hp = 100;
             state.shield = 50;
-            state.roundTimeLeft = 100;
+            state.roundTimeLeft = state.trainingDuration;
+            document.getElementById('round-timer').textContent=state.trainingDuration?Math.floor(state.trainingDuration/60)+':'+String(state.trainingDuration%60).padStart(2,'0'):'∞';
+            document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight';
             state.roundKills = 0;
             resetAbilities();state.healRemaining=0;
             state.spikePlanted = false;
-            state.spikeTimer = 45;
+            state.spikeTimer = SPIKE_RULES.fuseSeconds;state.defuseCheckpoint=0;state.spikeAction=null;state.holdingSpike=false;state.beepAccumulator=0;
             state.plantingProgress = 0;
             spikeGroup.visible = false;
             document.getElementById('spike-hud-badge').classList.add('hidden');
@@ -2991,7 +3079,7 @@
         }
 
         function resetMovementInput() {
-            abilityCast.cancel();
+            abilityCast.cancel();cancelSpikeAction();
             state.climbingRope=null;
             Object.keys(moveState).forEach(key => { moveState[key] = false; });
             isMouseDown = false;
@@ -3055,7 +3143,7 @@
             safeExitPointerLock();
         });
         document.getElementById('btn-reset-round').addEventListener('click', () => {
-            if(currentRoomId){abilityNotice('連線角色由伺服器重生；離開房間後可重置單人訓練');return;}
+            if(currentRoomId){abilityNotice('回合由伺服器管理；倒地後等待復活或下一回合');return;}
             resetRound();
             showCenterBanner('ROUND RESET', '戰場與特務靶位已重置', 1400);
         });
@@ -3195,6 +3283,7 @@
             if (code === 'Digit1') equipWeaponSlot(state.primaryWeaponKey);
             if (code === 'Digit2') equipWeaponSlot('classic');
             if (code === 'Digit3') equipWeaponSlot('melee');
+            if(code==='Digit4'){state.holdingSpike=true;setScope(false);abilityCast.cancel();}
             if (code === 'Digit4' || code === 'KeyF') moveState.holdPlant = true;
             if(code==='Space')moveState.glide=true;
             if (code === 'Space' && canJump && state.isLocked) {
@@ -3218,8 +3307,7 @@
             if (code === 'ControlLeft' || code === 'ControlRight') moveState.crouch = false;
             if (code === 'Digit4' || code === 'KeyF') {
                 moveState.holdPlant = false;
-                state.plantingProgress = 0;
-                document.getElementById('spike-progress-box').classList.add('hidden');
+                cancelSpikeAction();
             }
         });
 
@@ -3420,7 +3508,7 @@
 
         function updateBotsAndVFX(dt) {
             const playerPos = yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=!abilityCast.active;
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active;
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
@@ -3457,7 +3545,7 @@
                     if (b.dyingTimer > 0) {
                         b.dyingTimer -= dt;
                         b.group.rotation.x = Math.max(-Math.PI / 2, b.group.rotation.x - dt * 3.2);
-                        if (b.dyingTimer <= 0) b.group.visible = false;
+                        b.group.position.y=(b.deathGround??(b.deathGround=b.group.position.y))+.18;
                     }
                     return;
                 }
@@ -3471,52 +3559,27 @@
                     return;
                 }
 
-                if (state.gameMode !== 'stationary') {
-                    const candidate=b.group.position.clone();candidate.x+=b.dir*b.speed*dt*slowMultiplier(b.group.position);
-                    const eye=candidate.clone();eye.y+=2.2;
-                    if(realMap.ready && realMap.collides(eye))b.dir*=-1;
-                    else {b.group.position.x=candidate.x;if(realMap.ready)b.group.position.y=realMap.getGroundHeight(eye);}
-                    b.walkCycle += dt * b.speed * 2.6;
-                    b.leftLeg.rotation.x = Math.sin(b.walkCycle) * 0.55;
-                    b.rightLeg.rotation.x = -Math.sin(b.walkCycle) * 0.55;
-                    if (Math.abs(b.group.position.x - b.baseX) > b.patrolRange) {
-                        b.dir *= -1;
-                    }
-                } else {
-                    b.leftLeg.rotation.x = 0;
-                    b.rightLeg.rotation.x = 0;
-                }
+                if (state.gameMode !== 'stationary'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
+                    if(moveRoamingBot(b,dt,realMap)){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;}
+                }else{b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;}
 
                 b.footsteps ||= new FootstepTracker();
                 const footfall=b.footsteps.update(b.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:true,quiet:false});
                 if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);sfx.playFootstep(false,.35*(1-distance/36)**2,delta.normalize().dot(right));}}
-                b.group.lookAt(playerPos.x, b.group.position.y, playerPos.z);
-
-                if (state.gameMode === 'tactical' && state.isLocked && state.hp > 0) {
-                    const botEye = b.group.position.clone().add(new THREE.Vector3(0, 2.0, 0));
-                    const toPlayer = playerPos.clone().sub(botEye);
-                    const dist = toPlayer.length();
-
-                    if (dist < 42) {
-                        raycaster.set(botEye, toPlayer.normalize());
-                        raycaster.far = dist;
-                        const wallHits = raycaster.intersectObjects(shootableMeshes, false);
-                        const sightLine=new THREE.Line3(botEye,playerPos);const smokeOccludes=smokeSpheres.some(s=>sightLine.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<(3.8*s.mesh.scale.x)**2);
-                        const hasLOS = wallHits.length === 0&&!smokeOccludes;
-
-                        if (hasLOS) {
-                            b.reactionTimer += dt;
-                            if (b.reactionTimer > 0.88) {
-                                b.reactionTimer = 0;
-                                createBulletTracer(botEye, playerPos.clone().add(new THREE.Vector3(0, -0.4, 0)), 0xFF4655);
-                                applyDamageToPlayer(14, b.name, 'VANDAL', false);
-                            }
-                        } else {
-                            b.reactionTimer = Math.max(0, b.reactionTimer - dt);
-                        }
-                    }
+                if (state.gameMode==='tactical'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
+                    const targets=bots.filter(t=>t.alive&&t.team!==b.team).map(t=>({pos:t.group.position.clone().add(new THREE.Vector3(0,2,0)),bot:t}));
+                    if(state.hp>0&&b.team!==state.team)targets.push({pos:playerPos.clone(),bot:null});
+                    targets.sort((a,c)=>a.pos.distanceToSquared(b.group.position)-c.pos.distanceToSquared(b.group.position));
+                    const botEye=b.group.position.clone().add(new THREE.Vector3(0,2,0));let visible=null;
+                    for(const t of targets){const dir=t.pos.clone().sub(botEye),dist=dir.length();if(dist>42)continue;raycaster.set(botEye,dir.normalize());raycaster.far=dist-.4;
+                        const line=new THREE.Line3(botEye,t.pos),blockedBySmoke=smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<(3.8*s.mesh.scale.x)**2);
+                        if(!blockedBySmoke&&!raycaster.intersectObjects(shootableMeshes,false).length){visible=t;break;}}
+                    if(visible){b.group.lookAt(visible.pos.x,b.group.position.y,visible.pos.z);b.reactionTimer+=dt;if(b.reactionTimer>.9+Math.random()*.2){b.reactionTimer=0;createBulletTracer(botEye,visible.pos,b.team===state.team?0x00f5d4:0xff4655);
+                        if(visible.bot){visible.bot.hp=Math.max(0,visible.bot.hp-18);visible.bot.hpFill.scale.x=Math.max(.01,visible.bot.hp/100);if(visible.bot.hp<=0)handleBotKilled(visible.bot,false,false,b.name);}else applyDamageToPlayer(14,b.name,'VANDAL',false);}}
+                    else{b.reactionTimer=0;if(b.roamDirection)b.group.rotation.y=Math.atan2(b.roamDirection.x,b.roamDirection.z);}
                 }
             });
+            updateCorpses(dt);
 
             // Smoothly Interpolate Remote Multiplayer Avatars
             remotePlayers.forEach(rp => {
@@ -3569,29 +3632,7 @@
                 updateAliveHUD();
                 pushMyNetworkState(true);
 
-                if (currentRoomId) {
-                    broadcastRoomEvent({
-                        type: 'kill',
-                        killerName: attackerName,
-                        victimName: state.playerName,
-                        weaponName,
-                        isHead
-                    });
-                    showCenterBanner('YOU DIED // 遭到擊斃', `擊殺者：${attackerName} — 5 秒後於基地重生`, 4500);
-                    setTimeout(() => {
-                        state.hp = 100;
-                        state.shield = 50;
-                        if (state.team === 'attack') {
-                            placePlayerAtSpawn('attack');
-                        } else {
-                            placePlayerAtSpawn('defend');
-                        }
-                        updateHealthHUD();
-                        pushMyNetworkState(true);
-                    }, 5000);
-                } else {
-                    endRound(false, `你已被 ${attackerName} 擊斃 ELIMINATED`);
-                }
+                ensureOwnCorpse();resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();
             }
         }
 
@@ -3615,74 +3656,62 @@
                 }
             });
 
-            if(currentRoomId){document.getElementById('round-timer').textContent='∞';document.getElementById('site-prompt').classList.add('hidden');return;}
+            if(currentRoomId){renderRoomRound();document.getElementById('site-prompt').classList.add('hidden');return;}
             if (!state.isLocked || state.roundEnding || isTraining()) return;
 
-            const onSite = isPlayerOnSiteA();
-            const canPlant = onSite && !state.spikePlanted && state.team === 'attack';
-            const canDefuse = onSite && state.spikePlanted && state.team === 'defend';
+            const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
+            const canPlant = state.hp>0 && getPlantSite()!==null && !state.spikePlanted && state.team==='attack' && canJump && !moving;
+            const canDefuse = state.hp>0 && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
             document.getElementById('site-prompt').classList.toggle('hidden', !(canPlant || canDefuse));
+            document.getElementById('site-prompt').textContent=canDefuse?'按住 [4] 或 [F] 拆除 Spike · 7 秒 · 半程保存':'按住 [4] 或 [F] 安裝 Spike · 4 秒';
 
             if ((canPlant || canDefuse) && moveState.holdPlant) {
+                const action=canDefuse?'defuse':'plant';
+                if(state.spikeAction!==action){state.spikeAction=action;state.plantingProgress=canDefuse?state.defuseCheckpoint:0;}
                 document.getElementById('spike-progress-box').classList.remove('hidden');
-                document.getElementById('spike-action-label').textContent = canPlant
-                    ? '正在部署輻能核心 SPIKE (按住 4 或 F)...'
-                    : '正在拆除輻能核心 DEFUSING (按住 4 或 F)...';
-                state.plantingProgress += dt / 3.0;
-                document.getElementById('spike-progress-bar').style.width = `${Math.min(100, state.plantingProgress * 100)}%`;
-
-                if (state.plantingProgress >= 1) {
-                    state.plantingProgress = 0;
-                    document.getElementById('spike-progress-box').classList.add('hidden');
-
-                    if (canPlant) {
-                        state.spikePlanted = true;
-                        document.getElementById('spike-hud-badge').classList.remove('hidden');
-                        spikeGroup.position.set(yawObject.position.x, yawObject.position.y-2.2, yawObject.position.z);
-                        spikeGroup.visible = true;
-                        sfx.playSpikeBeep(true);
-                        showCenterBanner('SPIKE PLANTED // 輻能核心已部署', `守住 ${state.spikeSite || 'A'} 據點直到輻能引爆！`, 2400);
-
-
-                    } else if (canDefuse) {
-                        state.spikePlanted = false;
-                        spikeGroup.visible = false;
-                        document.getElementById('spike-hud-badge').classList.add('hidden');
-                        endRound(false, `${state.playerName} 成功拆除輻能核心 DEFUSED！`, true);
+                document.getElementById('spike-action-label').textContent=canPlant?'安裝 SPIKE · 4 秒':'拆除 SPIKE · 7 秒'+(state.defuseCheckpoint>=.5?' · 半程已保存':'');
+                state.plantingProgress=Math.min(1,state.plantingProgress+dt/(canPlant?SPIKE_RULES.plantSeconds:SPIKE_RULES.defuseSeconds));
+                if(canDefuse && state.plantingProgress>=.5)state.defuseCheckpoint=.5;
+                document.getElementById('spike-progress-bar').style.width=`${state.plantingProgress*100}%`;
+                if(state.plantingProgress>=1){
+                    cancelSpikeAction();
+                    if(canPlant){
+                        state.spikePlanted=true;state.holdingSpike=false;state.spikeSite=getPlantSite();state.spikeTimer=SPIKE_RULES.fuseSeconds;state.beepAccumulator=0;
+                        spikeGroup.position.set(yawObject.position.x,getGroundHeight(yawObject.position),yawObject.position.z);spikeGroup.rotation.y=yawObject.rotation.y;spikeGroup.visible=true;
+                        document.getElementById('spike-hud-badge').classList.remove('hidden');sfx.playSpikeBeep(true);
+                        abilityNotice('Spike 已安裝 · '+state.spikeSite+' 據點');
+                    }else{
+                        state.spikePlanted=false;spikeGroup.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
+                        endRound(state.team==='defend',`${state.playerName} 成功拆除 SPIKE`);return;
                     }
                 }
+            }else cancelSpikeAction();
+
+            if(state.spikePlanted){
+                state.spikeTimer=Math.max(0,state.spikeTimer-dt);state.beepAccumulator+=dt;
+                const beepInterval=state.spikeTimer<10?.22:state.spikeTimer<20?.48:.95;
+                if(state.beepAccumulator>=beepInterval){state.beepAccumulator=0;sfx.playSpikeBeep(state.spikeTimer<10);}
+                document.getElementById('round-timer').textContent='0:'+String(Math.ceil(state.spikeTimer)).padStart(2,'0');
+                document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-[#FF4655] tracking-wider leading-tight animate-pulse';
+                if(state.spikeTimer<=0)endRound(state.team==='attack','SPIKE DETONATED // 輻能核心引爆');
+            }else{
+                if(state.trainingDuration>0)state.roundTimeLeft=Math.max(0,state.roundTimeLeft-dt);
+                const sec=Math.ceil(state.roundTimeLeft);
+                document.getElementById('round-timer').textContent=state.trainingDuration>0?`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`:'∞';
+                document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight';
+                if(state.trainingDuration>0&&state.roundTimeLeft<=0)endRound(state.team==='defend','回合時間耗盡 TIME EXPIRED');
             }
+        }
 
-            if (state.spikePlanted) {
-                state.spikeTimer -= dt;
-                spikeCrystal.rotation.y += dt * 4;
-                spikeCrystal.position.y = 1.35 + Math.sin(performance.now() * 0.008) * 0.1;
-
-                state.beepAccumulator += dt;
-                const beepInterval = state.spikeTimer < 10 ? 0.22 : (state.spikeTimer < 20 ? 0.48 : 0.95);
-                if (state.beepAccumulator >= beepInterval) {
-                    state.beepAccumulator = 0;
-                    sfx.playSpikeBeep(state.spikeTimer < 10);
-                }
-
-                const sec = Math.max(0, Math.ceil(state.spikeTimer));
-                document.getElementById('round-timer').textContent = `0:${sec < 10 ? '0' + sec : sec}`;
-                document.getElementById('round-timer').className = 'font-val text-2xl sm:text-3xl font-black text-[#FF4655] tracking-wider leading-tight animate-pulse';
-
-                if (state.spikeTimer <= 0) {
-                    endRound(true, '輻能核心成功引爆 DETONATED！');
-                }
-            } else {
-                state.roundTimeLeft = Math.max(0, state.roundTimeLeft - dt);
-                const mins = Math.floor(state.roundTimeLeft / 60);
-                const secs = Math.floor(state.roundTimeLeft % 60);
-                document.getElementById('round-timer').textContent = `${mins}:${secs < 10 ? '0' + secs : secs}`;
-                document.getElementById('round-timer').className = 'font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight';
-
-                if (state.roundTimeLeft <= 0) {
-                    endRound(false, '回合時間耗盡 TIME EXPIRED');
-                }
-            }
+        function cancelSpikeAction(){
+            state.spikeAction=null;state.plantingProgress=state.spikePlanted?state.defuseCheckpoint:0;
+            document.getElementById('spike-progress-box').classList.add('hidden');
+        }
+        function updateSpikeVisuals(dt){
+            plantedSpike.update(dt,{deployed:state.spikePlanted,progress:state.spikeAction==='defuse'?state.plantingProgress:state.defuseCheckpoint,remaining:state.spikeTimer});
+            carriedSpike.update(dt,{progress:state.spikeAction==='plant'?state.plantingProgress:0});
+            spikeCarryRoot.visible=state.isLocked&&!state.inBuyMenu&&!state.roundEnding&&state.hp>0&&!state.spikePlanted&&(state.holdingSpike||state.spikeAction==='plant');
+            if(spikeCarryRoot.visible)gunGroup.visible=false;
         }
 
         function animate() {
@@ -3788,6 +3817,7 @@
             updateViewmodelAnimations(dt, isMoving);
             updateBotsAndVFX(dt);
             updateTimersAndSpike(dt);
+            updateSpikeVisuals(dt);
             tickTraining(realDt);
             pushMyNetworkState(false);
             drawRadar();

@@ -53,3 +53,5 @@
 @media(max-width:650px){#ability-hud{gap:6px;padding-inline:6px}#ability-hud>div{width:40px}}
 
 .shop-abilities svg[data-agent="sage"]{color:#35f4c4}.shop-abilities svg[data-agent="jett"]{color:#7aa7ae}
+
+#spike-progress-box{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);width:280px;padding:10px 15px;background:#0b1a1ccc;z-index:24}#spike-action-label{font-size:10px;letter-spacing:1px}

@@ -6,7 +6,7 @@ export function normalizeServer(value){
 }
 export class RoomClient {
  constructor(server,callbacks={}){this.server=normalizeServer(server);this.callbacks=callbacks;this.socket=null;this.connected=false;this.desiredRoom=null;this.generation=0;this.attempts=0;this.retryTimer=null;}
- async createRoom(map='ascent'){if(!['ascent','haven','summit','abyss'].includes(map))throw Error('Unknown map');const r=await fetch(this.server+'/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({map}),signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error(r.status===429?'建立房間太頻繁，請稍後再試':'無法建立房間，請確認伺服器網址和允許的網站網域');const data=await r.json();if(map!=='ascent'&&data.map!==map)throw Error('此伺服器尚未支援 '+map.toUpperCase()+'，請在 Cloudflare 部署最新版本；目前仍可使用 Ascent');return data.code;}
+ async createRoom(map='ascent',{mode='rounds',duration=300}={}){if(!['ascent','haven','summit','abyss'].includes(map))throw Error('Unknown map');const r=await fetch(this.server+'/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({map,mode,duration}),signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error(r.status===429?'建立房間太頻繁，請稍後再試':'無法建立房間，請確認伺服器網址和允許的網站網域');const data=await r.json();if(mode==='rounds'&&data.mode!=='rounds')throw Error('連線後端尚未支援回合與復活，請更新 Cloudflare 部署');if(map!=='ascent'&&data.map!==map)throw Error('此伺服器尚未支援 '+map.toUpperCase()+'，請在 Cloudflare 部署最新版本；目前仍可使用 Ascent');return data.code;}
  async join(code,profile){
   if(!/^(?:[A-Z2-9]{6}|PUBLIC)$/.test(code))throw Error('房號須為 6 碼英數字');
   this.leave();this.desiredRoom=code;this.profile=profile;this.attempts=0;return this.open();
@@ -24,7 +24,9 @@ export class RoomClient {
     if(message.type==='welcome'){
      if(message.protocol!==1){ws.close(1002,'Protocol mismatch');return;}
      welcomed=true;this.hadConnection=true;clearTimeout(timeout);this.connected=true;this.attempts=0;this.uid=message.uid;this.resumeToken=message.resumeToken;this.callbacks.welcome?.(message);this.callbacks.status?.('connected');resolve(message);
-    }else if(message.type==='players')this.callbacks.players?.(message.players);
+    }else if(message.type==='players')this.callbacks.players?.(message.players,message.round);
+    else if(message.type==='round')this.callbacks.round?.(message.round);
+    else if(message.type==='ability_error')this.callbacks.abilityError?.(message.reason);
     else if(message.type==='event')this.callbacks.event?.(message.event);
     else if(message.type==='damage')this.callbacks.damage?.(message);
     else if(message.type==='spawn')this.callbacks.spawn?.(message.player);
