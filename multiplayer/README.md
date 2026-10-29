@@ -96,3 +96,20 @@ Sage（沿用內部 agent=phoenix）可傳 `{ "type":"revive", "targetUid":"..."
 `rounds.mjs` 必須與 worker.mjs／protocol.mjs 一起部署；/health.features 應包含 rounds、resurrection。
 
 `npm test` 涵蓋實際 Worker 的倒地保留、拒絕非法復活、復活一次限制、團滅與下回合重生。
+
+## 治療、導引煙霧與噴漆
+
+部署包含 `skill-events.mjs`；/health 及 welcome.features 新增 ally-heal、guided-smoke、sprays。
+新版前端會檢查支援能力，缺少時提示更新後端。
+
+heal.targetUid 可指定受傷且仍存活的同隊玩家（省略為自補）。驗證 Sage、存活、參戰、
+40 世界單位內、45 秒冷卻；ability_result 確認後前端才消耗冷卻。血量回復在後端 alarm 執行。
+隊友 20 HP/秒、上限 100，自補 3 HP/秒、上限 30，受傷後暫停 2 秒。
+
+smoke_launch 消耗一次煙霧，回報唯一 id、起點和單位方向；smoke_guide 以最多 10 Hz 驗證／廣播
+飛行位置及單位方向，smoke_land 依同一 id 完成煙霧。超距離、無效／重複 id 不會重複生成。
+投擲或導引不代表伺服器持有完整地圖物理，仍依有限範圍驗證客戶端碰撞回報。
+
+spray 驗證存活、參戰、距離、單位法線、圖案及 3 秒冷卻，由伺服器指派 ownerUid／id。
+最多保存 20 張最近且未過期的紀錄，welcome 回播，30 秒到期，新回合清除。
+噴漆表面射線檢查由前端執行；不能將此描述為完整伺服器防作弊。

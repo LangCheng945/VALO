@@ -58,9 +58,10 @@ export class RoundRules {
     r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
-     Object.assign(p,{hp:100,shield:50,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,cUsed:0,qUsed:0},spawn(p.team,room.meta.map));room.save(ws,p);
+     Object.assign(p,{hp:100,shield:50,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));room.save(ws,p);
      room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
     }
+    room.sprays=[];await room.ctx.storage.delete('sprays');
     await this.publish();
    }
   }

@@ -62,8 +62,9 @@ export class AbilityCastView {
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
- get active(){return this.remaining>0;}
- play(kind,duration=.85){this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
- cancel(){this.remaining=0;this.root.visible=false;}
- update(dt,enabled){if(!enabled)this.cancel();if(!this.active)return;this.elapsed+=dt;this.remaining=Math.max(0,this.remaining-dt);const t=this.elapsed/this.duration;this.root.position.y=-.32*(Math.max(0,1-t*6)+Math.max(0,(t-.7)/.3));this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);this.wind.rotation.z+=dt*1.8;for(const w of this.wind.children)w.material.opacity=.3*Math.sin(Math.PI*t);this.root.visible=this.active;}
+ get active(){return this.held||this.remaining>0;}
+ play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
+ holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}
+ cancel(){this.held=false;this.remaining=0;this.root.visible=false;}
+ update(dt,enabled){if(!enabled)this.cancel();if(!this.active)return;this.elapsed+=dt;if(this.held){this.root.position.y=0;this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);return;}this.remaining=Math.max(0,this.remaining-dt);const t=this.elapsed/this.duration;this.root.position.y=-.32*(Math.max(0,1-t*6)+Math.max(0,(t-.7)/.3));this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);this.wind.rotation.z+=dt*1.8;for(const w of this.wind.children)w.material.opacity=.3*Math.sin(Math.PI*t);this.root.visible=this.active;}
 }

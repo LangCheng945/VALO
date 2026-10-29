@@ -4,8 +4,8 @@ function peer(code,agent){const ws=new WebSocket(base.replace('http','ws')+'/roo
 const pose=(agent,x)=>({type:'state',x,y:4.8667,z:0,yaw:0,pitch:0,active:true,agent,weapon:'vandal',shield:50});
 test('rounds retain corpses, validate Sage resurrection and respawn only at the next round',{timeout:25000},async()=>{
  const r=await fetch(base+'/rooms',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({map:'ascent',mode:'rounds',duration:300})});assert.equal(r.status,201);const{code,mode}=await r.json();assert.equal(mode,'rounds');
- const a=peer(code,'phoenix'),b=peer(code,'jett'),c=peer(code,'jett');
- try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome'),cw=await c.wait(m=>m.type==='welcome');assert.equal(aw.player.team,cw.player.team);assert.notEqual(bw.player.team,cw.player.team);
+ let a,b,c;
+ try{a=peer(code,'phoenix');const aw=await a.wait(m=>m.type==='welcome');b=peer(code,'jett');const bw=await b.wait(m=>m.type==='welcome');c=peer(code,'jett');const cw=await c.wait(m=>m.type==='welcome');assert.equal(aw.player.team,cw.player.team);assert.notEqual(bw.player.team,cw.player.team);
  a.send(pose('phoenix',0));b.send(pose('jett',2));c.send(pose('jett',3));await a.wait(m=>m.type==='players'&&m.round?.phase==='playing');
  const kill=async(target,x)=>{b.send({type:'shot',sx:2,sy:4.8667,sz:0,ex:x,ey:4,ez:0});b.send({type:'hit',targetUid:target,isHead:true});await b.wait(m=>m.type==='event'&&m.event.type==='kill'&&m.event.victimUid===target);};
  await kill(cw.uid,3);await delay(5500);assert(!c.messages.some(m=>m.type==='spawn'));const dead=a.messages.filter(m=>m.type==='players').at(-1);assert.equal(dead.players.find(p=>p.uid===cw.uid).hp,0);assert.equal(dead.round.phase,'playing');
@@ -15,5 +15,5 @@ test('rounds retain corpses, validate Sage resurrection and respawn only at the 
  c.send(pose('jett',3));await delay(100);await kill(cw.uid,3);a.send({type:'revive',targetUid:cw.uid});await delay(100);assert.equal(a.messages.filter(m=>m.type==='event'&&m.event.type==='revive'&&m.event.phase==='start').length,1);
  await delay(150);await kill(aw.uid,0);const ended=await b.wait(m=>m.type==='round'&&m.round.phase==='ending');assert.equal(ended.round.winner,'defend');
  const next=await b.wait(m=>m.type==='round'&&m.round.number===2);assert.equal(next.round.scoreDefend,1);assert.equal(c.messages.filter(m=>m.type==='spawn').at(-1).player.hp,100);assert.equal(a.messages.filter(m=>m.type==='spawn').at(-1).player.ultUsed,false);
- }finally{a.ws.close();b.ws.close();c.ws.close();}
+ }finally{a?.ws.close();b?.ws.close();c?.ws.close();}
 });

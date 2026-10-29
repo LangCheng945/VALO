@@ -23,9 +23,10 @@ export class RoomClient {
     let message;try{message=JSON.parse(e.data);}catch{return;}
     if(message.type==='welcome'){
      if(message.protocol!==1){ws.close(1002,'Protocol mismatch');return;}
-     welcomed=true;this.hadConnection=true;clearTimeout(timeout);this.connected=true;this.attempts=0;this.uid=message.uid;this.resumeToken=message.resumeToken;this.callbacks.welcome?.(message);this.callbacks.status?.('connected');resolve(message);
+     welcomed=true;this.hadConnection=true;clearTimeout(timeout);this.connected=true;this.attempts=0;this.serverFeatures=Array.isArray(message.features)?message.features:[];this.uid=message.uid;this.resumeToken=message.resumeToken;this.callbacks.welcome?.(message);this.callbacks.status?.('connected');resolve(message);
     }else if(message.type==='players')this.callbacks.players?.(message.players,message.round);
     else if(message.type==='round')this.callbacks.round?.(message.round);
+    else if(message.type==='ability_result')this.callbacks.abilityResult?.(message);
     else if(message.type==='ability_error')this.callbacks.abilityError?.(message.reason);
     else if(message.type==='event')this.callbacks.event?.(message.event);
     else if(message.type==='damage')this.callbacks.damage?.(message);
