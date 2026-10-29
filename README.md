@@ -1,6 +1,6 @@
 # VALO
 
-Three.js Ascent／Haven／Summit 訓練場。前端可使用 GitHub Pages／ChatGPT Sites；多人房間使用獨立 WebSocket 後端。
+Three.js Ascent／Haven／Summit／Abyss 訓練場。前端可使用 GitHub Pages／ChatGPT Sites；多人房間使用獨立 WebSocket 後端。
 
 ## 本機啟動
 
@@ -138,7 +138,7 @@ Jett 按住空白鍵可降低下降速度。
 
 ## Haven（遺落境地）
 
-新增地圖選單，可在 Ascent、Haven 與 Summit 之間切換；也可直接開啟 `?map=haven`。
+新增地圖選單，可在 Ascent、Haven、Summit 與 Abyss 之間切換；也可直接開啟 `?map=haven`。
 Haven 使用完整 `triad` 場景 GLB、內嵌貼圖、原始碰撞與小地圖，約 11.6 MB 模型。
 已設定雙方出生點、A／B／C 據點標示與訓練靶位置。
 切換地圖會重新載入頁面，釋放上一張地圖資源並重置本次訓練。
@@ -166,5 +166,15 @@ Cloudflare 後端亦需更新；`/health` 的 maps 應包含 `summit`。
 驗證：`node tests/test_summit_assets.cjs`、`node tests/test_summit_browser.cjs`、
 `node tests/test_summit_multiplayer.cjs`。瀏覽器測試保留完整場景與碰撞，以單幀渲染檢查畫面。
 
-Sunset 尚未加入：目前固定來源明確標示未提供，其他查到的工具需要本機遊戲 PAK 檔，
-尚無可直接接入的完整場景。沒有用其他地圖冒充 Sunset。
+Sunset 依使用者要求改為 Abyss，未加入 Sunset。
+
+## Abyss（深窟幽境）
+
+以 `?map=abyss` 或地圖選單進入。完整 `infinity` 場景約 12.4 MB，含內嵌貼圖、
+三角碰撞、小地圖、A／B 據點、雙方出生點、訓練靶與四條攀爬繩索。
+好友房會固定使用 Abyss，自動切圖、同步位置、互打、重生與重連沿用房間地圖。
+掉出場景後會回到出生點；目前是好友訓練模式。
+素材來源與 SHA256 位於 `assets/abyss/provenance.json`，來源遊戲素材仍屬 Riot Games。
+
+驗證：`node tests/test_abyss_assets.cjs`、`node tests/test_abyss_browser.cjs`、
+`node tests/test_abyss_multiplayer.cjs`。

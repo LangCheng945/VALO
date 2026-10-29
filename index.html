@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=summit1">
+    <link rel="stylesheet" href="./shop.css?v=abyss1">
 </head>
 <body class="relative select-none">
 
@@ -508,7 +508,7 @@
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
-                    <div class="map-picker"><label for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option></select><small>切換會重置訓練；加入好友房間會自動切到房主選擇的地圖。</small></div>
+                    <div class="map-picker"><label for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option></select><small>切換會重置訓練；加入好友房間會自動切到房主選擇的地圖。</small></div>
                     <section class="range-hero">
                         <div class="range-hero-copy">
                             <p class="range-eyebrow" data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</p>
@@ -678,11 +678,11 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=summit1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=abyss1';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=summit1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=abyss1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1358,7 +1358,7 @@
         window.changeTrainingMap=function(id){if(!Object.hasOwn(MAPS,id)||id===selectedMap)return;if(currentRoomId){mapSelect.value=selectedMap;networkFeedback('請先離開房間，再切換地圖');return;}const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('room');location.assign(url.href);};
         document.title=`VALO ${mapDefinition.name.toUpperCase()} | ${mapDefinition.title}地圖訓練`;
         document.getElementById('map-hero-title').innerHTML=mapDefinition.title+'。<br><em>從轉角開始。</em>';
-        document.getElementById('map-description').textContent=selectedMap==='summit'?'探索山城雙據點、中路與高低差；繩索附近按 F 使用，W／S 攀爬，F／空白鍵離開。':selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
+        document.getElementById('map-description').textContent=selectedMap==='abyss'?'探索深窟雙據點、天橋與高低差；小心邊緣落差，繩索附近按 F 使用。':selectedMap==='summit'?'探索山城雙據點、中路與高低差；繩索附近按 F 使用，W／S 攀爬，F／空白鍵離開。':selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
         for(const el of document.querySelectorAll('[data-map-label]'))el.textContent=mapDefinition.name.toUpperCase()+' / '+el.dataset.mapLabel;
         document.getElementById('btn-start-combat').innerHTML='進入 '+mapDefinition.name+' <span>↗</span>';
         if(selectedMap!=='ascent'){document.getElementById('map-cover').alt=mapDefinition.name+' 場景預覽';document.getElementById('map-cover').src='./assets/'+selectedMap+'/cover.webp';document.getElementById('map-cover').hidden=false;document.getElementById('map-blueprint-svg').hidden=true;}

@@ -1,0 +1,35 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourcePath": "site/aim-maps",
+  "sourceMapId": "infinity",
+  "displayName": "Abyss",
+  "nameEvidence": "site/local-api/maps labels id infinity as Abyss.",
+  "upstreamCredit": "ishoutu aim trainer; VALORANT assets belong to Riot Games. MIT code license excludes game assets.",
+  "files": {
+    "abyss.glb": {
+      "bytes": 12382948,
+      "sha256": "e2fad50eb7031aafe01031f5931bb74b12cc9056efe4da9fed72f86f9bc63c18"
+    },
+    "collision.json": {
+      "bytes": 697250,
+      "sha256": "6793421bbf6c24a60b9153add259fe1271f6cedd43b069ce9e9f1127594e4542"
+    },
+    "minimap.json": {
+      "bytes": 1151,
+      "sha256": "b475bef706d5158bf89301ed9c08a368d19c983ea87ef30be4358d611c835719"
+    },
+    "minimap.png": {
+      "bytes": 29070,
+      "sha256": "466a3d18f78c251b416533959471bdef80b75e9dd3f8a89b1601e6c1ed4d299f"
+    },
+    "cover.webp": {
+      "bytes": 55778,
+      "sha256": "aa3d867f294f724b8ad11aa1f41337f4270f90fadb0a809f40afa5fc86bbd0ad"
+    },
+    "ropes.json": {
+      "bytes": 2501,
+      "sha256": "44d45d0d9ad9a345a757ae000695282db21df28a8d14f0cb4b0c604a0ed9ede8"
+    }
+  }
+}

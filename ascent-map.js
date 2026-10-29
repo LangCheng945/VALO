@@ -16,7 +16,13 @@ export const MAPS=Object.freeze({
         spawns:{attack:[59,-7.5,2,0],defend:[61.75,-120.75,4,Math.PI]},
         training:[[61.75,-56.75,2],[86.25,-31.75,2],[86.25,-55,1],[32.25,-51.25,2],[18.5,-65,1]],
         tactical:[[116,-76.75,1],[13.75,-85.5,1],[99.25,-76.75,1],[36.75,-90.75,1],[58.25,-75,1]],
-        sites:[{name:'A',minX:104,maxX:128,minZ:-88,maxZ:-67},{name:'B',minX:3,maxX:28,minZ:-98,maxZ:-75}]}
+        sites:[{name:'A',minX:104,maxX:128,minZ:-88,maxZ:-67},{name:'B',minX:3,maxX:28,minZ:-98,maxZ:-75}]},
+    abyss:{id:'abyss',name:'Abyss',title:'深窟幽境',bytes:12382948,ropes:true,ropeGuides:{BP_RopeAscender2_3:{approach:[-.8,0],endLift:.4},BP_RopeAscender4:{approach:[0,-.8],endLift:.4},BP_RopeAscender6:{approach:[0,.8],endLift:.4},BP_RopeAscender5_0:{approach:[0,.8],yLift:.4,endLift:.06}},
+        spawns:{attack:[49.5,-9.5,8,Math.PI/2],defend:[-52.75,-9.5,10,-Math.PI/2]},
+        training:[[34,-32.5,8],[16.5,-38,8],[10.75,17,9],[40.25,36.5,4],[15.25,44.5,4]],
+        tactical:[[-2,-43,8],[-24.5,-28,10],[-11.75,44.25,6],[-25,39.25,10],[-6,3.25,8]],
+        sites:[{name:'A',minX:-16,maxX:9,minZ:-58,maxZ:-33},{name:'B',minX:-24,maxX:0,minZ:34,maxZ:55}]}
+
 
 });
 export const MAP_SCALE=4/3; // Preserve the existing game's 2.2-unit eye height.
@@ -114,7 +120,7 @@ export class AscentMapRuntime {
         this.collisionMesh.name=this.id+'-collision';this.collisionMesh.raycast=globalThis.MeshBVHLib.acceleratedRaycast;
         this.collisionMesh.updateMatrixWorld(true);
         const batches=batchVisuals(meshes);this.root.add(batches.group);this.batches=batches.items;
-        this.ropes=(ropeData?.ropes||[]).map(source=>{const raw=source.points.map(p=>new T.Vector3(...p).multiplyScalar(MAP_SCALE));const guide=this.definition.ropeGuide;const points=guide?raw.map(p=>p.clone().add(new T.Vector3(guide.approach[0],0,guide.approach[1]))):raw;if(guide){points.at(-1).y+=.06;points.push(raw.at(-1).clone().add(new T.Vector3(guide.exit[0],.06,guide.exit[1])));}const cumulative=[0];for(let i=1;i<points.length;i++)cumulative.push(cumulative[i-1]+points[i].distanceTo(points[i-1]));return {name:source.name,points,cumulative,length:cumulative.at(-1),runSpeed:(source.tuning?.runSpeed||675)/100*MAP_SCALE,walkSpeed:(source.tuning?.walkSpeed||345)/100*MAP_SCALE};});
+        this.ropes=(ropeData?.ropes||[]).map(source=>{const raw=source.points.map(p=>new T.Vector3(...p).multiplyScalar(MAP_SCALE));const guide=this.definition.ropeGuides?.[source.name]||this.definition.ropeGuide;const points=guide?raw.map(p=>p.clone().add(new T.Vector3(guide.approach[0],guide.yLift||0,guide.approach[1]))):raw;if(guide){points.at(-1).y+=guide.endLift??.06;if(guide.exit)points.push(raw.at(-1).clone().add(new T.Vector3(guide.exit[0],guide.endLift??.06,guide.exit[1])));}const cumulative=[0];for(let i=1;i<points.length;i++)cumulative.push(cumulative[i-1]+points[i].distanceTo(points[i-1]));return {name:source.name,points,cumulative,length:cumulative.at(-1),runSpeed:(source.tuning?.runSpeed||675)/100*MAP_SCALE,walkSpeed:(source.tuning?.walkSpeed||345)/100*MAP_SCALE};});
         this.metadata=minimap;this.minimapImage.src=new URL('minimap.png',BASE).href;
         await this.minimapImage.decode();
         this.info={sourceMeshes:meshes.length,batches:this.batches.length,collisionTriangles:positions.length/9,triangles:meshes.reduce((n,m)=>n+(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3,0)};

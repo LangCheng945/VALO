@@ -51,3 +51,8 @@ test('Summit rooms publish their map and use Summit spawn positions',async()=>{
  const code=await create('summit'),a=peer(code,'Summit甲'),b=peer(code,'Summit乙');
  try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');assert.equal(aw.map,'summit');assert.equal(bw.map,'summit');const attack=[aw.player,bw.player].find(p=>p.team==='attack'),defend=[aw.player,bw.player].find(p=>p.team==='defend');assert(Math.abs(attack.x-78.6667)<.001);assert(Math.abs(attack.y-4.8667)<.001);assert(Math.abs(defend.z+161)<.001);}finally{a.ws.close();b.ws.close();}
 });
+
+test('Abyss rooms preserve map and use different elevation spawns',async()=>{
+ const code=await create('abyss'),a=peer(code,'深窟甲'),b=peer(code,'深窟乙');
+ try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');assert.equal(aw.map,'abyss');assert.equal(bw.map,'abyss');const attack=[aw.player,bw.player].find(p=>p.team==='attack'),defend=[aw.player,bw.player].find(p=>p.team==='defend');assert.equal(attack.x,66);assert.equal(defend.x,-70.3333);assert(attack.y>12&&defend.y>15);}finally{a.ws.close();b.ws.close();}
+});

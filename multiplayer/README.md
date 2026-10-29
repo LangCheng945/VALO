@@ -75,7 +75,7 @@ Worker 測試實際連到本機 workerd 的 WebSocket，檢查兩人同步、房
 
 ## 房間地圖
 
-POST /rooms 接受 JSON `{ "map": "ascent" }` 、`{ "map": "haven" }` 或 `{ "map": "summit" }`，未指定時使用 Ascent。
+POST /rooms 接受 JSON `{ "map": "ascent" }` 、`{ "map": "haven" }` 、`{ "map": "summit" }` 或 `{ "map": "abyss" }`，未指定時使用 Ascent。
 welcome 回傳房間 map；地圖是房間固定屬性，重連與重生沿用該地圖出生點。
-Haven 與 Summit 要求 join 具有 mapVersion:1，避免舊客戶端載入 Ascent 造成位置錯位。
+Haven、Summit 與 Abyss 要求 join 具有 mapVersion:1，避免舊客戶端載入 Ascent 造成位置錯位。
 公開 PUBLIC 房維持 Ascent。/health 的 maps 列出目前支援地圖。
