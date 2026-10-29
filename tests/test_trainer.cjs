@@ -9,7 +9,7 @@ assert.equal(summary.accuracy,0);assert.equal(summary.headshots,0);
 summary=context.getTrainingSummary({shots:8,hits:3,headshots:2,kills:1});
 assert.equal(summary.accuracy,38);assert.equal(summary.headshots,67);assert.equal(summary.kills,1);
 const groundSource=source.slice(source.indexOf('        function getGroundHeight('),source.indexOf('        function checkPlayerCollision('));
-const groundContext=vm.createContext({mapColliders:[
+const groundContext=vm.createContext({realMap:{ready:false},mapColliders:[
     {min:{x:-2,y:0,z:-2},max:{x:2,y:.4,z:2}},
     {min:{x:-2,y:0,z:-2},max:{x:2,y:3.2,z:2}}
 ]});vm.runInContext(groundSource,groundContext);

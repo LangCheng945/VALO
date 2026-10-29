@@ -76,17 +76,27 @@ node tests/test_controls.cjs
 
 武器設定檢查：`node tests/test_weapons.cjs`。
 
-## Ascent 風格重建版與訓練主頁
+## 完整 Ascent 模型
 
-這一版使用程式自建場景，包含 A／B 點、A Main／B Main、中路、Tree／Market 通道、A 點高台樓梯，以及鐘塔、圓頂、瓦屋頂與陽台。它不是原作等比例地圖，不適合作為正式對戰的距離、報位或投擲物落點依據。未包含或轉載 SpikeAtlas 的地圖模型、貼圖或程式碼。
+地圖已改為載入 GLB 場景與貼圖，取代先前程式產生的簡化庭院。模型約 13 MB，含約 233 萬個三角形；瀏覽器需解碼 KTX2 貼圖並建立碰撞索引，因此首次載入會顯示進度。載入完成前，進場按鈕停用；失敗時會提供重試。
 
-- **自由跑圖**：不計時、不生成敵人，可探索路線。
-- **預瞄定位／移動追蹤**：60、90、120 秒或不限時訓練；即時顯示擊殺、命中率和爆頭率。統計來自實際射擊與命中，不含近戰或技能飛刀。
-- 購買頁暫停訓練計時；時間到後顯示本輪結果。
-- 靈敏度、訓練時間、完成次數與最佳擊殺只保存在使用者瀏覽器的 localStorage。
-- 戰術模式保留 AI 反擊，A、B 區域都可裝包。樓梯和高台具有碰撞與高度支援。
-- 裝飾細節依材質合併為 instanced mesh，降低繪製次數。
+來源為 [open-aim](https://github.com/unkwsr/open-aim) 的 Ascent 資產（其上游來源為 ishoutu 訓練器）。固定來源版本、檔案大小與 SHA-256 記於 [assets/ascent/provenance.json](assets/ascent/provenance.json)。地圖與貼圖屬 Riot Games；open-aim 的 MIT 授權不涵蓋地圖資產。本專案不聲稱擁有或獲得 Riot 官方授權。
 
-本輪參考 [SpikeAtlas 訓練器](https://spikeatlas.com/zh-tw/trainer/) 的訓練流程與 Ascent 建築語彙；該站的完整模型未提供公開再散布授權，因此沒有加入此專案。
+- 場景保留原模型的建築、路線、貼圖與小地圖；以統一比例轉換配合現有玩家高度。
+- 靜態物件依幾何、材質與空間分區合併為 InstancedMesh，使用世界邊界作視錐剔除。
+- 牆壁、地面與階梯採三角形 BVH 和膠囊體檢查；不再以大方塊代替整間建築。
+- 出生位置與訓練目標會檢查地面及身體空間，避免生在牆內。
+- 自由跑圖與現有 ODIN、Smite、雷槌、蹲下和開鏡操作保留。
+- 靈敏度、訓練時間、完成次數與最佳擊殺保存在本機瀏覽器。
 
-訓練統計與階梯支援檢查：`node tests/test_trainer.cjs`。
+場景使用靜態模型。門、可破壞物、技能、穿牆傷害及裝包邊界並非完整原作模擬；本版也沒有驗證在所有電腦上的幀率。軟體渲染環境只用於功能檢查，不作硬體效能承諾。
+
+```sh
+python3 -B -m unittest discover -s tests
+node tests/test_controls.cjs
+node tests/test_weapons.cjs
+node tests/test_trainer.cjs
+node tests/test_ascent_assets.cjs
+```
+
+最後一項會驗證實際 GLB 標頭、地圖種類、來源雜湊，以及 BVH 地面、牆壁、階梯與蹲下空間檢查。

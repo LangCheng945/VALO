@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VALO ASCENT | 義境空島風格訓練場</title>
+    <title>VALO ASCENT | 義境空島完整地圖訓練</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="./vendor/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Oswald:wght@600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -143,6 +143,7 @@
         .trainer-footer{display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-top:1px solid #ffffff12;background:#101923;gap:15px;z-index:2}.trainer-footer>div{font-size:9px;color:#8a9bad}.trainer-footer kbd{display:inline-block;padding:3px 5px;border:1px solid #3c4b5d;background:#1e2c3d;font:9px monospace;color:#d0dae4}.trainer-footer>div>span{margin:0 8px}.trainer-footer small{margin-left:24px;color:#526a81;letter-spacing:1px}.trainer-start{background:#ff4655;color:white;border:0;padding:17px 31px;font-size:13px;font-weight:800;letter-spacing:2px;min-width:211px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));cursor:pointer;transition:.15s}.trainer-start:hover{background:#ff6470}.trainer-start span{margin-left:36px;font-size:18px}
         .trainer-network{border-top:1px solid #ffffff12;margin-top:25px;padding-top:15px;color:#7a8da2;font-size:10px}.trainer-network>summary{cursor:pointer;list-style:none}.trainer-network>summary>span{float:right}.trainer-network>div{margin-top:15px;background:#101a26;border-color:#344859!important}.trainer-result{display:grid;grid-template-columns:1fr auto;gap:8px;padding:17px 20px;margin-top:20px;background:#83c8b50a;border:1px solid #83c8b544}.trainer-result>span{font:8px monospace;letter-spacing:2px;color:#83c8b5}.trainer-result strong{grid-column:1;font-size:16px}.trainer-result p{grid-column:1;font-size:10px;color:#93aaba}.trainer-result button{grid-column:2;grid-row:1/4;align-self:center;padding:11px;background:#83c8b522;border:1px solid #83c8b544;color:#c6e4da;font-size:10px;cursor:pointer}
         .trainer-live{display:none;position:absolute;left:50%;top:22px;transform:translateX(-50%);gap:28px;align-items:center;z-index:20;padding:12px 20px;background:#0c1725d9;border:1px solid #ffffff1f;border-top:2px solid #ff5966;backdrop-filter:blur(8px)}.trainer-live>div>span{display:block;font:8px monospace;color:#94a6b5;letter-spacing:1px;margin-bottom:5px}.trainer-live strong{font:20px 'Oswald',sans-serif;color:#fff}.trainer-live>div:first-child strong{font:12px sans-serif;letter-spacing:1px}.trainer-live-time{padding-left:22px;border-left:1px solid #ffffff22}.trainer-live-time strong{color:#ff6873}.is-training .trainer-live{display:flex}.is-training #tactical-score,.is-training #keybind-hints{display:none}.is-training #hud>div:first-child>div:first-child>div:first-child{width:112px;height:112px}.is-training #hud>div:first-child>div:last-child>div:first-child{max-width:230px;flex-wrap:wrap;justify-content:flex-end}.is-training #stance-hud{font-size:10px;bottom:145px;background:#0c172599;border-color:#ffffff25}.is-training #hud button{font-size:10px}.is-training #chat-messages{opacity:.65}
+        .map-load-status{font:10px monospace;color:#83c8b5;margin-top:10px}.free-roam-button:disabled{opacity:.4;cursor:wait}.trainer-start:disabled{opacity:.4;cursor:wait}#map-retry{color:#fff;background:#ff4655;padding:8px 12px;border:0;font-size:11px}
         .hidden{display:none!important}
         @media(min-width:1550px){.trainer-main{padding:40px 60px}.trainer-layout{grid-template-columns:minmax(0,1fr) 365px}.range-hero{min-height:280px}.mode-card{min-height:218px;padding:20px}.range-blueprint{max-width:300px;width:35%}.hero-description{font-size:12px}.trainer-summary{padding:25px 0}}
         @media(max-width:1100px){.trainer-layout{grid-template-columns:minmax(0,1fr) 275px}.trainer-main{padding:24px}.trainer-loadout{padding:24px 17px}.trainer-topbar,.trainer-footer{padding-left:24px;padding-right:24px}.range-blueprint{min-width:130px;width:27%}.range-hero h1{font-size:39px}.hero-tags{gap:8px;font-size:8px}.trainer-settings-grid{gap:12px}.trainer-footer small{display:none}.mode-card{padding:13px 11px}.section-heading>small{font-size:7px}}
@@ -215,7 +216,7 @@
                     <canvas id="radar-canvas" width="176" height="176" class="w-full h-full"></canvas>
                     <div class="absolute top-1.5 text-[9px] font-val font-bold tracking-widest text-[#00F5D4]">N ▲</div>
                     <div class="absolute bottom-1.5 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-[#ECE8E1]/90 tracking-wider">
-                        ASCENT // REBUILD
+                        ASCENT // TRAINING
                     </div>
                 </div>
                 <div id="keybind-hints" class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
@@ -484,8 +485,9 @@
                         <div class="range-hero-copy">
                             <p class="range-eyebrow">ASCENT <span>／</span> FIELD TRAINING</p>
                             <h1>義境空島。<br><em>從轉角開始。</em></h1>
-                            <p class="hero-description">探索 A、B 點與中路，練習準星定位與進點路線。Ascent 風格自建場景，非原版等比例地圖。</p>
-                            <button class="free-roam-button" onclick="startFreeRoam()">自由跑圖 <span>↗</span></button>
+                            <p class="hero-description">探索 A、B 點與中路，練習準星定位與進點路線。載入 Ascent 完整模型、場景貼圖、原始碰撞與小地圖。</p>
+                            <p class="map-load-status" id="map-load-status" role="status">準備載入 Ascent…</p><button id="map-retry" class="hidden" onclick="retryAscentLoad()">重新載入地圖</button>
+                            <button class="free-roam-button" disabled onclick="startFreeRoam()">自由跑圖 <span>↗</span></button>
                             <div class="hero-tags"><span>01　準星定位</span><span>02　急停射擊</span><span>03　壓槍控制</span></div>
                         </div>
                         <div class="range-blueprint" aria-hidden="true">
@@ -499,7 +501,7 @@
                                 <circle cx="150" cy="175" r="4" fill="#ff6570"/>
                                 <text x="94" y="205" fill="currentColor" font-size="8" letter-spacing="2">ATTACKER SPAWN</text>
                             </svg>
-                            <span class="blueprint-label">ASCENT / ORIGINAL REBUILD</span>
+                            <span class="blueprint-label">ASCENT / FULL MAP MODEL</span>
                         </div>
                     </section>
                     <div class="trainer-summary">
@@ -630,12 +632,17 @@
                     <div class="loadout-note"><b>裝備已就緒。</b><p>Ctrl 蹲下 · Shift 靜走 · 右鍵瞄準<br>3 雷槌 · Y 檢視 · R 換彈</p></div>
                 </aside>
             </div>
-            <footer class="trainer-footer"><div><kbd>B</kbd> 購買／暫停 <span>·</span> <kbd>Esc</kbd> 釋放滑鼠 <small>專注當下這一發。</small></div><button id="btn-start-combat" class="trainer-start">進入 Ascent <span>↗</span></button></footer>
+            <footer class="trainer-footer"><div><kbd>B</kbd> 購買／暫停 <span>·</span> <kbd>Esc</kbd> 釋放滑鼠 <small>地圖：Riot Games · 來源 open-aim / ishoutu</small></div><button id="btn-start-combat" disabled class="trainer-start">進入 Ascent <span>↗</span></button></footer>
         </div>
     </div>
 
     <script src="./firebase-config.js"></script>
+    <script src="./vendor/GLTFLoader.js"></script>
+    <script src="./vendor/meshopt_decoder.js"></script>
+    <script src="./vendor/mesh-bvh.js"></script>
+    <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
+        import {AscentMapRuntime} from './ascent-map.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -1298,6 +1305,7 @@
             const skyGeo = new THREE.SphereGeometry(180, 32, 16);
             const skyMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false });
             const sky = new THREE.Mesh(skyGeo, skyMat);
+            sky.name='fallback-sky';
             scene.add(sky);
         }
         createSkyDome();
@@ -1313,253 +1321,36 @@
         const arenaRoot = new THREE.Group();
         scene.add(arenaRoot);
 
+        const realMap = new AscentMapRuntime(renderer);
         function buildArena() {
-            const geometries = new Set(), materials = new Set();
-            arenaRoot.traverse(mesh => {
-                if (mesh.geometry) geometries.add(mesh.geometry);
-                if (mesh.material) materials.add(mesh.material);
-            });
-            arenaRoot.clear();
-            geometries.forEach(g => g.dispose());
-            materials.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); });
-            mapColliders.length = 0;
-            mapRadarRects.length = 0;
-            shootableMeshes.length = 0;
-            const practice = state.gameMode !== 'tactical';
-            const mat = {
-                plaster: new THREE.MeshStandardMaterial({map:createAscentWallTex(), color:0xf1dfc3, roughness:0.96}),
-                peach: new THREE.MeshStandardMaterial({map:createAscentWallTex(),color:0xc6937c,roughness:0.96}),
-                ochre: new THREE.MeshStandardMaterial({map:createAscentWallTex(),color:0xd9b479,roughness:0.96}),
-                stone: new THREE.MeshStandardMaterial({color:0x9e9e91,roughness:0.92}),
-                lightStone: new THREE.MeshStandardMaterial({color:0xc9c3af,roughness:0.9}),
-                wood: new THREE.MeshStandardMaterial({color:0x5a4334,roughness:0.85}),
-                roof: new THREE.MeshStandardMaterial({color:0x98604e,roughness:0.9}),
-                roofLight: new THREE.MeshStandardMaterial({color:0xac7356,roughness:0.9}),
-                steel: new THREE.MeshStandardMaterial({color:0x35454a,roughness:0.7,metalness:0.4}),
-                window: new THREE.MeshStandardMaterial({color:0x374a50,roughness:0.4,metalness:0.2}),
-                teal: new THREE.MeshStandardMaterial({color:0x56817b,roughness:0.8}),
-                white: new THREE.MeshStandardMaterial({color:0xebe4d3,roughness:0.8}),
-                grass: new THREE.MeshStandardMaterial({color:0x5f7b4e,roughness:1}),
-                yellow: new THREE.MeshStandardMaterial({color:0xd6aa56,roughness:0.9}),
-                crate: new THREE.MeshStandardMaterial({map:createRadianiteCrateTex(),roughness:0.5,metalness:0.15})
-            };
-            Object.values(mat).forEach(material=>material.color.convertSRGBToLinear());
-            // Decorative boxes are instanced per material, keeping fine detail inexpensive.
-            const batches = new Map();
-            const dummy = new THREE.Object3D();
-            function detail(x,y,z,w,h,d,material,rotation = 0) {
-                dummy.position.set(x,y,z);dummy.rotation.set(0,rotation,0);dummy.scale.set(w,h,d);dummy.updateMatrix();
-                if (!batches.has(material)) batches.set(material,[]);
-                batches.get(material).push(dummy.matrix.clone());
-            }
-            function beam(a,b,width,depth,material) {
-                const start = new THREE.Vector3(...a), end = new THREE.Vector3(...b);
-                dummy.position.copy(start).add(end).multiplyScalar(0.5);
-                const direction = end.sub(start);
-                dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.clone().normalize());
-                dummy.scale.set(width,direction.length(),depth);dummy.updateMatrix();
-                if (!batches.has(material)) batches.set(material,[]);
-                batches.get(material).push(dummy.matrix.clone());
-                dummy.rotation.set(0,0,0);
-            }
-            function block(x,y,z,w,h,d,material,collidable=true,radar=true) {
-                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);
-                mesh.position.set(x,y+h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;
-                arenaRoot.add(mesh);shootableMeshes.push(mesh);
-                if(collidable)mapColliders.push(new THREE.Box3().setFromObject(mesh));
-                if(radar&&y<2)mapRadarRects.push({x,z,w,d});
-                return mesh;
-            }
-            function sign(text,x,y,z,width=5,height=1,color='#e4ddc7',back='#293d40') {
-                const c=document.createElement('canvas');c.width=768;c.height=192;
-                const ctx=c.getContext('2d');ctx.fillStyle=back;ctx.fillRect(0,0,768,192);
-                ctx.strokeStyle=color;ctx.lineWidth=3;ctx.strokeRect(13,13,742,166);
-                ctx.fillStyle=color;ctx.font='bold 52px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,384,96);
-                const texture=new THREE.CanvasTexture(c);texture.encoding=THREE.sRGBEncoding;
-                const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:texture}));
-                mesh.position.set(x,y,z);arenaRoot.add(mesh);return mesh;
-            }
-            function arch(x,z,radius=2.8,spring=3.5) {
-                const thick=0.42;
-                block(x-radius-thick/2,0,z,thick,spring,0.85,mat.lightStone);
-                block(x+radius+thick/2,0,z,thick,spring,0.85,mat.lightStone);
-                const shape=new THREE.Shape();
-                shape.moveTo(-radius-thick,0);shape.absarc(0,0,radius+thick,Math.PI,0,true);
-                shape.lineTo(radius,0);shape.absarc(0,0,radius,0,Math.PI,false);shape.closePath();
-                const geometry=new THREE.ExtrudeGeometry(shape,{depth:0.85,bevelEnabled:false,curveSegments:24});
-                const mesh=new THREE.Mesh(geometry,mat.lightStone);mesh.position.set(x,spring,z-0.425);mesh.castShadow=true;mesh.receiveShadow=true;arenaRoot.add(mesh);shootableMeshes.push(mesh);
-                // Narrow collision wedges preserve the opening, including its curved roof.
-                for(let i=0;i<12;i++) {
-                    const theta=(i+.5)/12*Math.PI;
-                    const wx=x+Math.cos(theta)*(radius+.2), wy=spring+Math.sin(theta)*(radius+.2);
-                    const collision=new THREE.Box3(new THREE.Vector3(wx-.17,wy-.17,z-.425),new THREE.Vector3(wx+.17,wy+.17,z+.425));
-                    mapColliders.push(collision);
-                    detail(wx,wy,z+.44,.035,.15,.04,mat.wood,0);
-                }
-                for(let y=.5;y<spring;y+=.6){detail(x-radius-.21,y,z+.44,.44,.025,.03,mat.stone);detail(x+radius+.21,y,z+.44,.44,.025,.03,mat.stone);}
-            }
-            function building(x,z,w,h,d,material,doors=2) {
-                block(x,0,z,w,h,d,material,true,false);
-                detail(x,.35,z+d/2+.04,w+.15,.7,.18,mat.stone);
-                detail(x,h-.2,z,w+.4,.25,d+.4,mat.lightStone);
-                // Plaster gable ends support the pitched terracotta roof.
-                const rise=Math.max(1.4,w*.18);
-                const gableGeometry=new THREE.BufferGeometry();
-                gableGeometry.setAttribute('position',new THREE.Float32BufferAttribute([
-                    x-w/2,h,z+d/2+.02,x+w/2,h,z+d/2+.02,x,h+rise,z+d/2+.02,
-                    x+w/2,h,z-d/2-.02,x-w/2,h,z-d/2-.02,x,h+rise,z-d/2-.02
-                ],3));
-                gableGeometry.computeVertexNormals();
-                const gable=new THREE.Mesh(gableGeometry,material);gable.castShadow=true;arenaRoot.add(gable);
-                // Individually instanced terracotta tile courses.
-                for(const side of [-1,1]) {
-                    for(let row=0;row<6;row++) {
-                        const rx=x+side*(row+.5)*w/12, ry=h+rise-(row+.5)*rise/6;
-                        detail(rx,ry,z,w/12+.03,.14,d+.8,row%2?mat.roof:mat.roofLight);
-                        for(let t=0;t<Math.ceil(d/.52);t++)detail(rx,ry+.085,z-d/2+t*.52,w/12,.035,.035,mat.roof);
-                    }
-                }
-                for(let level=3;level<h-1.5;level+=3.4) {
-                    for(let i=0;i<doors;i++) {
-                        const wx=x-w/2+(i+1)*w/(doors+1), wz=z+d/2+.12;
-                        detail(wx,level,wz,1.15,1.8,.14,mat.window);
-                        detail(wx,level-.95,wz+.1,1.5,.16,.4,mat.lightStone);
-                        detail(wx,level+.95,wz+.1,1.45,.13,.25,mat.lightStone);
-                        detail(wx,level,wz+.12,.06,1.8,.06,mat.wood);
-                        detail(wx,level,wz+.13,1.15,.06,.06,mat.wood);
-                        [-1,1].forEach(side=>{
-                            detail(wx+side*.81,level,wz,.38,1.85,.15,mat.teal);
-                            for(let j=-3;j<=3;j++)detail(wx+side*.81,level+j*.20,wz+.09,.38,.035,.04,mat.steel);
-                        });
-                        if(level>5&&i%2===0){
-                            detail(wx,level-.95,wz+.65,2.1,.18,1.1,mat.stone);
-                            detail(wx,level-.28,wz+1.14,2.1,.055,.055,mat.steel);
-                            for(let j=-4;j<=4;j++)detail(wx+j*.23,level-.6,wz+1.14,.035,.6,.035,mat.steel);
-                        }
-                    }
-                }
-                // Drain pipe and cornice lines add readable scale from the ground.
-                detail(x-w/2+.22,h/2,z+d/2+.2,.1,h,.1,mat.steel);
-                for(let y=1.2;y<h;y+=3.4)detail(x,y,z+d/2+.06,w,.07,.12,mat.lightStone);
-            }
-            const floor = new THREE.Mesh(new THREE.PlaneGeometry(150,166),new THREE.MeshStandardMaterial({map:createConcreteFloorTex(),roughness:.98}));
-            floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;arenaRoot.add(floor);shootableMeshes.push(floor);
-            // Ascent-inspired original layout: attacker plaza, A/B main, Mid, Tree,
-            // Market and two sites. Geometry is authored here, not the reference asset.
-            block(-61,0,0,2,8,144,mat.plaster,true,false);
-            block(61,0,0,2,8,144,mat.plaster,true,false);
-            block(0,0,-72,124,10,2,mat.plaster,true,false);
-            block(0,0,72,124,6,2,mat.plaster,true,false);
-            building(-23,27,22,10,27,mat.ochre,4);
-            building(23,27,22,12,27,mat.peach,4);
-            building(-56,11,8,13,40,mat.peach,2);
-            building(56,11,8,10,40,mat.ochre,2);
-            building(-17,-8,12,10,16,mat.plaster,2);
-            building(17,-8,12,10,16,mat.ochre,2);
-            building(-52,-55,15,14,13,mat.ochre,3);
-            building(0,-62,20,13,10,mat.peach,4);
-            building(52,-57,14,15,12,mat.plaster,3);
-            // Lower facade portals and awnings give the routes a human scale.
-            for(const side of [-1,1]) {
-                for(const z of [19,31]) {
-                    detail(side*34.1,2.1,z,.14,3.5,2.3,mat.wood);
-                    detail(side*34.2,3.95,z,.3,.2,2.7,mat.lightStone);
-                    detail(side*34.9,4.2,z,1.9,.13,3,mat.teal);
-                }
-                block(side*43,0,47,10,.45,1,mat.stone);
-                for(let i=0;i<3;i++) {
-                    const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15,1),mat.grass);
-                    leaves.scale.y=1.7;leaves.position.set(side*(39+i*2),1.9,47);arenaRoot.add(leaves);
-                }
-            }
-            arch(0,-28,3.4,3.5);
-            block(-9.3,0,-28,11.5,7,.85,mat.peach);
-            block(9.3,0,-28,11.5,7,.85,mat.plaster);
-            sign('DEFENDER SIDE',0,7.9,-27.5,6,.8);
-            arch(34,-11,3.8,3.4);arch(-34,-11,3.8,3.4);
-            sign('A  /  MAIN',34,8,-10.5,5,.8);
-            sign('B  /  MAIN',-34,8,-10.5,5,.8);
-            block(23,0,-11,14,7,.9,mat.plaster);
-            block(48,0,-11,19,7,.9,mat.peach);
-            block(-23,0,-11,14,7,.9,mat.peach);
-            block(-48,0,-11,19,7,.9,mat.plaster);
-            // Tree and Market connect Mid to each site through open side corridors.
-            arch(20,-21,2.2,3.0);arch(-20,-21,2.2,3.0);
-            sign('TREE  →',17,3.0,1,3,.65);sign('←  MARKET',-17,3.0,1,3,.65);
-            // A site: Generator, double cover, Heaven platform and walkable stairs.
-            block(29,0,-27,5,3.8,5,mat.steel);
-            for(const z of [-28.5,-27,-25.5])detail(26.47,2.1,z,.08,2.8,.23,mat.lightStone);
-            detail(29,3.9,-27,5.1,.2,5.1,mat.stone);
-            block(40,0,-23,4,3.0,4,mat.crate);
-            block(40,0,-28,4,3.0,4,mat.crate);
-            block(34,0,-40,22,3.2,8,mat.stone);
-            building(34,-47,22,11,6,mat.plaster,4);
-            for(let i=0;i<8;i++)block(48,0,-27-i*1.25,3,.4*(i+1),1.25,mat.lightStone);
-            block(46.5,0,-39,3,3.2,6,mat.stone);
-            for(let i=0;i<8;i++)detail(24+i*2.3,3.9,-35.8,.06,1.2,.06,mat.steel);
-            detail(32,4.5,-35.8,17,.06,.06,mat.steel);
-            detail(34,7.2,-44,24,.27,1.3,mat.wood);
-            for(const x of [24,44])detail(x,5.2,-43.6,.25,4,.25,mat.wood);
-            sign('A',34,2.1,-35.85,1.6,1.5,'#ece2bf','#7e8a7d');
-            // B site: green cover and a timber boathouse at the rear.
-            block(-31,0,-26,4.5,3.0,4.5,mat.crate);block(-39,0,-30,4,2.8,4,mat.crate);
-            block(-34,0,-42,24,6.5,.7,mat.plaster);
-            block(-47,0,-33,1,6.5,18,mat.peach);
-            block(-21,0,-34,1,6.5,16,mat.plaster);
-            arch(-34,-36,3.1,2.5);
-            for(const x of [-42,-26])block(x,0,-36,9,6.1,.8,mat.wood);
-            for(const z of [-37,-39,-41]) {
-                beam([-46,6.2,z],[-34,8.8,z],.25,.25,mat.wood);
-                beam([-34,8.8,z],[-22,6.2,z],.25,.25,mat.wood);
-                detail(-34,6.1,z,24,.2,.2,mat.wood);
-            }
-            sign('B  /  BOATHOUSE',-34,6.1,-35.5,6,.7);
-            // Plant zones and route marks are authored to match this version's geometry.
-            for(const site of [{x:34,z:-26,name:'A'},{x:-34,z:-27,name:'B'}]) {
-                for(const edge of [-1,1]) {
-                    detail(site.x+edge*11,.025,site.z,.07,.035,20,mat.yellow);
-                    detail(site.x,.025,site.z+edge*10,22,.035,.07,mat.yellow);
-                }
-                const label=sign(site.name,0,0,0,4,4,'#d6bd7a','#9b9d8a');label.rotation.x=-Math.PI/2;label.position.set(site.x,.04,site.z+5);
-            }
-            // Mid courtyard fountain with a low, collidable basin and planted tree.
-            const basin=new THREE.Mesh(new THREE.CylinderGeometry(2.8,3.1,.8,12),mat.lightStone);
-            basin.position.set(0,.4,4);basin.castShadow=true;basin.receiveShadow=true;arenaRoot.add(basin);shootableMeshes.push(basin);
-            mapColliders.push(new THREE.Box3().setFromObject(basin));mapRadarRects.push({x:0,z:4,w:6,d:6});
-            const water=new THREE.Mesh(new THREE.CircleGeometry(2.45,32),new THREE.MeshStandardMaterial({color:0x759eaa,roughness:.16,metalness:.3}));water.rotation.x=-Math.PI/2;water.position.set(0,.82,4);arenaRoot.add(water);
-            const fountain=new THREE.Mesh(new THREE.CylinderGeometry(.2,.5,2.3,8),mat.stone);fountain.position.set(0,1.5,4);arenaRoot.add(fountain);
-            for(const side of [-1,1]) {
-                block(side*8,0,-18,2.8,.7,3.8,mat.lightStone);
-                const treeTrunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.32,4,7),mat.wood);treeTrunk.position.set(side*8,2.6,-18);arenaRoot.add(treeTrunk);
-                for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.7,1),mat.grass);crown.position.set(side*8+(i-1)*.7,4.8+i*.45,-18);crown.castShadow=true;arenaRoot.add(crown);}
-            }
-            sign('MID  /  COURTYARD',0,3.3,43,5,.75);
-            sign('ASCENT  /  FIELD TRAINING',0,6,68.8,10,1.2);
-            // Clock tower landmark. Its facade remains visible from the main lanes.
-            block(-48,0,-58,5.8,23,5.8,mat.peach,true,false);
-            for(const y of [1,8,16,22])detail(-48,y,-58,6.1,.3,6.1,mat.lightStone);
-            for(const dx of [-2.3,2.3])detail(-48+dx,11,-55.0,.2,20,.22,mat.lightStone);
-            const clockCanvas=document.createElement('canvas');clockCanvas.width=256;clockCanvas.height=256;
-            const clockCtx=clockCanvas.getContext('2d');clockCtx.fillStyle='#e7dec4';clockCtx.beginPath();clockCtx.arc(128,128,122,0,Math.PI*2);clockCtx.fill();clockCtx.strokeStyle='#4c4d4a';clockCtx.lineWidth=5;
-            for(let i=0;i<12;i++){const angle=i*Math.PI/6;clockCtx.beginPath();clockCtx.moveTo(128+Math.sin(angle)*98,128-Math.cos(angle)*98);clockCtx.lineTo(128+Math.sin(angle)*110,128-Math.cos(angle)*110);clockCtx.stroke();}
-            clockCtx.lineWidth=7;clockCtx.beginPath();clockCtx.moveTo(128,128);clockCtx.lineTo(128,57);clockCtx.moveTo(128,128);clockCtx.lineTo(175,145);clockCtx.stroke();
-            const clockTexture=new THREE.CanvasTexture(clockCanvas);clockTexture.encoding=THREE.sRGBEncoding;
-            const clock=new THREE.Mesh(new THREE.CircleGeometry(1.5,32),new THREE.MeshBasicMaterial({map:clockTexture,transparent:true}));clock.position.set(-48,19,-55.05);arenaRoot.add(clock);
-            const spire=new THREE.Mesh(new THREE.ConeGeometry(4.3,8,4),mat.roof);spire.rotation.y=Math.PI/4;spire.position.set(-48,27,-58);arenaRoot.add(spire);
-            // Observatory dome and its exposed frame echo Ascent's skyline language.
-            block(50,0,-58,17,15,17,mat.plaster,true,false);
-            const dome=new THREE.Mesh(new THREE.SphereGeometry(9,24,10,0,Math.PI*2,0,Math.PI/2),mat.stone);dome.position.set(50,15,-58);arenaRoot.add(dome);
-            for(let i=0;i<8;i++) {
-                const arc=new THREE.Mesh(new THREE.TorusGeometry(9.08,.065,5,36,Math.PI),mat.steel);
-                arc.position.set(50,15,-58);arc.rotation.y=i*Math.PI/8;arenaRoot.add(arc);
-            }
-            // Instanced detail is decorative; structural meshes supply collision and ray tests.
-            for(const [material,matrices] of batches) {
-                const mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material,matrices.length);
-                matrices.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));mesh.castShadow=true;mesh.receiveShadow=true;arenaRoot.add(mesh);
+            shootableMeshes.length=0;mapColliders.length=0;mapRadarRects.length=0;
+            if(realMap.ready)shootableMeshes.push(realMap.collisionMesh);
+        }
+        function placePlayerAtSpawn(team=state.team) {
+            if(!realMap.ready)return;
+            const spawn=realMap.getSpawn(team);yawObject.position.copy(spawn.position);yawObject.rotation.y=spawn.yaw;
+            pitchObject.rotation.x=0;playerVelocity.set(0,0,0);
+        }
+        async function loadActualMap() {
+            const button=document.getElementById('btn-start-combat');button.disabled=true;
+            const label=document.getElementById('map-load-status');
+            document.querySelector('.free-roam-button').disabled=true;
+            try {
+                await realMap.load(text=>label.textContent=text);
+                arenaRoot.add(realMap.root);
+                const sky=scene.getObjectByName('fallback-sky');if(sky)scene.remove(sky);
+                scene.background=new THREE.Color(0xb9d5e6);scene.fog=new THREE.FogExp2(0xb9d5e6,.0008);
+                hemiLight.intensity=1.3;sunLight.intensity=1.6;renderer.toneMappingExposure=.95;
+                camera.far=900;camera.updateProjectionMatrix();
+                buildArena();resetRound();button.disabled=false;document.querySelector('.free-roam-button').disabled=false;
+                label.textContent='Ascent 模型與碰撞已就緒';document.getElementById('map-retry').classList.add('hidden');
+            } catch(error) {
+                realMap.ready=false;console.error('Ascent loading failed:',error);label.textContent='Ascent 載入失敗，請重試或重新整理頁面';
+                document.getElementById('map-retry').classList.remove('hidden');
             }
         }
-        buildArena();
+        window.retryAscentLoad=()=>loadActualMap();
+
 
 
         const smiteTexture = createSmiteTexture();
@@ -1812,7 +1603,7 @@
 
         function createHumanoidBot(idx, sp) {
             const group = new THREE.Group();
-            group.position.set(sp.x, 0, sp.z);
+            group.position.set(sp.x, sp.y||0, sp.z);
 
             const armorMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.5 });
             const outlineRedMat = new THREE.MeshBasicMaterial({ color: 0xFF4655, side: THREE.BackSide });
@@ -1904,6 +1695,7 @@
                 hp: 100,
                 alive: true,
                 dyingTimer: 0,
+                baseY: sp.y||0,
                 baseX: sp.x,
                 baseZ: sp.z,
                 patrolRange: sp.patrol,
@@ -1924,7 +1716,8 @@
             }
             const spawns = state.gameMode === 'tactical' ? BOT_SPAWNS
                 : [{x:0,z:25,patrol:1.5},{x:-30,z:45,patrol:1.5},{x:30,z:45,patrol:1.5},{x:-40,z:8,patrol:1.5},{x:40,z:8,patrol:1.5}];
-            spawns.forEach((sp, idx) => {
+            const points=realMap.ready?realMap.getBotSpawns(state.gameMode==='tactical'):spawns;
+            points.forEach((sp, idx) => {
                 bots.push(createHumanoidBot(idx, sp));
             });
             updateAliveHUD();
@@ -2120,13 +1913,11 @@
             if (state.team === 'attack') {
                 btn.textContent = '陣營: 攻擊方 (赤紅)';
                 btn.className = 'bg-[#FF4655]/25 border border-[#FF4655] px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap hover:bg-[#FF4655] transition cursor-pointer';
-                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 58);
-                yawObject.rotation.y = 0;
+                placePlayerAtSpawn('attack');
             } else {
                 btn.textContent = '陣營: 守備方 (青藍)';
                 btn.className = 'bg-[#00F5D4]/25 border border-[#00F5D4] px-2.5 py-1.5 text-xs font-bold text-[#00F5D4] whitespace-nowrap hover:bg-[#00F5D4] hover:text-black transition cursor-pointer';
-                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -58);
-                yawObject.rotation.y = Math.PI;
+                placePlayerAtSpawn('defend');
             }
             pushMyStateToFirestore(true);
             addChatMessage('系統', `你已切換至 ${state.team === 'attack' ? '攻擊方 (Attackers)' : '守備方 (Defenders)'}`);
@@ -2826,7 +2617,7 @@
                     bot.hp = 100;
                     bot.hpFill.scale.x = 1;
                     bot.group.rotation.x = 0;
-                    bot.group.position.y = 0;
+                    bot.group.position.y = bot.baseY||0;
                     bot.group.position.x = bot.baseX + (Math.random() - 0.5) * 6;
                     bot.alive = true;
                     bot.group.visible = true;
@@ -2950,7 +2741,7 @@
                 opacity: 0.88
             });
             const iceMesh = new THREE.Mesh(new THREE.BoxGeometry(6.8, 3.6, 1.2), iceMat);
-            iceMesh.position.set(wallPos.x, 1.8, wallPos.z);
+            iceMesh.position.set(wallPos.x, wallPos.y-2.2+1.8, wallPos.z);
             iceMesh.rotation.y = yawAngle;
             scene.add(iceMesh);
             shootableMeshes.push(iceMesh);
@@ -2969,7 +2760,7 @@
             const forward = new THREE.Vector3();
             camera.getWorldDirection(forward);
             const smokePos = yawObject.position.clone().add(forward.multiplyScalar(13));
-            smokePos.y = 2.2;
+            smokePos.y = yawObject.position.y;
 
             spawnSmokeAtPosition(smokePos);
             broadcastRoomEvent({
@@ -3226,6 +3017,7 @@
          * 12. ROUND RESET & SPIKE LOGIC (ATTACK PLANT / DEFEND DEFUSE)
          ********************************************************************/
         function getPlantSite(position = yawObject.position) {
+            if(realMap.ready)return realMap.getPlantSite(position);
             if (Math.abs(position.x-34)<11 && Math.abs(position.z+26)<10) return 'A';
             if (Math.abs(position.x+34)<11 && Math.abs(position.z+27)<10) return 'B';
             return null;
@@ -3305,11 +3097,9 @@
             smokeSpheres.length = 0;
 
             if (state.team === 'attack') {
-                yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 58);
-                yawObject.rotation.y = 0;
+                placePlayerAtSpawn('attack');
             } else {
-                yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -58);
-                yawObject.rotation.y = Math.PI;
+                placePlayerAtSpawn('defend');
             }
             pitchObject.rotation.x = 0;
 
@@ -3368,6 +3158,7 @@
         }
 
         function lockPointerAndPlay() {
+            if(!realMap.ready)return;
             if (state.training.finished) resetRound();
             sfx.init();
             resetMovementInput();
@@ -3562,13 +3353,11 @@
             rCtx.arc(88, 88, 72, 0, Math.PI * 2);
             rCtx.stroke();
 
-            const toRadar = (wx, wz) => ({
-                x: 88 + (wx / 62) * 76,
-                y: 88 + (wz / 74) * 76
-            });
+            const toRadar=(wx,wz)=>realMap.ready?realMap.toRadar(wx,wz):{x:88+wx/62*76,y:88+wz/74*76};
+            if(realMap.ready && realMap.minimapImage.complete)rCtx.drawImage(realMap.minimapImage,0,0,W,H);
 
             // Plant zones for both A and B in the authored Ascent layout.
-            for(const site of [{x:34,z:-26,name:'A'},{x:-34,z:-27,name:'B'}]) {
+            for(const site of (realMap.ready?[]:[{x:34,z:-26,name:'A'},{x:-34,z:-27,name:'B'}])) {
                 const tl=toRadar(site.x-11,site.z-10),br=toRadar(site.x+11,site.z+10);
                 rCtx.fillStyle='rgba(0,245,212,.13)';rCtx.strokeStyle='rgba(0,245,212,.5)';
                 rCtx.fillRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);rCtx.strokeRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);
@@ -3651,6 +3440,7 @@
         let prevTime = performance.now();
 
         function getGroundHeight(position) {
+            if(realMap.ready)return realMap.getGroundHeight(position);
             const feet=position.y-2.2;
             let ground=0;
             for(const box of mapColliders) {
@@ -3662,7 +3452,8 @@
         }
 
         function checkPlayerCollision(nextPos, crouchAmount = state.crouchAmount) {
-            if (Math.abs(nextPos.x) > 59 || Math.abs(nextPos.z) > 70) return true;
+            if(realMap.ready && realMap.collides(nextPos,crouchAmount))return true;
+            if(!realMap.ready && (Math.abs(nextPos.x)>59 || Math.abs(nextPos.z)>70))return true;
             const playerBox = new THREE.Box3(
                 new THREE.Vector3(nextPos.x - 0.6, nextPos.y - 2.0, nextPos.z - 0.6),
                 new THREE.Vector3(nextPos.x + 0.6, nextPos.y + 0.3 - crouchAmount * 0.75, nextPos.z + 0.6)
@@ -3774,7 +3565,10 @@
                 }
 
                 if (state.gameMode !== 'stationary') {
-                    b.group.position.x += b.dir * b.speed * dt;
+                    const candidate=b.group.position.clone();candidate.x+=b.dir*b.speed*dt;
+                    const eye=candidate.clone();eye.y+=2.2;
+                    if(realMap.ready && realMap.collides(eye))b.dir*=-1;
+                    else {b.group.position.x=candidate.x;if(realMap.ready)b.group.position.y=realMap.getGroundHeight(eye);}
                     b.walkCycle += dt * b.speed * 2.6;
                     b.leftLeg.rotation.x = Math.sin(b.walkCycle) * 0.55;
                     b.rightLeg.rotation.x = -Math.sin(b.walkCycle) * 0.55;
@@ -3786,7 +3580,7 @@
                     b.rightLeg.rotation.x = 0;
                 }
 
-                b.group.lookAt(playerPos.x, 0, playerPos.z);
+                b.group.lookAt(playerPos.x, b.group.position.y, playerPos.z);
 
                 if (state.gameMode === 'tactical' && state.isLocked && state.hp > 0) {
                     const botEye = b.group.position.clone().add(new THREE.Vector3(0, 2.0, 0));
@@ -3875,9 +3669,9 @@
                         state.hp = 100;
                         state.shield = 50;
                         if (state.team === 'attack') {
-                            yawObject.position.set((Math.random() - 0.5) * 8, 2.2, 58);
+                            placePlayerAtSpawn('attack');
                         } else {
-                            yawObject.position.set((Math.random() - 0.5) * 10, 2.2, -58);
+                            placePlayerAtSpawn('defend');
                         }
                         updateHealthHUD();
                         pushMyStateToFirestore(true);
@@ -3924,7 +3718,7 @@
                     if (canPlant) {
                         state.spikePlanted = true;
                         document.getElementById('spike-hud-badge').classList.remove('hidden');
-                        spikeGroup.position.set(yawObject.position.x, 0, yawObject.position.z);
+                        spikeGroup.position.set(yawObject.position.x, yawObject.position.y-2.2, yawObject.position.z);
                         spikeGroup.visible = true;
                         sfx.playSpikeBeep(true);
                         showCenterBanner('SPIKE PLANTED // 輻能核心已部署', `守住 ${state.spikeSite || 'A'} 據點直到輻能引爆！`, 2400);
@@ -4063,6 +3857,7 @@
                 else yawObject.position.y=vertical.y;
                 if(yawObject.position.y<=ground) {yawObject.position.y=ground;playerVelocity.y=0;canJump=true;}
                 else canJump=false;
+                if(yawObject.position.y < -60)placePlayerAtSpawn();
             }
 
             // Dynamic Crosshair Expansion
@@ -4081,6 +3876,7 @@
             pushMyStateToFirestore(false);
             drawRadar();
 
+            realMap.updateCulling(camera);
             renderer.render(scene, camera);
         }
 
@@ -4096,9 +3892,9 @@
             document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);
             document.getElementById('trainer-duration').value=state.trainingDuration;
             renderTrainingStats();
-            spawnBots();
             updateShopUI();
             animate();
+            loadActualMap();
         };
     </script>
 </body>
