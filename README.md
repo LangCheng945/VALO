@@ -1,46 +1,32 @@
 # VALO
 
-靜態網頁遊戲，使用 Three.js 與 Firebase Authentication / Cloud Firestore。
+Three.js Ascent 訓練場。前端可使用 GitHub Pages／ChatGPT Sites；多人房間使用獨立 WebSocket 後端。
 
 ## 本機啟動
 
 ```sh
-python3 -m http.server 8000 --bind 0.0.0.0
+python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
-離線模式不需要 Firebase；前端套件與字型仍透過 CDN 載入，需要網路。
+單人遊玩不需要帳號或 Firebase。字型與 Tailwind 仍從 CDN 載入。
 
-## 啟用多人連線
+## 好友連線
 
-1. 在 Firebase Console 建立專案，新增「網頁」應用程式。
-2. 在 Authentication → Sign-in method 啟用 Anonymous（匿名登入）。
-3. 建立 Cloud Firestore 資料庫，並設定適當的存取規則。
-4. 將專案設定中的公開 `firebaseConfig` 物件填入 `firebase-config.js`：
+目前版本已移除原先未設定的 Firebase 連線，改用 Cloudflare Workers + Durable Objects。
+完整後端、部署按鈕與測試方式：[multiplayer/README.md](multiplayer/README.md)。
 
-   ```js
-   if (typeof window.__firebase_config === 'undefined') {
-       window.__firebase_config = {
-           apiKey: '你的網頁應用程式 API key',
-           authDomain: '你的專案.firebaseapp.com',
-           projectId: '你的專案 ID',
-           appId: '你的網頁應用程式 ID'
-       };
-   }
-   ```
+1. 先部署 `multiplayer/`，取得自己的 `https://...workers.dev` 網址。
+2. 遊戲上方「好友連線」→填伺服器網址→「套用網址」。
+3. 一人建立房間，其他人使用相同伺服器、輸入六碼房號。
+4. 看到成員與各自不同 UID 後進入 Ascent；預設分配到不同陣營。
 
-   此設定會公開給瀏覽器；不要填入服務帳戶私鑰或管理員憑證。
-5. 將實際網站網域加入 Authentication 的 Authorized domains；確認 API key 的網站限制允許這些網域。
-6. 部署時一併發布 `index.html` 與 `firebase-config.js`。所有玩家必須使用同一個 Firebase 專案及 `__app_id`（預設 `default-app-id`）。
+公開網站只放靜態檔案不能代替連線伺服器。此工作環境沒有 Cloudflare 部署憑證，
+本機通過測試不等於後端已公開上線。部署後把公開 URL 填入 `multiplayer-config.js`，即可讓朋友省去填網址。
+這個檔案只可放公開 URL，不可放 Cloudflare API Token。
 
-目前程式使用以下 Firestore 路徑：
-
-- `artifacts/{appId}/public/data/val_rooms/{roomCode}`：房間狀態。
-- `artifacts/{appId}/public/data/val_room_{roomCode}_players/{uid}`：玩家狀態。
-- `artifacts/{appId}/public/data/val_room_{roomCode}_events/{eventId}`：聊天與戰鬥事件。
-
-規則需允許登入玩家監聽對應房間、寫入自己的玩家狀態及送出事件。不要為正式網站開放整個資料庫的無條件讀寫。現有戰鬥事件由客戶端送出；正式公開對戰仍需額外的成員授權及防作弊設計。
-
-驗證時使用兩個獨立瀏覽器或無痕視窗，確認兩邊 UID 不同，建立並加入同一房號，檢查成員、移動和聊天是否雙向同步。只有看到房號，不能代表資料庫已成功同步。
+房間提供最多 10 人自由練習、20 Hz 狀態同步、射擊／傷害／擊殺、聊天、煙霧／牆／緩速同步、
+五秒重生、短暫斷線重連。連線時停用各台電腦獨立的 AI 靶與裝拆包計時，避免各人看到不同狀態。
+目前為好友練習模式，尚未完成原版回合賽制與伺服器地圖碰撞／完整防作弊。
 
 ## 戰術操作
 
@@ -143,3 +129,8 @@ node tests/test_ascent_assets.cjs
 Jett 按住空白鍵可降低下降速度。
 
 檢查：`node tests/test_shop_economy.mjs`、`node tests/test_movement_audio.mjs`。
+
+
+連線檢查：先啟動靜態伺服器與 `npm run dev --prefix multiplayer`，再執行
+`npm test --prefix multiplayer`、`node tests/test_multiplayer_browser.cjs`。
+瀏覽器測試使用獨立儲存空間的兩個 context；保留真實地圖、碰撞、射線與遊戲 callback，省略 CI 中的 GPU 繪圖。

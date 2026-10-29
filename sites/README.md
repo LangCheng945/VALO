@@ -27,8 +27,10 @@ publication tool or signed-in Sites session; preparation is not publication.
 Keep the current valonow.langcheng.uk and existing DNS until the new preview
 has been checked. Do not reuse work.langcheng.uk or change its CNAME.
 
-Multiplayer still needs a configured backend; moving hosting does not provide
-room synchronization automatically. Sage resurrection is unavailable without
+Multiplayer uses the separately deployed WebSocket Worker in ../multiplayer.
+Set public/game/multiplayer-config.js to its public URL and add the actual Sites
+origin to the Worker ALLOWED_ORIGINS variable. Moving hosting alone does not
+provision that backend. Sage resurrection is unavailable without
 connected teammates. Skills are local training approximations: aimed placement
 is immediate, the wall is one destructible block, and dynamic door behavior is
 not reproduced. Ultimate/utility charges are preloaded on training reset.

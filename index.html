@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css">
+    <link rel="stylesheet" href="./shop.css?v=net1">
 </head>
 <body class="relative select-none">
 
@@ -503,7 +503,7 @@
         <div class="trainer-workspace">
             <header class="trainer-topbar" id="training-home">
                 <div class="trainer-brand">VALO<span>／</span><small>ASCENT / FIELD TRAINING</small></div>
-                <nav class="menu-tabs" aria-label="選單頁面"><button id="tab-training" onclick="setMenuView('training')">訓練</button><button id="tab-buy" onclick="setMenuView('buy')">購買裝備</button></nav>
+                <nav class="menu-tabs" aria-label="選單頁面"><button id="tab-training" onclick="setMenuView('training')">訓練</button><button id="tab-buy" onclick="setMenuView('buy')">購買裝備</button><button onclick="openNetworkMenu()">好友連線</button></nav>
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
@@ -556,7 +556,8 @@
                             <div>準星顏色<div class="crosshair-swatches"><button style="--swatch:#00f5d4" onclick="setCrosshairColor('#00f5d4')" aria-label="青色準星"></button><button style="--swatch:#ffffff" onclick="setCrosshairColor('#ffffff')" aria-label="白色準星"></button><button style="--swatch:#ff4655" onclick="setCrosshairColor('#ff4655')" aria-label="紅色準星"></button><button style="--swatch:#b5ff62" onclick="setCrosshairColor('#b5ff62')" aria-label="綠色準星"></button></div><small>選擇與場景對比清楚的顏色。</small></div>
                         </div>
                     </section>
-                    <details class="trainer-network"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
+                    <details class="trainer-network" id="network-panel"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
+        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://你的伺服器.workers.dev" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人自由練習。雙方都按「進入 Ascent」後即可互打；選單中暫停參戰。好友房停用單機靶與裝拆包計時。</small></div>
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
@@ -576,7 +577,7 @@
                     <label class="text-[10px] font-black text-[#FFBE0B] tracking-wider uppercase">2. 與朋友聯機對戰房間 (MULTIPLAYER ROOM)</label>
                     <div class="flex flex-wrap gap-1.5">
                         <button onclick="createMultiplayerRoom()" class="bg-[#00F5D4] hover:bg-[#00d8bb] text-black font-black px-3 py-1.5 text-xs val-clip-sm transition cursor-pointer">
-                            + 建立新房間
+                            + 建立好友房間
                         </button>
                         <button onclick="joinQuickPublicLobby()" class="bg-[#FFBE0B]/20 hover:bg-[#FFBE0B]/40 border border-[#FFBE0B] text-[#FFBE0B] font-bold px-3 py-1.5 text-xs val-clip-sm transition cursor-pointer">
                             ⚡ 快速加入公開房 (#PUBLIC)
@@ -669,7 +670,7 @@
         </div>
     </div>
 
-    <script src="./firebase-config.js"></script>
+    <script src="./multiplayer-config.js?v=net1"></script>
     <script src="./vendor/GLTFLoader.js"></script>
     <script src="./vendor/meshopt_decoder.js"></script>
     <script src="./vendor/mesh-bvh.js"></script>
@@ -679,9 +680,7 @@
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1156,11 +1155,13 @@
             document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);saveTrainingData();
         };
         window.setTrainerDuration=function(value) {
+            if(currentRoomId){networkFeedback('請先離開好友房間，再設定單人訓練');return;}
             const parsed=Number(value);if(![0,60,90,120].includes(parsed))return;
             state.trainingDuration=parsed;saveTrainingData();resetRound();
         };
-        window.resetTraining=function(){resetRound();lockPointerAndPlay();};
+        window.resetTraining=function(){if(currentRoomId)return;resetRound();lockPointerAndPlay();};
         window.startFreeRoam=function(){
+            if(currentRoomId){openNetworkMenu();networkFeedback('你已在好友自由練習房間');return;}
             setGameMode('stationary');state.freeRoam=true;state.trainingDuration=0;
             document.getElementById('trainer-duration').value='0';
             toggleBotsInMatch(false);document.getElementById('chk-enable-bots').checked=false;
@@ -1763,52 +1764,42 @@
         /********************************************************************
          * 7B. FIREBASE MULTIPLAYER ENGINE (REALTIME ROOMS, PLAYERS & EVENTS)
          ********************************************************************/
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        let db = null;
-        let auth = null;
-        let currentUser = null;
-        let multiplayerError = null;
-        let currentRoomId = null;
-        let unsubPlayers = null;
-        let unsubEvents = null;
-        let unsubRoomState = null;
-        let lastNetSyncTime = 0;
-        const remotePlayers = new Map(); // uid -> { uid, data, group, headMesh, bodyMesh, leftLeg, rightLeg, gunMesh, hpFill, nameSprite, targetPos, targetYaw }
-        const processedEventIds = new Set();
-
-        async function initFirebaseMultiplayer() {
-            try {
-                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
-                    multiplayerError = '尚未設定 Firebase，請先在 firebase-config.js 填入專案設定';
-                    document.getElementById('lobby-uid-display').textContent = '本地模式 (未偵測到雲端設定)';
-                    return;
-                }
-                const firebaseConfig = typeof __firebase_config === 'string'
-                    ? JSON.parse(__firebase_config) : __firebase_config;
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    if (user) {
-                        document.getElementById('lobby-uid-display').textContent = user.uid;
-                        document.getElementById('sb-my-uid').textContent = user.uid;
-                    }
-                });
-            } catch (err) {
-                multiplayerError = `雲端登入失敗 (${err.code || err.message})，請檢查 Firebase 設定與匿名登入`;
-                console.error('Firebase initialization error:', err);
-                document.getElementById('lobby-uid-display').textContent = '單機離線模式';
-            }
+        let currentUser=null,currentRoomId=null,roomSocket=null,lastNetSyncTime=0;
+        let previousSolo=null,roomPingTimer=null;
+        const remotePlayers=new Map();
+        let serverAddress='';
+        try{serverAddress=localStorage.getItem('valo-multiplayer-server')||window.__multiplayer_server||'';}catch{}
+        document.getElementById('input-server-url').value=serverAddress;document.querySelector('.network-deploy').hidden=!!serverAddress;
+        document.getElementById('lobby-uid-display').textContent='尚未加入房間';
+        function networkFeedback(text){document.getElementById('network-feedback').textContent=text;}
+        networkFeedback(serverAddress?'伺服器已設定，建立或加入房間開始連線':'尚未設定伺服器：需要先部署連線後端，再貼上網址');
+        window.openNetworkMenu=()=>{setMenuView('training');const panel=document.getElementById('network-panel');panel.open=true;panel.scrollIntoView({behavior:'smooth',block:'start'});};
+        document.getElementById('btn-save-server').addEventListener('click',()=>{
+            try{const value=normalizeServer(document.getElementById('input-server-url').value);leaveMultiplayerRoom();serverAddress=value;document.querySelector('.network-deploy').hidden=true;try{localStorage.setItem('valo-multiplayer-server',value);}catch{}networkFeedback('已套用伺服器，現在可以建立或加入房間');}catch(error){networkFeedback(error.message);}
+        });
+        function applyRoomTeam(team){
+            const changed=state.team!==team;state.team=team;const btn=document.getElementById('btn-switch-team');btn.textContent=team==='attack'?'陣營：攻擊方':'陣營：守備方';
+            if(changed)for(const rp of remotePlayers.values()){const color=rp.data.team===team?0x00f5d4:0xff4655;rp.torsoOutline.material.color.setHex(color);rp.headOutline.material.color.setHex(color);rp.hpFill.material.color.setHex(color);rp.group.remove(rp.nameSprite);rp.nameSprite=createNameplateSprite(rp.data.name,rp.data.team,rp.data.agent);rp.group.add(rp.nameSprite);}
         }
-        initFirebaseMultiplayer();
+        function applyServerSpawn(player){
+            if(!player)return;applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
+            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();
+            equipWeaponSlot(state.primaryWeaponKey);updateHealthHUD();pushMyNetworkState(true);
+        }
+        function receivePlayerSnapshot(players){
+            const seen=new Set();
+            for(const p of players){
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;continue;}
+                seen.add(p.uid);
+                if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
+                else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=p.hp>0;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
+                    if(changed){const color=p.team===state.team?0x00f5d4:0xff4655;rp.torsoOutline.material.color.setHex(color);rp.headOutline.material.color.setHex(color);rp.hpFill.material.color.setHex(color);rp.group.remove(rp.nameSprite);rp.nameSprite=createNameplateSprite(p.name,p.team,p.agent);rp.group.add(rp.nameSprite);}}
+            }
+            for(const [uid,rp]of remotePlayers)if(!seen.has(uid)){scene.remove(rp.group);remotePlayers.delete(uid);}
+            updateHealthHUD();updateLobbyPlayersUI();updateAliveHUD();updateScoreboardUI();
+            const attack=players.filter(p=>p.team==='attack').reduce((sum,p)=>sum+p.kills,0),defend=players.filter(p=>p.team==='defend').reduce((sum,p)=>sum+p.kills,0);
+            document.getElementById('score-ally').textContent=attack;document.getElementById('score-enemy').textContent=defend;
+        }
 
         function createNameplateSprite(nameText, team, agentKey) {
             const c = document.createElement('canvas');
@@ -1915,7 +1906,8 @@
             const nameSprite = createNameplateSprite(pData.name || 'Player', pData.team || 'attack', pData.agent || 'jett');
 
             group.add(bodyMesh, leftLeg, rightLeg, leftArm, rightArm, gunMesh, headMesh, hpBg, hpFill, nameSprite);
-            group.position.set(pData.x || 0, (pData.y || 2.2) - 2.2, pData.z || 20);
+            group.position.set(pData.x ?? 0, (pData.y ?? 2.2) - 2.2, pData.z ?? 20);
+            group.visible=(pData.hp??100)>0;
             scene.add(group);
 
             return {
@@ -1933,7 +1925,7 @@
                 hpBg,
                 hpFill,
                 nameSprite,
-                targetPos: new THREE.Vector3(pData.x || 0, (pData.y || 2.2) - 2.2, pData.z || 20),
+                targetPos: new THREE.Vector3(pData.x ?? 0, (pData.y ?? 2.2) - 2.2, pData.z ?? 20),
                 targetYaw: pData.yaw || 0,
                 walkCycle: 0
             };
@@ -1944,262 +1936,58 @@
             remotePlayers.clear();
         }
 
-        window.toggleMyTeam = function() {
-            state.team = state.team === 'attack' ? 'defend' : 'attack';
-            const btn = document.getElementById('btn-switch-team');
-            if (state.team === 'attack') {
-                btn.textContent = '陣營: 攻擊方 (赤紅)';
-                btn.className = 'bg-[#FF4655]/25 border border-[#FF4655] px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap hover:bg-[#FF4655] transition cursor-pointer';
-                placePlayerAtSpawn('attack');
-            } else {
-                btn.textContent = '陣營: 守備方 (青藍)';
-                btn.className = 'bg-[#00F5D4]/25 border border-[#00F5D4] px-2.5 py-1.5 text-xs font-bold text-[#00F5D4] whitespace-nowrap hover:bg-[#00F5D4] hover:text-black transition cursor-pointer';
-                placePlayerAtSpawn('defend');
-            }
-            pushMyStateToFirestore(true);
-            addChatMessage('系統', `你已切換至 ${state.team === 'attack' ? '攻擊方 (Attackers)' : '守備方 (Defenders)'}`);
+        window.toggleMyTeam=function(){
+            if(currentRoomId){if(state.isLocked){networkFeedback('請先按 B 開啟選單再切換陣營');return;}pushMyNetworkState(true);roomSocket?.send({type:'team',team:state.team==='attack'?'defend':'attack'});return;}
+            applyRoomTeam(state.team==='attack'?'defend':'attack');placePlayerAtSpawn(state.team);
         };
-
-        window.toggleBotsInMatch = function(enabled) {
-            state.enableBots = enabled;
-            spawnBots();
-            if (currentRoomId && db && currentUser) {
-                const roomDoc = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
-                setDoc(roomDoc, { enableBots: enabled, updatedAt: Date.now() }, { merge: true }).catch(() => {});
-            }
+        window.toggleBotsInMatch=function(enabled){if(currentRoomId){networkFeedback('好友房間停用單機靶');return;}state.enableBots=enabled;spawnBots();};
+        window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom();await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
+        window.joinQuickPublicLobby=()=>connectToMultiplayerRoom('PUBLIC');
+        window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
+        window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
+        window.leaveMultiplayerRoom=function(){
+            roomSocket?.leave();clearInterval(roomPingTimer);currentRoomId=null;currentUser=null;clearAllRemotePlayers();
+            document.getElementById('lobby-room-status').textContent='單人模式';document.getElementById('lobby-uid-display').textContent='尚未加入房間';
+            for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.add('hidden');
+            document.getElementById('round-phase-label').textContent='SOLO // LOCAL';document.getElementById('chk-enable-bots').disabled=false;
+            if(previousSolo){Object.assign(state,previousSolo);previousSolo=null;document.body.classList.toggle('is-training',isTraining());resetRound();document.getElementById('center-banner').classList.add('hidden');}document.getElementById('chk-enable-bots').checked=state.enableBots;for(const mode of ['stationary','strafing','tactical'])document.getElementById('mode-'+mode).disabled=false;
+            updateLobbyPlayersUI();updateAliveHUD();updateScoreboardUI();networkFeedback('已離開房間');
         };
-
-        window.createMultiplayerRoom = async function() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-            await connectToMultiplayerRoom(code);
-        };
-
-        window.joinQuickPublicLobby = async function() {
-            await connectToMultiplayerRoom('PUBLIC');
-        };
-
-        window.joinRoomByInput = async function() {
-            const raw = document.getElementById('input-room-code').value || '';
-            const code = raw.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-            if (!code) {
-                showCenterBanner('ROOM ERROR', '請輸入有效的房間代碼', 1600);
-                return;
-            }
-            await connectToMultiplayerRoom(code);
-        };
-
-        window.copyRoomCode = function() {
-            if (!currentRoomId) return;
-            const temp = document.createElement('input');
-            temp.value = currentRoomId;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-            showCenterBanner('ROOM CODE COPIED', `已複製房間代碼 [${currentRoomId}]，快傳給朋友吧！`, 2000);
-        };
-
-        window.leaveMultiplayerRoom = async function() {
-            if (unsubPlayers) { unsubPlayers(); unsubPlayers = null; }
-            if (unsubEvents) { unsubEvents(); unsubEvents = null; }
-            if (unsubRoomState) { unsubRoomState(); unsubRoomState = null; }
-            if (currentRoomId && db && currentUser) {
-                const myDoc = doc(db, 'artifacts', appId, 'public', 'data', `val_room_${currentRoomId}_players`, currentUser.uid);
-                deleteDoc(myDoc).catch(() => {});
-            }
-            currentRoomId = null;
-            clearAllRemotePlayers();
-            document.getElementById('lobby-room-status').textContent = '單人離線訓練 (未加入房間)';
-            document.getElementById('btn-copy-room').classList.add('hidden');
-            document.getElementById('btn-leave-room').classList.add('hidden');
-            document.getElementById('room-hud-pill').classList.add('hidden');
-            document.getElementById('round-phase-label').textContent = 'SOLO // LOCAL';
-            updateLobbyPlayersUI();
-            updateAliveHUD();
-        };
-
-        async function connectToMultiplayerRoom(roomCode) {
-            if (!db || !currentUser) {
-                showCenterBanner(multiplayerError ? 'CONNECTION ERROR' : 'CONNECTING...',
-                    multiplayerError || '正在初始化雲端連線，請稍候再試', 4000);
-                return;
-            }
-            await window.leaveMultiplayerRoom();
-
-            // Verify the backend accepts the room before showing a connected state.
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', roomCode);
-            try {
-                await setDoc(roomDocRef, {
-                    roomCode,
-                    enableBots: state.enableBots,
-                    updatedAt: Date.now()
-                }, { merge: true });
-            } catch (err) {
-                console.error('Room connection error:', err);
-                showCenterBanner('CONNECTION ERROR',
-                    `無法加入房間 (${err.code || err.message})，請檢查網路與 Firestore 權限`, 4000);
-                return;
-            }
-
-            currentRoomId = roomCode;
-            document.getElementById('input-room-code').value = roomCode;
-            document.getElementById('lobby-room-status').textContent = `已連線房號: #${roomCode}`;
-            document.getElementById('btn-copy-room').classList.remove('hidden');
-            document.getElementById('btn-leave-room').classList.remove('hidden');
-            document.getElementById('room-hud-pill').classList.remove('hidden');
-            document.getElementById('hud-room-code').textContent = `ROOM: ${roomCode}`;
-            document.getElementById('round-phase-label').textContent = `ROOM #${roomCode}`;
-            document.getElementById('sb-room-title').textContent = `ASCENT // MULTIPLAYER ROOM #${roomCode}`;
-
-            // 1. Listen to Room Global State (Spike Planted / Defused / Round Scores)
-            unsubRoomState = onSnapshot(roomDocRef, (snap) => {
-                if (!snap.exists()) return;
-                const rData = snap.data();
-                if (typeof rData.enableBots === 'boolean' && rData.enableBots !== state.enableBots) {
-                    state.enableBots = rData.enableBots;
-                    document.getElementById('chk-enable-bots').checked = state.enableBots;
-                    spawnBots();
-                }
-                if (typeof rData.scoreAttack === 'number') {
-                    state.scoreAlly = rData.scoreAttack;
-                    document.getElementById('score-ally').textContent = state.scoreAlly;
-                }
-                if (typeof rData.scoreDefend === 'number') {
-                    state.scoreEnemy = rData.scoreDefend;
-                    document.getElementById('score-enemy').textContent = state.scoreEnemy;
-                }
-                if (rData.spikePlanted && !state.spikePlanted) {
-                    state.spikePlanted = true;
-                    state.spikeTimer = 45;
-                    spikeGroup.position.set(rData.spikeX || 0, 0, rData.spikeZ || -12);
-                    spikeGroup.visible = true;
-                    document.getElementById('spike-hud-badge').classList.remove('hidden');
-                    sfx.playSpikeBeep(true);
-                    showCenterBanner('SPIKE PLANTED // 輻能核心已部署', `${rData.planterName || '隊友'} 已在 A 據點部署輻能核心！`, 2400);
-                } else if (rData.spikePlanted === false && state.spikePlanted) {
-                    state.spikePlanted = false;
-                    spikeGroup.visible = false;
-                    document.getElementById('spike-hud-badge').classList.add('hidden');
-                }
-            }, (err) => console.error('Room state listener error:', err));
-
-            // 2. Listen to All Players in Room
-            const playersColRef = collection(db, 'artifacts', appId, 'public', 'data', `val_room_${roomCode}_players`);
-            unsubPlayers = onSnapshot(playersColRef, (snapshot) => {
-                const now = Date.now();
-                const seenUids = new Set();
-
-                snapshot.forEach((docSnap) => {
-                    const p = docSnap.data();
-                    const uid = docSnap.id;
-                    if (!p || (now - (p.updatedAt || 0) > 45000)) return; // Ignore stale players > 45s
-                    seenUids.add(uid);
-
-                    if (uid === currentUser.uid) return; // Skip self
-
-                    if (!remotePlayers.has(uid)) {
-                        const rp = createRemotePlayerAvatar(uid, p);
-                        remotePlayers.set(uid, rp);
-                        addChatMessage('系統', `${p.name || '新特務'} 加入了房間 (${p.team === 'attack' ? '攻擊方' : '守備方'})`);
-                    } else {
-                        const rp = remotePlayers.get(uid);
-                        const teamOrNameChanged = (rp.data.team !== p.team || rp.data.name !== p.name || rp.data.agent !== p.agent);
-                        rp.data = p;
-                        rp.targetPos.set(p.x || 0, (p.y || 2.2) - 2.2, p.z || 0);
-                        rp.targetYaw = p.yaw || 0;
-                        rp.group.visible = (p.hp > 0);
-                        rp.hpFill.scale.x = Math.max(0.01, (p.hp || 0) / 100);
-
-                        if (teamOrNameChanged) {
-                            const isEnemy = p.team !== state.team;
-                            const col = isEnemy ? 0xFF4655 : 0x00F5D4;
-                            rp.torsoOutline.material.color.setHex(col);
-                            rp.headOutline.material.color.setHex(col);
-                            rp.hpFill.material.color.setHex(col);
-                            rp.group.remove(rp.nameSprite);
-                            rp.nameSprite = createNameplateSprite(p.name || 'Player', p.team || 'attack', p.agent || 'jett');
-                            rp.group.add(rp.nameSprite);
-                        }
-                    }
-                });
-
-                // Remove disconnected players
-                remotePlayers.forEach((rp, uid) => {
-                    if (!seenUids.has(uid)) {
-                        scene.remove(rp.group);
-                        remotePlayers.delete(uid);
-                    }
-                });
-
-                updateLobbyPlayersUI();
-                updateAliveHUD();
-                updateScoreboardUI();
-            }, (err) => console.error('Players listener error:', err));
-
-            // 3. Listen to Realtime Combat & Tactical Events (Shots, Hits, Kills, Smokes, Walls, Chat)
-            const eventsColRef = collection(db, 'artifacts', appId, 'public', 'data', `val_room_${roomCode}_events`);
-            unsubEvents = onSnapshot(eventsColRef, (snapshot) => {
-                const now = Date.now();
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type !== 'added') return;
-                    const evId = change.doc.id;
-                    if (processedEventIds.has(evId)) return;
-                    processedEventIds.add(evId);
-
-                    const ev = change.doc.data();
-                    if (!ev || (now - (ev.timestamp || 0) > 10000)) return; // Only process recent events
-
-                    handleNetworkCombatEvent(ev);
-                });
-            }, (err) => console.error('Events listener error:', err));
-
-            await pushMyStateToFirestore(true);
-            broadcastRoomEvent({
-                type: 'chat',
-                senderName: state.playerName,
-                senderTeam: state.team,
-                text: `已進入戰場房間 #${roomCode}！`
-            });
-            showCenterBanner(`CONNECTED // 房間 #${roomCode}`, '多人即時連線已啟動！複製房號邀請朋友加入對戰', 2400);
+        function getRoomClient(){
+            if(!serverAddress)throw Error('尚未設定連線後端；請先部署伺服器並填入上方網址');
+            if(roomSocket&&roomSocket.server===normalizeServer(serverAddress))return roomSocket;
+            roomSocket?.leave();
+            roomSocket=new RoomClient(serverAddress,{
+                status(status){
+                    const messages={connecting:'正在連線…',connected:'已連線 · #'+(currentRoomId||''),reconnecting:'連線中斷，正在重連…',disconnected:'已斷線，請重新加入房間'};
+                    networkFeedback(messages[status]);document.getElementById('lobby-room-status').textContent=messages[status];
+                    if(status==='reconnecting'||status==='disconnected'){clearAllRemotePlayers();updateLobbyPlayersUI();updateAliveHUD();resetMovementInput();safeExitPointerLock();showBuyMenu('training');document.getElementById('network-panel').open=true;}if(status==='disconnected'&&currentRoomId){leaveMultiplayerRoom();networkFeedback(messages[status]);}
+                },
+                welcome(message){
+                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;
+                    if(!previousSolo)previousSolo={enableBots:state.enableBots,gameMode:state.gameMode};
+                    state.enableBots=false;state.gameMode='tactical';for(const mode of ['stationary','strafing','tactical'])document.getElementById('mode-'+mode).disabled=true;spawnBots();document.body.classList.remove('is-training');
+                    document.getElementById('chk-enable-bots').checked=false;document.getElementById('chk-enable-bots').disabled=true;
+                    document.getElementById('input-room-code').value=currentRoomId;document.getElementById('lobby-uid-display').textContent=message.uid;document.getElementById('sb-my-uid').textContent=message.uid;
+                    document.getElementById('lobby-room-status').textContent='房間 #'+currentRoomId+' · 自由練習';
+                    for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
+                    document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent='ROOM #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
+                    document.getElementById('sb-room-title').textContent='ASCENT // ROOM #'+currentRoomId;
+                    applyServerSpawn(message.player);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                },
+                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,
+                damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',message.attacker+' · 5 秒後重生',4000);}},
+                latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
+            });return roomSocket;
         }
-
-        async function pushMyStateToFirestore(force = false) {
-            if (!db || !currentUser || !currentRoomId) return;
-            const now = performance.now();
-            if (!force && now - lastNetSyncTime < 90) return; // ~11 Hz smooth position sync
-            lastNetSyncTime = now;
-
-            const myDocRef = doc(db, 'artifacts', appId, 'public', 'data', `val_room_${currentRoomId}_players`, currentUser.uid);
-            setDoc(myDocRef, {
-                uid: currentUser.uid,
-                name: state.playerName,
-                team: state.team,
-                agent: state.agent,
-                weapon: state.weaponKey,
-                x: Number(yawObject.position.x.toFixed(2)),
-                y: Number(yawObject.position.y.toFixed(2)),
-                crouching: state.crouchAmount > 0.5,
-                z: Number(yawObject.position.z.toFixed(2)),
-                yaw: Number(yawObject.rotation.y.toFixed(3)),
-                hp: Math.max(0, Math.ceil(state.hp)),
-                shield: Math.max(0, Math.ceil(state.shield)),
-                kills: state.kills,
-                deaths: state.deaths,
-                updatedAt: Date.now()
-            }).catch(() => {});
+        async function connectToMultiplayerRoom(code){
+            try{const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey});}catch(error){networkFeedback(error.message);}
         }
-
-        function broadcastRoomEvent(payload) {
-            if (!db || !currentUser || !currentRoomId) return;
-            const eventsColRef = collection(db, 'artifacts', appId, 'public', 'data', `val_room_${currentRoomId}_events`);
-            addDoc(eventsColRef, {
-                ...payload,
-                senderUid: currentUser.uid,
-                timestamp: Date.now()
-            }).catch(() => {});
+        async function pushMyNetworkState(force=false){
+            if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
+            roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0,shield:state.shield});
         }
+        function broadcastRoomEvent(payload){if(payload.type==='shot')pushMyNetworkState(true);roomSocket?.send(payload);}
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
@@ -2217,15 +2005,9 @@
                 return;
             }
 
-            if (ev.type === 'hit' && ev.targetUid === currentUser.uid && state.hp > 0) {
-                applyDamageToPlayer(ev.dmg || 40, ev.attackerName || '敵方特務', ev.weaponName || 'VANDAL', ev.isHead);
-                return;
-            }
-
             if (ev.type === 'kill') {
                 addKillfeedItem(ev.killerName, ev.victimName, ev.weaponName, ev.isHead);
                 if (ev.killerUid === currentUser.uid) {
-                    state.kills++;
                     state.roundKills++;
             if(state.agent==='jett'&&state.roundKills%2===0)state.eCharges=1;
                     state.creds = Math.min(9000, state.creds + 300);
@@ -2246,6 +2028,7 @@
                 return;
             }
 
+            if(ev.type==='slow'&&ev.senderUid!==currentUser.uid){spawnSlowField(new THREE.Vector3(ev.x,ev.y,ev.z));return;}
             if (ev.type === 'flash' && ev.senderUid !== currentUser.uid && ev.senderTeam !== state.team) {
                 const flashEl = document.getElementById('flash-overlay');
                 flashEl.style.opacity = '0.9';
@@ -2264,7 +2047,7 @@
             if (!box) return;
             const div = document.createElement('div');
             const colorClass = sender === '系統' ? 'text-[#FFBE0B]' : (team === 'attack' ? 'text-[#FF4655]' : 'text-[#00F5D4]');
-            div.innerHTML = `<span class="font-bold ${colorClass}">[${sender}]:</span> <span class="text-white/90">${text}</span>`;
+            const author=document.createElement('span');author.className='font-bold '+colorClass;author.textContent='['+sender+']: ';const body=document.createElement('span');body.className='text-white/90';body.textContent=text;div.append(author,body);
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
         }
@@ -2651,7 +2434,7 @@
             addKillfeedItem(state.playerName, bot.name, WEAPONS[state.weaponKey].name, isHead);
             updateAliveHUD();
             updateShopUI();
-            pushMyStateToFirestore(true);
+            pushMyNetworkState(true);
             if (currentRoomId || state.gameMode !== 'tactical') {
                 setTimeout(() => {
                     bot.hp = 100;
@@ -2803,6 +2586,7 @@
             point.y=realMap.ready?realMap.getGroundHeight(point.clone().add(new THREE.Vector3(0,2.2,0))):0;
             return point;
         }
+        function spawnSlowField(p){const mesh=new THREE.Mesh(new THREE.CircleGeometry(5,48),new THREE.MeshBasicMaterial({color:0x76d8cb,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide}));mesh.rotation.x=-Math.PI/2;mesh.position.copy(p);mesh.position.y+=.04;scene.add(mesh);slowFields.push({mesh,life:7});}
         function slowMultiplier(point) {return slowFields.some(f=>Math.hypot(point.x-f.mesh.position.x,point.z-f.mesh.position.z)<5 && Math.abs(point.y-f.mesh.position.y)<3)?.5:1;}
         function updateAbilityHUD() {
             const sage=state.agent!=='jett';
@@ -2845,8 +2629,7 @@
             if(state.qCharges<=0||state.inBuyMenu||state.hp<=0)return;
             if(state.agent==='jett'){playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
             else {
-                const p=aimedPoint(24);const mesh=new THREE.Mesh(new THREE.CircleGeometry(5,48),new THREE.MeshBasicMaterial({color:0x76d8cb,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide}));
-                mesh.rotation.x=-Math.PI/2;mesh.position.copy(p);mesh.position.y+=.04;scene.add(mesh);slowFields.push({mesh,life:7});
+                const p=aimedPoint(24);spawnSlowField(p);broadcastRoomEvent({type:'slow',x:p.x,y:p.y,z:p.z});
                 sfx.playAbilitySound('smoke');
             }
             state.qCharges--;updateAbilityHUD();
@@ -2868,6 +2651,7 @@
                 }
             } else {
                 if(state.eCooldown>0||state.hp>=100)return;
+                if(currentRoomId)broadcastRoomEvent({type:'heal'});
                 state.healRemaining=30;state.healClock=0;state.eCooldown=45;sfx.playAbilitySound('smoke');
             }
             updateAbilityHUD();
@@ -2942,6 +2726,7 @@
         };
 
         window.setGameMode = function(mode) {
+            if(currentRoomId){networkFeedback('請先離開好友房間，再選擇單人訓練');return;}
             if (!['tactical','strafing','stationary'].includes(mode)) return;
             state.gameMode = mode;
             if(state.freeRoam) {state.enableBots=true;document.getElementById('chk-enable-bots').checked=true;state.freeRoam=false;}
@@ -3140,20 +2925,7 @@
             const subTitle = allyWon ? 'ROUND WON // 攻擊方勝利' : 'ROUND WON // 守備方勝利';
             showCenterBanner(subTitle, reasonText, 3100);
 
-            if (broadcast && currentRoomId && db) {
-                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
-                setDoc(roomDocRef, {
-                    scoreAttack: state.scoreAlly,
-                    scoreDefend: state.scoreEnemy,
-                    spikePlanted: false,
-                    updatedAt: Date.now()
-                }, { merge: true }).catch(() => {});
-                broadcastRoomEvent({
-                    type: 'round_end',
-                    bannerSub: subTitle,
-                    bannerTitle: reasonText
-                });
-            }
+
 
             setTimeout(() => resetRound(false), 3300);
         }
@@ -3209,12 +2981,9 @@
             updateHealthHUD();
             updateAmmoHUD();
             updateShopUI();
-            pushMyStateToFirestore(true);
+            pushMyNetworkState(true);
 
-            if (syncRoomDoc && currentRoomId && db) {
-                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
-                setDoc(roomDocRef, { spikePlanted: false, updatedAt: Date.now() }, { merge: true }).catch(() => {});
-            }
+
         }
 
         function resetMovementInput() {
@@ -3262,6 +3031,7 @@
         }
 
         function lockPointerAndPlay() {
+            if(currentRoomId&&!roomSocket?.connected){networkFeedback('尚未重新連上房間，請稍候');return;}
             if(!realMap.ready)return;
             if (state.training.finished) resetRound();
             sfx.init();sfx.preloadSamples();
@@ -3279,6 +3049,7 @@
             safeExitPointerLock();
         });
         document.getElementById('btn-reset-round').addEventListener('click', () => {
+            if(currentRoomId){abilityNotice('連線角色由伺服器重生；離開房間後可重置單人訓練');return;}
             resetRound();
             showCenterBanner('ROUND RESET', '戰場與特務靶位已重置', 1400);
         });
@@ -3346,6 +3117,8 @@
         document.addEventListener('keydown', (e) => {
             const code = e.code;
             if(e.repeat&&['KeyB','KeyC','KeyQ','KeyE','KeyX','KeyY'].includes(code))return;
+
+            if(code==='Enter'&&state.inBuyMenu){const id=document.activeElement?.id;if(id==='input-room-code'){e.preventDefault();joinRoomByInput();}else if(id==='input-server-url'){e.preventDefault();document.getElementById('btn-save-server').click();}return;}
 
             // Handle Enter key for In-Game Multiplayer Chat
             if (code === 'Enter') {
@@ -3726,6 +3499,7 @@
                 if ((rp.data.hp ?? 100) <= 0) return;
                 const distMove = rp.group.position.distanceTo(rp.targetPos);
                 rp.group.position.lerp(rp.targetPos, Math.min(1, dt * 12));
+                rp.footsteps ||= new FootstepTracker();const footfall=rp.footsteps.update(rp.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:realMap.ready?Math.abs(realMap.getGroundHeight(rp.targetPos.clone().add(new THREE.Vector3(0,2.2,0)))-rp.group.position.y)<.4:true,quiet:rp.data.walking||rp.data.crouching});if(footfall){const delta=rp.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36)sfx.playFootstep(footfall==='land',.35*(1-distance/36)**2,delta.normalize().dot(new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y)));}
                 rp.group.rotation.y = rp.targetYaw;
                 rp.group.scale.y += ((rp.data.crouching ? 0.68 : 1) - rp.group.scale.y) * Math.min(1, dt * 18);
                 rp.hpBg.lookAt(playerPos);
@@ -3743,6 +3517,7 @@
         }
 
         function applyDamageToPlayer(dmg, attackerName = '敵方特務', weaponName = 'VANDAL', isHead = false) {
+            if(currentRoomId)return;
             if (state.hp <= 0) return;
             if (state.shield > 0) {
                 const absorb = Math.min(state.shield, Math.ceil(dmg * 0.66));
@@ -3752,7 +3527,7 @@
                 state.hp -= dmg;
             }
             updateHealthHUD();
-            pushMyStateToFirestore(true);
+            pushMyNetworkState(true);
 
             const vig = document.getElementById('damage-overlay');
             const arc = document.getElementById('damage-arc');
@@ -3768,7 +3543,7 @@
                 state.deaths++;
                 updateHealthHUD();
                 updateAliveHUD();
-                pushMyStateToFirestore(true);
+                pushMyNetworkState(true);
 
                 if (currentRoomId) {
                     broadcastRoomEvent({
@@ -3788,7 +3563,7 @@
                             placePlayerAtSpawn('defend');
                         }
                         updateHealthHUD();
-                        pushMyStateToFirestore(true);
+                        pushMyNetworkState(true);
                     }, 5000);
                 } else {
                     endRound(false, `你已被 ${attackerName} 擊斃 ELIMINATED`);
@@ -3798,7 +3573,7 @@
 
         function updateTimersAndSpike(dt) {
             if(state.isLocked&&!state.inBuyMenu) {
-                if(state.healRemaining>0){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
+                if(state.healRemaining>0&&!currentRoomId){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
                 for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life-=dt;if(f.life<=0){scene.remove(f.mesh);f.mesh.geometry.dispose();f.mesh.material.dispose();slowFields.splice(i,1);}}
                 for(let i=temporaryWalls.length-1;i>=0;i--){const w=temporaryWalls[i];w.userData.life-=dt;if(w.userData.life<=0||w.userData.barrierHP<=0){scene.remove(w);const j=shootableMeshes.indexOf(w);if(j>=0)shootableMeshes.splice(j,1);temporaryWalls.splice(i,1);w.geometry.dispose();w.material.dispose();}}
             }
@@ -3816,6 +3591,7 @@
                 }
             });
 
+            if(currentRoomId){document.getElementById('round-timer').textContent='∞';document.getElementById('site-prompt').classList.add('hidden');return;}
             if (!state.isLocked || state.roundEnding || isTraining()) return;
 
             const onSite = isPlayerOnSiteA();
@@ -3843,16 +3619,7 @@
                         sfx.playSpikeBeep(true);
                         showCenterBanner('SPIKE PLANTED // 輻能核心已部署', `守住 ${state.spikeSite || 'A'} 據點直到輻能引爆！`, 2400);
 
-                        if (currentRoomId && db) {
-                            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'val_rooms', currentRoomId);
-                            setDoc(roomDocRef, {
-                                spikePlanted: true,
-                                spikeX: yawObject.position.x,
-                                spikeZ: yawObject.position.z,
-                                planterName: state.playerName,
-                                updatedAt: Date.now()
-                            }, { merge: true }).catch(() => {});
-                        }
+
                     } else if (canDefuse) {
                         state.spikePlanted = false;
                         spikeGroup.visible = false;
@@ -3997,7 +3764,7 @@
             updateBotsAndVFX(dt);
             updateTimersAndSpike(dt);
             tickTraining(realDt);
-            pushMyStateToFirestore(false);
+            pushMyNetworkState(false);
             drawRadar();
 
             if(!state.inBuyMenu){realMap.updateCulling(camera);renderer.render(scene, camera);}
