@@ -292,3 +292,9 @@ Sites 的 iframe 已允許 fullscreen 且沒有 pointer-lock sandbox 限制。�
 換彈仍使用既有時間與彈量規則。檢視動作較輕，後座俯仰會回正；Operator 開鏡時持續隱藏手與槍，避免畫面更新又把它們顯示在鏡內。換槍釋放自建網格／材質，來源槍模幾何與共用貼圖繼續快取。這些手部與彈匣為本專案的近似模型與動作，並非官方完整角色骨架／動畫。
 
 驗證：`node tests/test_first_person_view.cjs` 實測五把槍的三角面保留、雙手／材質、換彈與回位、彈量、角色外觀、檢視、狙擊鏡、槌子與飛刀，並實際編譯 shader 及輸出畫面；另執行 `tests/test_gameplay.cjs`、`tests/test_ability_effects.cjs`、武器與操控檢查。
+
+## 角色噴漆圖片
+
+Sage 預設噴漆換為 All Good（冰牆前比讚），Jett 換為 Love > Hate（手指比心與風之心形），對應使用者提供的兩張參考。Sage 使用固定版本公開圖庫的原始透明 WebP；Jett 為依使用者圖片以影像生成工具去背的 PNG，屬參考圖處理版本，並非官方像素完全一致的擷取。兩張都隨網站放在 `assets/sprays/`，不需外部圖片服務；來源與雜湊見 `assets/sprays/provenance.json`。
+
+噴漆預載後才允許施放，依原圖寬高比顯示並保留透明邊角；尚未載好或載入失敗不會噴出白色方片。好友事件仍傳既有 sage／jett 圖案 ID，不需後端遷移；兩端重新整理後即可看到相同圖案。冷卻 3 秒、30 秒到期與每人一張的規則維持。`node tests/test_spray_art_browser.cjs` 檢查角色自動選圖、透明像素、比例、牆／地板方向、冷卻與清理；`tests/test_skill_multiplayer.cjs` 檢查好友端的相同 Sage 圖片與落點。

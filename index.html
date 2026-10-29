@@ -554,7 +554,7 @@
                         <div class="section-heading"><h2><span>02</span> 調整手感</h2><small>MAKE IT YOURS</small></div>
                         <div class="trainer-settings-grid">
                             <label>滑鼠靈敏度 <output id="sensitivity-value">0.35</output><input id="sensitivity-input" type="range" min="0.1" max="1" step="0.01" value="0.35" oninput="setTrainerSensitivity(this.value)"><small>固定 DPI，找到適合自己的手感。</small></label>
-                            <label>噴漆 · [T]<select id="spray-design" onchange="setSprayDesign(this.value)"><option value="agent">隨角色</option><option value="jett">JETT · 疾風</option><option value="sage">SAGE · 玉環</option><option value="gg">GG · 好局</option></select><small>近距離貼牆／地面；冷卻 3 秒，保留 30 秒。</small></label>
+                            <label>噴漆 · [T]<select id="spray-design" onchange="setSprayDesign(this.value)"><option value="agent">隨角色</option><option value="jett">JETT · 比心</option><option value="sage">SAGE · 讚</option><option value="gg">GG · 好局</option></select><small>近距離貼牆／地面；冷卻 3 秒，保留 30 秒。</small></label>
                             <label>遊戲時間<select id="trainer-duration" onchange="setTrainerDuration(this.value)"><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">2 分鐘</option><option value="180">3 分鐘</option><option value="300">5 分鐘 · 預設</option><option value="600">10 分鐘</option><option value="0">自由練習 · 不限時</option></select><small>單人訓練與戰術回合共用；開啟購買頁時暫停。</small></label>
                             <div>準星顏色<div class="crosshair-swatches"><button style="--swatch:#00f5d4" onclick="setCrosshairColor('#00f5d4')" aria-label="青色準星"></button><button style="--swatch:#ffffff" onclick="setCrosshairColor('#ffffff')" aria-label="白色準星"></button><button style="--swatch:#ff4655" onclick="setCrosshairColor('#ff4655')" aria-label="紅色準星"></button><button style="--swatch:#b5ff62" onclick="setCrosshairColor('#b5ff62')" aria-label="綠色準星"></button></div><small>選擇與場景對比清楚的顏色。</small></div>
                         </div>
@@ -690,7 +690,8 @@
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
         import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=hands1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=slow1';
-        import {makeSpray,removeSpray,sprayHiss} from './spray.js?v=skills2';
+        import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
+        preloadSprayArt();
         import {SpikeModel} from './spike-model.js?v=spike1';
         import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
@@ -2813,6 +2814,7 @@
             const matrix=hit.object.matrixWorld.clone();if(hit.instanceId!==undefined){const instance=new THREE.Matrix4();hit.object.getMatrixAt(hit.instanceId,instance);matrix.multiply(instance);}
             const normal=hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(matrix)).normalize();if(normal.dot(dir)>0)normal.negate();
             const design=state.sprayDesign==='agent'?(state.agent==='jett'?'jett':'sage'):state.sprayDesign;
+            const artState=sprayAssetState(design);if(artState!=='ready'){abilityNotice(artState==='error'?'噴漆圖片載入失敗，請重新整理':'噴漆圖片載入中，請稍候');return;}
             const e={type:'spray',ownerUid:currentUser?.uid||'solo',x:hit.point.x,y:hit.point.y,z:hit.point.z,nx:normal.x,ny:normal.y,nz:normal.z,yaw:yawObject.rotation.y,design:design||'jett',expiresAt:Date.now()+30000};
             if(currentRoomId){lastSpray=Date.now();pushMyNetworkState(true);broadcastRoomEvent(e);}else receiveSpray(e);
         }

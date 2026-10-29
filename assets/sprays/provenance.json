@@ -1,0 +1,26 @@
+{
+  "files": {
+    "sage.webp": {
+      "bytes": 28876,
+      "sha256": "3da0d87bb277d64a15b1a08f8ec5154f6ab615f737dc55148d066d4c5c4d1c0c",
+      "width": 512,
+      "height": 512
+    },
+    "jett.png": {
+      "bytes": 610604,
+      "sha256": "d275238077eddad7de643203443ff139a57fe3134d786fa6a4b67bd0bfbceefd",
+      "width": 1228,
+      "height": 1281
+    }
+  },
+  "sage": {
+    "name": "All Good",
+    "source": "https://github.com/45H15H/WhatsApp_Sticker_App/blob/e37ee8ff3bc94751df173f252c5d829d12e88e3e/Android/app/src/main/assets/1/All_Good_Spray.webp",
+    "type": "unchanged transparent artwork"
+  },
+  "jett": {
+    "name": "Love > Hate",
+    "source": "user-provided reference, background removal with image generation",
+    "type": "reference-based transparent cutout; not a pixel-identical official asset extraction"
+  }
+}
