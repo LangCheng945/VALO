@@ -676,7 +676,7 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=abyss1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=summit-paths1';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
         import {abilityIcon,makeCloudburst,makeBarrier,makeSlowField,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=icons2';
@@ -1364,7 +1364,7 @@
 
         function buildArena() {
             shootableMeshes.length=0;mapColliders.length=0;mapRadarRects.length=0;
-            if(realMap.ready)shootableMeshes.push(realMap.collisionMesh);
+            if(realMap.ready){shootableMeshes.push(realMap.collisionMesh);if(realMap.projectileCollisionMesh)shootableMeshes.push(realMap.projectileCollisionMesh);}
         }
         function placePlayerAtSpawn(team=state.team) {
             if(!realMap.ready)return;

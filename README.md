@@ -161,6 +161,9 @@ Haven 使用完整 `triad` 場景 GLB、內嵌貼圖、原始碰撞與小地圖�
 B 區繩索附近按 F 上繩，W／S 上下攀爬，Shift 慢爬，F 或空白鍵離開。
 攀爬路徑以小步碰撞檢查避開繩索與平台邊緣；開啟選單、死亡與使用位移技能會解除攀爬。
 好友房支援 Summit，同房自動切圖、傷害、重生與斷線重連皆使用房間地圖。
+Summit 的 `projectile` 阻擋面另建射擊碰撞，玩家只使用地圖實體與 `pawn` 阻擋面，
+避免 A 大廳（約 86, -42）與 B 大廳（約 29, -53）產生無法通行的隱形牆。
+瀏覽器測試以 W／S 連續往返這兩個入口，並確認子彈碰撞仍保留。
 Cloudflare 後端亦需更新；`/health` 的 maps 應包含 `summit`。
 
 驗證：`node tests/test_summit_assets.cjs`、`node tests/test_summit_browser.cjs`、

@@ -12,7 +12,7 @@ export const MAPS=Object.freeze({
         training:[[-45,-24,3],[-57,-33,3],[-69,-62,1],[-80,-1.8,1],[-87,28,2]],
         tactical:[[-92,-64,3],[-90,-16,3],[-90,26,2],[-80,-1.8,1],[-67,-18,1]],
         sites:[{name:'A',minX:-105,maxX:-79,minZ:-75,maxZ:-52},{name:'B',minX:-105,maxX:-81,minZ:-31,maxZ:-7},{name:'C',minX:-106,maxX:-77,minZ:14,maxZ:38}]},
-    summit:{id:'summit',name:'Summit',title:'天樞雲闕',bytes:18167644,ropes:true,ropeGuide:{approach:[.8,.8],exit:[0,.8]},
+    summit:{id:'summit',name:'Summit',title:'天樞雲闕',bytes:18167644,separateProjectileCollision:true,ropes:true,ropeGuide:{approach:[.8,.8],exit:[0,.8]},
         spawns:{attack:[59,-7.5,2,0],defend:[61.75,-120.75,4,Math.PI]},
         training:[[61.75,-56.75,2],[86.25,-31.75,2],[86.25,-55,1],[32.25,-51.25,2],[18.5,-65,1]],
         tactical:[[116,-76.75,1],[13.75,-85.5,1],[99.25,-76.75,1],[36.75,-90.75,1],[58.25,-75,1]],
@@ -39,9 +39,9 @@ function worldPositions(mesh,target,offset) {
     return offset;
 }
 
-function volumePositions(data) {
+function volumePositions(data,types=['pawn','projectile']) {
     const result=[];
-    for(const type of ['pawn','projectile']) {
+    for(const type of types) {
         const set=data.sets[type];if(!set)continue;
         for(let i=0;i<set.count;i++) {
             const primitive=data.prims[set.prim[i]],m=set.m.slice(i*12,i*12+12);
@@ -92,7 +92,7 @@ export class AscentMapRuntime {
         this.raycaster=new T.Raycaster();this.raycaster.firstHitOnly=true;
         this.segment=new T.Line3();this.capsuleBox=new T.Box3();this.trianglePoint=new T.Vector3();this.capsulePoint=new T.Vector3();
         this.minimapImage=new Image();
-        this.spawnCache=new Map();this.ropes=[];
+        this.spawnCache=new Map();this.ropes=[];this.projectileCollisionMesh=null;
     }
     async load(progress=()=>{}) {
         const BASE=this.base,name=this.definition.name;progress(`下載 ${name} 模型…`);
@@ -109,7 +109,9 @@ export class AscentMapRuntime {
         const meshes=[];original.traverse(object=>{if(object.isMesh)meshes.push(object)});
         const excluded=new Set(collision.noCollision||[]);
         const physical=meshes.filter(mesh=>!excluded.has(sourceName(mesh))&&!/fog|cloud|lightshaft|skybox|vfx/i.test(sourceName(mesh)));
-        const extra=volumePositions(collision);
+        // Projectile-only barriers must not become invisible walls for players.
+        const splitProjectiles=this.definition.separateProjectileCollision;
+        const extra=volumePositions(collision,splitProjectiles?['pawn']:['pawn','projectile']);
         const vertexCount=physical.reduce((sum,mesh)=>sum+(mesh.geometry.index?mesh.geometry.index.count:mesh.geometry.attributes.position.count),0);
         const positions=new Float32Array(vertexCount*3+extra.length);
         let offset=0;for(const mesh of physical)offset=worldPositions(mesh,positions,offset);
@@ -119,6 +121,14 @@ export class AscentMapRuntime {
         this.collisionMesh=new T.Mesh(geometry,new T.MeshBasicMaterial({side:T.DoubleSide}));
         this.collisionMesh.name=this.id+'-collision';this.collisionMesh.raycast=globalThis.MeshBVHLib.acceleratedRaycast;
         this.collisionMesh.updateMatrixWorld(true);
+        if(splitProjectiles){
+            const projectilePositions=new Float32Array(volumePositions(collision,['projectile']));
+            const projectileGeometry=new T.BufferGeometry();projectileGeometry.setAttribute('position',new T.BufferAttribute(projectilePositions,3));
+            projectileGeometry.boundsTree=new globalThis.MeshBVHLib.MeshBVH(projectileGeometry,{maxLeafTris:12});
+            this.projectileCollisionMesh=new T.Mesh(projectileGeometry,new T.MeshBasicMaterial({side:T.DoubleSide}));
+            this.projectileCollisionMesh.name=this.id+'-projectile-only';
+            this.projectileCollisionMesh.raycast=globalThis.MeshBVHLib.acceleratedRaycast;this.projectileCollisionMesh.updateMatrixWorld(true);
+        }
         const batches=batchVisuals(meshes);this.root.add(batches.group);this.batches=batches.items;
         this.ropes=(ropeData?.ropes||[]).map(source=>{const raw=source.points.map(p=>new T.Vector3(...p).multiplyScalar(MAP_SCALE));const guide=this.definition.ropeGuides?.[source.name]||this.definition.ropeGuide;const points=guide?raw.map(p=>p.clone().add(new T.Vector3(guide.approach[0],guide.yLift||0,guide.approach[1]))):raw;if(guide){points.at(-1).y+=guide.endLift??.06;if(guide.exit)points.push(raw.at(-1).clone().add(new T.Vector3(guide.exit[0],guide.endLift??.06,guide.exit[1])));}const cumulative=[0];for(let i=1;i<points.length;i++)cumulative.push(cumulative[i-1]+points[i].distanceTo(points[i-1]));return {name:source.name,points,cumulative,length:cumulative.at(-1),runSpeed:(source.tuning?.runSpeed||675)/100*MAP_SCALE,walkSpeed:(source.tuning?.walkSpeed||345)/100*MAP_SCALE};});
         this.metadata=minimap;this.minimapImage.src=new URL('minimap.png',BASE).href;
