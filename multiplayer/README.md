@@ -9,7 +9,7 @@ WebSocket + Cloudflare Durable Objects (SQLite)。不需要 Firebase。
 
 按上面的按鈕，以你的 Cloudflare 帳號登入／連接此 GitHub 專案，部署 `multiplayer/`。
 部署使用本資料夾的 wrangler.jsonc，包含 GameRoom Durable Object 綁定與 SQLite migration。
-完成後複製 `https://valo-multiplayer.<你的帳號>.workers.dev` 公開網址。
+完成後複製 `https://valo.<你的帳號>.workers.dev` 公開網址。
 
 已安裝 Node.js 的使用者也可在本機登入自己的 Cloudflare 帳號後執行：
 
@@ -58,3 +58,16 @@ Worker 測試實際連到本機 workerd 的 WebSocket，檢查兩人同步、房
 射擊傷害、重生、斷線、resume token 與 10 人容量。
 兩個獨立瀏覽器 context 的測試保留真實地圖／碰撞／射線與遊戲程式，僅省略 CI 的 GPU 繪圖。
 公開網路仍需在你的 Worker 部署後，以兩台實際裝置驗證。
+
+
+## 目前網站的部署入口
+
+目前公開 Worker URL 設為 `https://valo.09786593a.workers.dev`，Worker 名稱為 `valo`。
+儲存庫根目錄與 multiplayer/ 都提供 wrangler.jsonc：
+
+- Cloudflare 建置根目錄為 repo 根目錄：執行 `npx wrangler deploy`，會載入根目錄設定與 multiplayer/worker.mjs。
+- 建置根目錄為 multiplayer/：執行 `npm run deploy`。
+- 請確認連接的儲存庫是 LangCheng945/VALO、分支 main；不要以「僅靜態資產」模式部署連線後端。
+
+部署完成後，`/health` 應回傳包含 `ok: true`、`protocol: 1`、`service: valo-multiplayer` 的 JSON。
+若仍回傳 404，應檢查 Cloudflare 的儲存庫、根目錄與部署指令，而不是將房號當作連線成功。
