@@ -3,7 +3,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const root=fileURLToPath(new URL('../../',import.meta.url));
 const target=fileURLToPath(new URL('../public/game/',import.meta.url));
-const files=['index.html','ascent-map.js','weapon-models.js','firebase-config.js','assets','vendor'];
+const files=['index.html','ascent-map.js','weapon-models.js','shop-economy.mjs','movement-audio.mjs','shop.css','firebase-config.js','assets','vendor'];
 await mkdir(target,{recursive:true});
 let sourceAvailable=true;
 try {await access(path.join(root,'ascent-map.js'));}catch(e){if(e.code!=='ENOENT')throw e;sourceAvailable=false;}

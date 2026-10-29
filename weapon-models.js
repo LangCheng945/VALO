@@ -1,12 +1,12 @@
 // Local geometry adapter. Asset provenance: assets/weapons/README.md.
 const THREE=window.THREE;
 const cache=new Map();
-let manifest;
+let manifestPromise;
 export async function loadWeaponModel(key,material) {
- if(!['vandal','phantom','classic','operator','odin'].includes(key))return null;
+ if(!/^[a-z]+$/.test(key))return null;
  if(!cache.has(key))cache.set(key,(async()=>{
-  manifest ||= await fetch('./assets/weapons/manifest.json').then(r=>{if(!r.ok)throw Error('Weapon manifest');return r.json()});
-  const m=manifest[key];const response=await fetch(`./assets/weapons/${key}.bin`);if(!response.ok)throw Error(`Weapon ${key}`);
+  const manifest=await (manifestPromise ||= fetch('./assets/weapons/manifest.json').then(r=>{if(!r.ok)throw Error('Weapon manifest');return r.json()}));
+  const m=manifest[key];if(!m)throw Error('Unknown weapon');const response=await fetch(`./assets/weapons/${key}.bin`);if(!response.ok)throw Error(`Weapon ${key}`);
   const b=await response.arrayBuffer();if(b.byteLength!==m.vertices*24+m.indices*4)throw Error('Invalid weapon geometry');
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b,0,m.vertices*3),3));
   g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(b,m.vertices*12,m.vertices*3),3));

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {quoteExchange} from '../shop-economy.mjs';
+let q=quoteExchange(4700,null,'vandal','operator',4700);
+assert.equal(q.credits,0);
+q=quoteExchange(q.credits,q.pending,'operator','odin',3200);assert.equal(q.credits,1500);
+const repeat=quoteExchange(q.credits,q.pending,'odin','odin',3200);assert.equal(repeat.credits,1500);assert.deepEqual(repeat.pending,q.pending);
+q=quoteExchange(q.credits,q.pending,'odin','vandal',2900);assert.equal(q.credits,4700);assert.equal(q.pending,null);
+q=quoteExchange(1000,null,0,50,1000);assert.equal(q.credits,0);
+q=quoteExchange(q.credits,q.pending,50,25,400);assert.equal(q.credits,600);
+q=quoteExchange(q.credits,q.pending,25,0,0);assert.equal(q.credits,1000);
+const failed=quoteExchange(0,null,'operator','odin',3200);assert.equal(failed.ok,false);assert.equal(failed.credits,0);assert.equal(failed.pending,null);
+const partial=quoteExchange(0,{baseKey:'vandal',key:'phantom',cost:2900},'phantom','operator',4700);assert.equal(partial.ok,false);assert.equal(partial.pending.key,'phantom');
+console.log('PASS buy at zero balance, repeated swaps, owned baseline, armor exchange and atomic insufficient-funds rejection');
