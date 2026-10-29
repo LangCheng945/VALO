@@ -560,7 +560,7 @@
                         </div>
                     </section>
                     <details class="trainer-network" id="network-panel"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
-        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://你的伺服器.workers.dev" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房為自由練習。Spike 安拆目前在單人戰術模式。</small></div>
+        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://valonow.langcheng.uk" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房為自由練習。Spike 安拆目前在單人戰術模式。</small></div>
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
@@ -673,7 +673,7 @@
         </div>
     </div>
 
-    <script src="./multiplayer-config.js?v=net2"></script>
+    <script src="./multiplayer-config.js?v=domain1"></script>
     <script src="./vendor/GLTFLoader.js"></script>
     <script src="./vendor/meshopt_decoder.js"></script>
     <script src="./vendor/mesh-bvh.js"></script>
@@ -688,6 +688,7 @@
         import {SpikeModel} from './spike-model.js?v=spike1';
         import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
+        import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
         import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=skills2';
 
         /********************************************************************
@@ -1858,15 +1859,25 @@
         let currentUser=null,currentRoomId=null,roomSocket=null,lastNetSyncTime=0;
         let previousSolo=null,roomPingTimer=null;let roomMode='practice',roomRound=null;
         const remotePlayers=new Map();
-        let serverAddress='';
+        let serverAddress='',serverSettingGeneration=0;
         try{serverAddress=localStorage.getItem('valo-multiplayer-server')||window.__multiplayer_server||'';}catch{}
         document.getElementById('input-server-url').value=serverAddress;document.querySelector('.network-deploy').hidden=!!serverAddress;
         document.getElementById('lobby-uid-display').textContent='尚未加入房間';
         function networkFeedback(text){document.getElementById('network-feedback').textContent=text;}
         networkFeedback(serverAddress?'伺服器已設定，建立或加入房間開始連線':'尚未設定伺服器：需要先部署連線後端，再貼上網址');
+        async function discoverManagedServer(){
+            const generation=serverSettingGeneration;
+            const result=await selectMultiplayerServer({current:serverAddress,preferred:window.__multiplayer_preferred_server,fallback:window.__multiplayer_fallback_server});
+            if(generation!==serverSettingGeneration||currentRoomId)return;
+            const input=document.getElementById('input-server-url');if(document.activeElement===input&&input.value!==serverAddress)return;
+            if(result.server){serverAddress=result.server;document.getElementById('input-server-url').value=result.server;document.querySelector('.network-deploy').hidden=true;if(result.ready)try{localStorage.setItem('valo-multiplayer-server',result.server);}catch{}}
+            if(result.ready===true)networkFeedback(result.custom?'已連上 valonow.langcheng.uk，可建立或加入房間。':'自訂網域尚未就緒，目前使用原連線服務；設定完成後重新整理會自動切換。');
+            else if(result.ready===false)networkFeedback('尚未確認連線服務；請確認 Cloudflare 部署與自訂網域代理設定。');
+        }
+        const serverDiscovery=discoverManagedServer();
         window.openNetworkMenu=()=>{setMenuView('training');const panel=document.getElementById('network-panel');panel.open=true;panel.scrollIntoView({behavior:'smooth',block:'start'});};
         document.getElementById('btn-save-server').addEventListener('click',()=>{
-            try{const value=normalizeServer(document.getElementById('input-server-url').value);leaveMultiplayerRoom();serverAddress=value;document.querySelector('.network-deploy').hidden=true;try{localStorage.setItem('valo-multiplayer-server',value);}catch{}networkFeedback('已套用伺服器，現在可以建立或加入房間');}catch(error){networkFeedback(error.message);}
+            try{const value=normalizeServer(document.getElementById('input-server-url').value);serverSettingGeneration++;leaveMultiplayerRoom();serverAddress=value;document.querySelector('.network-deploy').hidden=true;try{localStorage.setItem('valo-multiplayer-server',value);}catch{}networkFeedback('網址已套用，建立或加入房間時會確認連線');}catch(error){networkFeedback(error.message);}
         });
         function applyRoomTeam(team){
             const changed=state.team!==team;state.team=team;const btn=document.getElementById('btn-switch-team');btn.textContent=team==='attack'?'陣營：攻擊方':'陣營：守備方';
@@ -2035,7 +2046,7 @@
             applyRoomTeam(state.team==='attack'?'defend':'attack');resetRound();
         };
         window.toggleBotsInMatch=function(enabled){if(currentRoomId){networkFeedback('好友房間停用單機靶');return;}state.enableBots=enabled;spawnBots();};
-        window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap,{duration:state.trainingDuration});await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
+        window.createMultiplayerRoom=async function(){try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap,{duration:state.trainingDuration});await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
         window.joinQuickPublicLobby=()=>{if(selectedMap!=='ascent'){networkFeedback('公開房固定使用 Ascent；'+mapDefinition.name+' 請建立好友房間');return;}return connectToMultiplayerRoom('PUBLIC');};
         window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
         window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
@@ -2079,7 +2090,7 @@
             });return roomSocket;
         }
         async function connectToMultiplayerRoom(code){
-            try{const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1});}catch(error){networkFeedback(error.message);}
+            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;

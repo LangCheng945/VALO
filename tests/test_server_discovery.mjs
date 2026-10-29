@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';import{selectMultiplayerServer}from'../server-discovery.mjs';
+const preferred='https://valonow.langcheng.uk',fallback='https://valo.09786593a.workers.dev',good={ok:true,protocol:1,service:'valo-multiplayer'};
+let calls=[];
+const healthy=async url=>{calls.push(url);return {ok:true,json:async()=>good}};
+assert.deepEqual(await selectMultiplayerServer({current:fallback,preferred,fallback},healthy),{server:preferred,ready:true,custom:true});assert.deepEqual(calls,[preferred+'/health']);
+const site404=async url=>url.startsWith(preferred)?{ok:false}:{ok:true,json:async()=>good};assert.equal((await selectMultiplayerServer({current:preferred,preferred,fallback},site404)).server,fallback);
+const wrongService=async url=>({ok:true,json:async()=>url.startsWith(preferred)?{ok:true,service:'website'}:good});assert.equal((await selectMultiplayerServer({current:fallback,preferred,fallback},wrongService)).server,fallback);
+assert.deepEqual(await selectMultiplayerServer({current:'http://127.0.0.1:8790',preferred,fallback},()=>{throw Error('must not probe user server')}),{server:'http://127.0.0.1:8790',ready:null,custom:false});
+assert.equal((await selectMultiplayerServer({current:preferred,preferred,fallback},async()=>{throw Error('offline')})).ready,false);
+console.log('PASS verified custom-domain migration, static-site 404/wrong-service fallback, offline handling and explicit custom-server preservation');

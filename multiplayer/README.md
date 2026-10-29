@@ -113,3 +113,14 @@ smoke_launch 消耗一次煙霧，回報唯一 id、起點和單位方向；smok
 spray 驗證存活、參戰、距離、單位法線、圖案及 3 秒冷卻，由伺服器指派 ownerUid／id。
 最多保存 20 張最近且未過期的紀錄，welcome 回播，30 秒到期，新回合清除。
 噴漆表面射線檢查由前端執行；不能將此描述為完整伺服器防作弊。
+
+## 共用網站網域
+
+wrangler.jsonc 宣告 langcheng.uk zone 的 `valonow.langcheng.uk/health*` 與
+`valonow.langcheng.uk/rooms*` 路由。部署後，前端與 WebSocket 可共用 `https://valonow.langcheng.uk`。
+首頁與靜態資源不經此 Worker，仍使用 GitHub Pages。workers.dev 網址繼續保留作備援。
+
+Cloudflare → langcheng.uk → DNS → valonow：保持原 DNS 目標，將代理狀態設為橘雲。
+若自動部署顯示 route／zone 權限錯誤，可在 Workers & Pages → valo → 設定 → 網域與路由
+手動新增上述兩個 Route，zone 選 langcheng.uk；請勿將首頁根網域設為整站 Worker Custom Domain。
+`/health` 回傳遊戲服務 JSON 後，網頁會自動切換；404 或 HTML 不會被誤當成已完成連線設定。

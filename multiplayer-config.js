@@ -1,3 +1,5 @@
-// Public backend URL only. Never put a Cloudflare API token in this file.
-// Set after deploying multiplayer/: https://<worker>.<account>.workers.dev
-window.__multiplayer_server ||= 'https://valo.09786593a.workers.dev';
+// Public endpoints only; never put Cloudflare credentials here.
+// /health and /rooms* are routed to the same Worker; the game page remains on GitHub Pages.
+window.__multiplayer_preferred_server ||= 'https://valonow.langcheng.uk';
+window.__multiplayer_fallback_server ||= 'https://valo.09786593a.workers.dev';
+window.__multiplayer_server ||= window.__multiplayer_preferred_server;

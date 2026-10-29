@@ -22,5 +22,15 @@
         "GameRoom"
       ]
     }
+  ],
+  "routes": [
+    {
+      "pattern": "valonow.langcheng.uk/health*",
+      "zone_name": "langcheng.uk"
+    },
+    {
+      "pattern": "valonow.langcheng.uk/rooms*",
+      "zone_name": "langcheng.uk"
+    }
   ]
 }

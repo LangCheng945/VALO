@@ -241,3 +241,23 @@ Sage 的 E 先裝備治療球；左鍵治療準星指到、視線未受實牆阻
 檢查：`node tests/test_skill_details_browser.cjs`、`node tests/test_skill_multiplayer.cjs`、
 `npm test --prefix multiplayer`。瀏覽器測試保留實際遊戲、碰撞和操作，僅略過持續 GPU 繪圖，
 以手動單幀檢查畫面，避免軟體渲染拖慢模擬時間。
+
+## 同網域連線：valonow.langcheng.uk
+
+前端優先使用 `https://valonow.langcheng.uk`，但先驗證 `/health` 的 service／protocol／ok，
+確認是遊戲 Worker 才切換。若仍是靜態網站 404、HTML 或服務尚未部署，會保留 workers.dev 備援。
+已儲存的官方舊網址會自動遷移；使用者指定的其他後端、正在手動套用的設定不會被覆蓋。
+
+根目錄與 multiplayer/ 的 wrangler.jsonc 都為同一個 valo Worker 宣告以下兩條路由：
+
+- `valonow.langcheng.uk/health*`
+- `valonow.langcheng.uk/rooms*`
+
+網頁 `/`、地圖與其他靜態資源仍由原 GitHub Pages 提供，不把整個網域改指到 Worker。
+房間 HTTP API 與 WebSocket 同樣使用原 GameRoom Durable Object，不需要搬動房間資料。
+Cloudflare 的 langcheng.uk zone 必須將 valonow DNS 記錄設為代理（橘雲）；
+保留既有 DNS 目標，只改代理狀態。部署身份亦需有該 zone 的 Workers Routes 權限。
+設定成功後 `https://valonow.langcheng.uk/health` 應回傳 service=valo-multiplayer；重新整理遊戲會自動切換。
+
+此環境沒有 Cloudflare 帳號管理憑證，不能代為確認或修改 DNS／正式路由。
+本機驗證：`node tests/test_server_discovery.mjs`、`node tests/test_server_discovery_browser.cjs`、Worker dry-run。
