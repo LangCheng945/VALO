@@ -1,0 +1,35 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourcePath": "site/aim-maps",
+  "sourceMapId": "plummet",
+  "displayName": "Summit",
+  "nameEvidence": "site/local-api/maps labels id plummet as Summit; en.dict.mjs translates 天枢云阙 training scenarios as Summit.",
+  "upstreamCredit": "ishoutu aim trainer; VALORANT assets belong to Riot Games. MIT code license excludes game assets.",
+  "files": {
+    "summit.glb": {
+      "bytes": 18167644,
+      "sha256": "e2b0e22ca9310636bf9ebf443cf2efcce0d521d976e1fb2557462a2f8d023da8"
+    },
+    "collision.json": {
+      "bytes": 965002,
+      "sha256": "910252205f53ad07e6bc2d99f23413f40f2871043c445e2453cfb28c49d25303"
+    },
+    "minimap.json": {
+      "bytes": 1221,
+      "sha256": "59fd94672a2bcee7ae260735d54950ad5f1ef31236c2f36514208dafe6fa13cc"
+    },
+    "minimap.png": {
+      "bytes": 35500,
+      "sha256": "e3ceb9a90958953933aa2e0a7821cb42eb80d622700be89c288d933ac855075f"
+    },
+    "cover.webp": {
+      "bytes": 80314,
+      "sha256": "faff51c5d045b2b3bcf7a62e42a9ccc827c171005f0d2f0dda5576dc81404290"
+    },
+    "ropes.json": {
+      "bytes": 857,
+      "sha256": "46540a8965747efa3afe38af2f28c347915c04abdd4996f7e1783c9ef26193aa"
+    }
+  }
+}

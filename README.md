@@ -1,6 +1,6 @@
 # VALO
 
-Three.js Ascent 訓練場。前端可使用 GitHub Pages／ChatGPT Sites；多人房間使用獨立 WebSocket 後端。
+Three.js Ascent／Haven／Summit 訓練場。前端可使用 GitHub Pages／ChatGPT Sites；多人房間使用獨立 WebSocket 後端。
 
 ## 本機啟動
 
@@ -18,7 +18,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 1. 先部署 `multiplayer/`，取得自己的 `https://...workers.dev` 網址。
 2. 遊戲上方「好友連線」→填伺服器網址→「套用網址」。
 3. 一人建立房間，其他人使用相同伺服器、輸入六碼房號。
-4. 看到成員與各自不同 UID 後進入 Ascent；預設分配到不同陣營。
+4. 看到成員與各自不同 UID 後進入房主選擇的地圖；預設分配到不同陣營。
 
 公開網站只放靜態檔案不能代替連線伺服器。此工作環境沒有 Cloudflare 部署憑證，
 本機通過測試不等於後端已公開上線。部署後把公開 URL 填入 `multiplayer-config.js`，即可讓朋友省去填網址。
@@ -138,7 +138,7 @@ Jett 按住空白鍵可降低下降速度。
 
 ## Haven（遺落境地）
 
-新增地圖選單，可在 Ascent 與 Haven 之間切換；也可直接開啟 `?map=haven`。
+新增地圖選單，可在 Ascent、Haven 與 Summit 之間切換；也可直接開啟 `?map=haven`。
 Haven 使用完整 `triad` 場景 GLB、內嵌貼圖、原始碰撞與小地圖，約 11.6 MB 模型。
 已設定雙方出生點、A／B／C 據點標示與訓練靶位置。
 切換地圖會重新載入頁面，釋放上一張地圖資源並重置本次訓練。
@@ -151,3 +151,20 @@ Haven 使用完整 `triad` 場景 GLB、內嵌貼圖、原始碰撞與小地圖�
 
 檢查：`node tests/test_haven_assets.cjs`、`node tests/test_haven_browser.cjs`、
 `node tests/test_haven_multiplayer.cjs`（後兩項需本機遊戲與連線伺服器）。
+
+## Summit（天樞雲闕）
+
+直接開啟 `?map=summit`，或在地圖選單選擇 Summit。來源以 `plummet` 為內部 ID，
+`site/local-api/maps` 將它標為 Summit；名稱證據及素材雜湊記錄於 `assets/summit/provenance.json`。
+使用約 18.2 MB 的完整場景、內嵌貼圖、碰撞與小地圖，設定 A／B 據點、雙方出生點與訓練靶。
+
+B 區繩索附近按 F 上繩，W／S 上下攀爬，Shift 慢爬，F 或空白鍵離開。
+攀爬路徑以小步碰撞檢查避開繩索與平台邊緣；開啟選單、死亡與使用位移技能會解除攀爬。
+好友房支援 Summit，同房自動切圖、傷害、重生與斷線重連皆使用房間地圖。
+Cloudflare 後端亦需更新；`/health` 的 maps 應包含 `summit`。
+
+驗證：`node tests/test_summit_assets.cjs`、`node tests/test_summit_browser.cjs`、
+`node tests/test_summit_multiplayer.cjs`。瀏覽器測試保留完整場景與碰撞，以單幀渲染檢查畫面。
+
+Sunset 尚未加入：目前固定來源明確標示未提供，其他查到的工具需要本機遊戲 PAK 檔，
+尚無可直接接入的完整場景。沒有用其他地圖冒充 Sunset。

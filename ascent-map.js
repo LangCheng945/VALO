@@ -11,7 +11,13 @@ export const MAPS=Object.freeze({
         spawns:{attack:[-26.43,-17.42,3,1.57],defend:[-127.15,-29.46,3,-1.57]},
         training:[[-45,-24,3],[-57,-33,3],[-69,-62,1],[-80,-1.8,1],[-87,28,2]],
         tactical:[[-92,-64,3],[-90,-16,3],[-90,26,2],[-80,-1.8,1],[-67,-18,1]],
-        sites:[{name:'A',minX:-105,maxX:-79,minZ:-75,maxZ:-52},{name:'B',minX:-105,maxX:-81,minZ:-31,maxZ:-7},{name:'C',minX:-106,maxX:-77,minZ:14,maxZ:38}]}
+        sites:[{name:'A',minX:-105,maxX:-79,minZ:-75,maxZ:-52},{name:'B',minX:-105,maxX:-81,minZ:-31,maxZ:-7},{name:'C',minX:-106,maxX:-77,minZ:14,maxZ:38}]},
+    summit:{id:'summit',name:'Summit',title:'天樞雲闕',bytes:18167644,ropes:true,ropeGuide:{approach:[.8,.8],exit:[0,.8]},
+        spawns:{attack:[59,-7.5,2,0],defend:[61.75,-120.75,4,Math.PI]},
+        training:[[61.75,-56.75,2],[86.25,-31.75,2],[86.25,-55,1],[32.25,-51.25,2],[18.5,-65,1]],
+        tactical:[[116,-76.75,1],[13.75,-85.5,1],[99.25,-76.75,1],[36.75,-90.75,1],[58.25,-75,1]],
+        sites:[{name:'A',minX:104,maxX:128,minZ:-88,maxZ:-67},{name:'B',minX:3,maxX:28,minZ:-98,maxZ:-75}]}
+
 });
 export const MAP_SCALE=4/3; // Preserve the existing game's 2.2-unit eye height.
 
@@ -74,22 +80,22 @@ function batchVisuals(meshes) {
 
 export class AscentMapRuntime {
     constructor(renderer,mapId='ascent') {
-        this.definition=MAPS[mapId];if(!this.definition)throw Error('Unknown map');this.id=mapId;this.base=new URL(`./assets/${mapId}/`,import.meta.url);
+        this.definition=Object.hasOwn(MAPS,mapId)?MAPS[mapId]:null;if(!this.definition)throw Error('Unknown map');this.id=mapId;this.base=new URL(`./assets/${mapId}/`,import.meta.url);
         this.renderer=renderer;this.ready=false;this.root=new T.Group();this.root.name='actual-'+this.id;
         this.scale=MAP_SCALE;this.frustum=new T.Frustum();this.viewMatrix=new T.Matrix4();
         this.raycaster=new T.Raycaster();this.raycaster.firstHitOnly=true;
         this.segment=new T.Line3();this.capsuleBox=new T.Box3();this.trianglePoint=new T.Vector3();this.capsulePoint=new T.Vector3();
         this.minimapImage=new Image();
-        this.spawnCache=new Map();
+        this.spawnCache=new Map();this.ropes=[];
     }
     async load(progress=()=>{}) {
         const BASE=this.base,name=this.definition.name;progress(`下載 ${name} 模型…`);
         const ktx=new KTX2Loader().setTranscoderPath(new URL('./vendor/basis/',import.meta.url).href).setWorkerLimit(4).detectSupport(this.renderer);
         const loader=new T.GLTFLoader().setMeshoptDecoder(globalThis.MeshoptDecoder).setKTX2Loader(ktx);
         const readJSON=async name=>{const response=await fetch(new URL(name,BASE));if(!response.ok)throw Error(`${name}: HTTP ${response.status}`);return response.json()};
-        const [gltf,collision,minimap]=await Promise.all([
+        const [gltf,collision,minimap,ropeData]=await Promise.all([
             new Promise((resolve,reject)=>loader.load(new URL(this.id+'.glb',BASE).href,resolve,event=>progress(`下載 ${name} 模型 ${Math.min(100,Math.round(event.loaded/this.definition.bytes*100))}% · 正在解碼貼圖`),reject)),
-            readJSON('collision.json'),readJSON('minimap.json')
+            readJSON('collision.json'),readJSON('minimap.json'),this.definition.ropes?readJSON('ropes.json'):Promise.resolve(null)
         ]);
         progress('建立地圖碰撞與繪圖批次…');
         await new Promise(requestAnimationFrame);
@@ -108,11 +114,21 @@ export class AscentMapRuntime {
         this.collisionMesh.name=this.id+'-collision';this.collisionMesh.raycast=globalThis.MeshBVHLib.acceleratedRaycast;
         this.collisionMesh.updateMatrixWorld(true);
         const batches=batchVisuals(meshes);this.root.add(batches.group);this.batches=batches.items;
+        this.ropes=(ropeData?.ropes||[]).map(source=>{const raw=source.points.map(p=>new T.Vector3(...p).multiplyScalar(MAP_SCALE));const guide=this.definition.ropeGuide;const points=guide?raw.map(p=>p.clone().add(new T.Vector3(guide.approach[0],0,guide.approach[1]))):raw;if(guide){points.at(-1).y+=.06;points.push(raw.at(-1).clone().add(new T.Vector3(guide.exit[0],.06,guide.exit[1])));}const cumulative=[0];for(let i=1;i<points.length;i++)cumulative.push(cumulative[i-1]+points[i].distanceTo(points[i-1]));return {name:source.name,points,cumulative,length:cumulative.at(-1),runSpeed:(source.tuning?.runSpeed||675)/100*MAP_SCALE,walkSpeed:(source.tuning?.walkSpeed||345)/100*MAP_SCALE};});
         this.metadata=minimap;this.minimapImage.src=new URL('minimap.png',BASE).href;
         await this.minimapImage.decode();
         this.info={sourceMeshes:meshes.length,batches:this.batches.length,collisionTriangles:positions.length/9,triangles:meshes.reduce((n,m)=>n+(m.geometry.index?m.geometry.index.count:m.geometry.attributes.position.count)/3,0)};
         this.ready=true;ktx.dispose();progress(name+' 地圖已就緒');
         return this;
+    }
+    ropePosition(rope,distance){
+        const d=Math.max(0,Math.min(rope.length,distance));let i=1;while(i<rope.cumulative.length-1&&rope.cumulative[i]<d)i++;
+        const t=(d-rope.cumulative[i-1])/(rope.cumulative[i]-rope.cumulative[i-1]);const p=rope.points[i-1].clone().lerp(rope.points[i],t);p.y+=.54;return p;
+    }
+    nearestRope(position){
+        let nearest=null,best=1.4;const hand=position.clone();hand.y-=.54;
+        for(const rope of this.ropes)for(let i=1;i<rope.points.length;i++){const segment=new T.Line3(rope.points[i-1],rope.points[i]),t=segment.closestPointToPointParameter(hand,true),point=segment.at(t,new T.Vector3()),distance=point.distanceTo(hand);if(distance<best){best=distance;nearest={rope,distance:rope.cumulative[i-1]+(rope.cumulative[i]-rope.cumulative[i-1])*t};}}
+        return nearest;
     }
     updateCulling(camera) {
         if(!this.ready)return;

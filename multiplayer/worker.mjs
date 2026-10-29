@@ -1,11 +1,11 @@
-import {VERSION,WEAPONS,isWeapon,spawn,cleanText,finite,validPose,applyDamage} from './protocol.mjs';
+import {VERSION,MAP_IDS,WEAPONS,isWeapon,spawn,cleanText,finite,validPose,applyDamage} from './protocol.mjs';
 const ROOM=/^[A-Z2-9]{6}$/;
 const allowed=(request,env)=>(env.ALLOWED_ORIGINS||'').split(',').map(s=>s.trim()).includes(request.headers.get('Origin'));
 const json=(body,status=200,headers={})=>Response.json(body,{status,headers});
 export default {
  async fetch(request,env){
   const url=new URL(request.url),origin=request.headers.get('Origin');
-  if((url.pathname==='/'||url.pathname==='/health')&&request.method==='GET')return json({ok:true,protocol:VERSION,service:'valo-multiplayer',maps:['ascent','haven']});
+  if((url.pathname==='/'||url.pathname==='/health')&&request.method==='GET')return json({ok:true,protocol:VERSION,service:'valo-multiplayer',maps:MAP_IDS});
   if(!allowed(request,env))return json({error:'ORIGIN_NOT_ALLOWED'},403);
   const cors={'Access-Control-Allow-Origin':origin,'Vary':'Origin','Access-Control-Allow-Methods':'POST,GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Cache-Control':'no-store'};
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
@@ -13,7 +13,7 @@ export default {
    const lobby=env.ROOMS.get(env.ROOMS.idFromName('__creation_rate__'));
    const gate=await lobby.fetch(new Request('https://internal/rate',{method:'POST',body:request.headers.get('CF-Connecting-IP')||'local'}));
    if(!gate.ok)return json({error:'CREATE_RATE_LIMIT'},429,cors);
-   let body={};try{body=await request.json();}catch{}if(!body||typeof body!=='object'||Array.isArray(body))return json({error:'INVALID_MAP'},400,cors);if(body.map&&!['ascent','haven'].includes(body.map))return json({error:'INVALID_MAP'},400,cors);const map=body.map||'ascent';
+   let body={};try{body=await request.json();}catch{}if(!body||typeof body!=='object'||Array.isArray(body))return json({error:'INVALID_MAP'},400,cors);if(body.map&&!MAP_IDS.includes(body.map))return json({error:'INVALID_MAP'},400,cors);const map=body.map||'ascent';
    const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
    for(let attempt=0;attempt<5;attempt++){
     const bytes=crypto.getRandomValues(new Uint8Array(6));const code=[...bytes].map(b=>chars[b%chars.length]).join('');
@@ -50,7 +50,7 @@ export class GameRoom {
   }
   if(path==='/create'){
    if(this.meta)return json({error:'EXISTS'},409);
-   let body={};try{body=await request.json();}catch{}this.meta={createdAt:Date.now(),map:body.map==='haven'?'haven':'ascent'};await this.ctx.storage.put('meta',this.meta);await this.ctx.storage.setAlarm(Date.now()+120000);return json({ok:true});
+   let body={};try{body=await request.json();}catch{}this.meta={createdAt:Date.now(),map:MAP_IDS.includes(body.map)?body.map:'ascent'};await this.ctx.storage.put('meta',this.meta);await this.ctx.storage.setAlarm(Date.now()+120000);return json({ok:true});
   }
   if(path!=='/connect'||!this.meta)return json({error:'ROOM_NOT_FOUND'},404);
   if(this.sockets().length>=10)return json({error:'ROOM_FULL'},409);
@@ -66,7 +66,7 @@ export class GameRoom {
   p.lastSeen=now;this.save(ws,p);
   if(!m||typeof m.type!=='string')return;
   if(m.type==='join'){
-   if(p.joined)return;if(this.meta?.map==='haven'&&m.mapVersion!==1){ws.close(1008,'Update client for Haven');return;}
+   if(p.joined)return;if(this.meta?.map&&this.meta.map!=='ascent'&&m.mapVersion!==1){ws.close(1008,'Update client for this map');return;}
    if(typeof m.resumeToken==='string'&&/^[a-f0-9]{64}$/.test(m.resumeToken)){
     let saved;await this.ctx.blockConcurrencyWhile(async()=>{saved=await this.ctx.storage.get('resume:'+m.resumeToken);if(saved)await this.ctx.storage.delete('resume:'+m.resumeToken);});
     if(!saved||saved.expires<now){ws.close(1008,'Resume expired');return;}

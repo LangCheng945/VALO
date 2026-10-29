@@ -46,3 +46,8 @@ test('Haven rooms keep map identity, spawn teams in Haven and reject incompatibl
  try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');assert.equal(aw.map,'haven');assert.equal(bw.map,'haven');assert(Math.abs(aw.player.y-6.2)<.01);assert(aw.player.x<-30&&bw.player.x<-30);const legacy=new WebSocket(base.replace('http','ws')+'/rooms/'+code,{headers:{Origin:origin}});legacy.on('open',()=>legacy.send(JSON.stringify({type:'join',name:'舊版本'})));await new Promise((resolve,reject)=>{legacy.on('close',code=>{assert.equal(code,1008);resolve();});legacy.on('error',reject);});}finally{a.ws.close();b.ws.close();}
  const bad=await fetch(base+'/rooms',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:'{"map":"unknown"}'});assert.equal(bad.status,400);
 });
+
+test('Summit rooms publish their map and use Summit spawn positions',async()=>{
+ const code=await create('summit'),a=peer(code,'Summit甲'),b=peer(code,'Summit乙');
+ try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');assert.equal(aw.map,'summit');assert.equal(bw.map,'summit');const attack=[aw.player,bw.player].find(p=>p.team==='attack'),defend=[aw.player,bw.player].find(p=>p.team==='defend');assert(Math.abs(attack.x-78.6667)<.001);assert(Math.abs(attack.y-4.8667)<.001);assert(Math.abs(defend.z+161)<.001);}finally{a.ws.close();b.ws.close();}
+});

@@ -37,7 +37,7 @@ npm run deploy
 - 新加入玩家由伺服器分配 UID 與陣營，伺服器不接受客戶端指定擊殺者或直接修改 HP。
 - 同一房間收到移動、蹲下、靜走、射擊、傷害、擊殺、聊天及支援的技能事件；其他房間收不到。
 - 血量與傷害數值由伺服器計算，擊中必須配對近期射擊、有效目標、敵對陣營與合理落點／距離。
-- 雙方都進入 Ascent 後才可互打；開啟選單時暫停參戰，死亡五秒後重生。
+- 雙方都進入房間指定地圖後才可互打；開啟選單時暫停參戰，死亡五秒後重生。
 - 60 秒內自動重連可使用伺服器發的私密 token 保留 UID、陣營、血量及戰績。主動離房會開始新身分。
 - WebSocket 斷線會清除遠端人物；30 秒無心跳時清除失聯玩家。空房兩分鐘後刪除。
 - 無法連上或後端未設定時明確顯示狀態，不把產生房號當成連線成功。
@@ -75,7 +75,7 @@ Worker 測試實際連到本機 workerd 的 WebSocket，檢查兩人同步、房
 
 ## 房間地圖
 
-POST /rooms 接受 JSON `{ "map": "ascent" }` 或 `{ "map": "haven" }`，未指定時使用 Ascent。
+POST /rooms 接受 JSON `{ "map": "ascent" }` 、`{ "map": "haven" }` 或 `{ "map": "summit" }`，未指定時使用 Ascent。
 welcome 回傳房間 map；地圖是房間固定屬性，重連與重生沿用該地圖出生點。
-Haven 要求 join 具有 mapVersion:1，避免舊客戶端載入 Ascent 造成位置錯位。
+Haven 與 Summit 要求 join 具有 mapVersion:1，避免舊客戶端載入 Ascent 造成位置錯位。
 公開 PUBLIC 房維持 Ascent。/health 的 maps 列出目前支援地圖。

@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=haven1">
+    <link rel="stylesheet" href="./shop.css?v=summit1">
 </head>
 <body class="relative select-none">
 
@@ -210,6 +210,7 @@
     </div>
 
     <div id="ability-notice" role="status" aria-live="polite"></div>
+    <div id="rope-hint" class="rope-hint" role="status"></div>
     <!-- Dynamic Crosshair + Hitmarker -->
     <div id="crosshair" class="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
         <div id="ch-center" class="w-1 h-1 bg-[#00F5D4] rounded-full shadow-[0_0_4px_#000]"></div>
@@ -507,7 +508,7 @@
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
-                    <div class="map-picker"><label for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option></select><small>切換會重置訓練；加入好友房間會自動切到房主選擇的地圖。</small></div>
+                    <div class="map-picker"><label for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option></select><small>切換會重置訓練；加入好友房間會自動切到房主選擇的地圖。</small></div>
                     <section class="range-hero">
                         <div class="range-hero-copy">
                             <p class="range-eyebrow" data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</p>
@@ -677,11 +678,11 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=haven1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=summit1';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=haven1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=summit1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1069,6 +1070,7 @@
             isScoped: false,
             scopeLevel: 0,
             crouchAmount: 0,
+            climbingRope: null,
             scoreAlly: 0,
             scoreEnemy: 0,
             roundTimeLeft: 100,
@@ -1356,10 +1358,10 @@
         window.changeTrainingMap=function(id){if(!Object.hasOwn(MAPS,id)||id===selectedMap)return;if(currentRoomId){mapSelect.value=selectedMap;networkFeedback('請先離開房間，再切換地圖');return;}const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('room');location.assign(url.href);};
         document.title=`VALO ${mapDefinition.name.toUpperCase()} | ${mapDefinition.title}地圖訓練`;
         document.getElementById('map-hero-title').innerHTML=mapDefinition.title+'。<br><em>從轉角開始。</em>';
-        document.getElementById('map-description').textContent=selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
+        document.getElementById('map-description').textContent=selectedMap==='summit'?'探索山城雙據點、中路與高低差；繩索附近按 F 使用，W／S 攀爬，F／空白鍵離開。':selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
         for(const el of document.querySelectorAll('[data-map-label]'))el.textContent=mapDefinition.name.toUpperCase()+' / '+el.dataset.mapLabel;
         document.getElementById('btn-start-combat').innerHTML='進入 '+mapDefinition.name+' <span>↗</span>';
-        if(selectedMap==='haven'){document.getElementById('map-cover').src='./assets/haven/cover.webp';document.getElementById('map-cover').hidden=false;document.getElementById('map-blueprint-svg').hidden=true;}
+        if(selectedMap!=='ascent'){document.getElementById('map-cover').alt=mapDefinition.name+' 場景預覽';document.getElementById('map-cover').src='./assets/'+selectedMap+'/cover.webp';document.getElementById('map-cover').hidden=false;document.getElementById('map-blueprint-svg').hidden=true;}
 
         function buildArena() {
             shootableMeshes.length=0;mapColliders.length=0;mapRadarRects.length=0;
@@ -1955,7 +1957,7 @@
         };
         window.toggleBotsInMatch=function(enabled){if(currentRoomId){networkFeedback('好友房間停用單機靶');return;}state.enableBots=enabled;spawnBots();};
         window.createMultiplayerRoom=async function(){try{const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap);await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
-        window.joinQuickPublicLobby=()=>{if(selectedMap==='haven'){networkFeedback('公開房固定使用 Ascent；Haven 請建立好友房間');return;}return connectToMultiplayerRoom('PUBLIC');};
+        window.joinQuickPublicLobby=()=>{if(selectedMap!=='ascent'){networkFeedback('公開房固定使用 Ascent；'+mapDefinition.name+' 請建立好友房間');return;}return connectToMultiplayerRoom('PUBLIC');};
         window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
         window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
         window.leaveMultiplayerRoom=function(){
@@ -2644,7 +2646,7 @@
         }
         function triggerAbilityQ() {
             if(state.qCharges<=0||state.inBuyMenu||state.hp<=0)return;
-            if(state.agent==='jett'){playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
+            if(state.agent==='jett'){state.climbingRope=null;playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
             else {
                 const p=aimedPoint(24);spawnSlowField(p);broadcastRoomEvent({type:'slow',x:p.x,y:p.y,z:p.z});
                 sfx.playAbilitySound('smoke');
@@ -2657,6 +2659,7 @@
                 const now=performance.now();
                 if(state.dashReadyUntil>now) {
                     if(now<state.dashArmedAt)return;
+                    state.climbingRope=null;
                     const dir=new THREE.Vector3((moveState.right?1:0)-(moveState.left?1:0),0,(moveState.backward?1:0)-(moveState.forward?1:0));
                     if(dir.lengthSq()===0)dir.z=-1;dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);
                     // Small swept steps prevent a dash from tunneling through Ascent walls.
@@ -3004,6 +3007,7 @@
         }
 
         function resetMovementInput() {
+            state.climbingRope=null;
             Object.keys(moveState).forEach(key => { moveState[key] = false; });
             isMouseDown = false;
             playerVelocity.x = 0;
@@ -3133,7 +3137,7 @@
 
         document.addEventListener('keydown', (e) => {
             const code = e.code;
-            if(e.repeat&&['KeyB','KeyC','KeyQ','KeyE','KeyX','KeyY'].includes(code))return;
+            if(e.repeat&&['KeyB','KeyC','KeyQ','KeyE','KeyX','KeyY','KeyF'].includes(code))return;
 
             if(code==='Enter'&&state.inBuyMenu){const id=document.activeElement?.id;if(id==='input-room-code'){e.preventDefault();joinRoomByInput();}else if(id==='input-server-url'){e.preventDefault();document.getElementById('btn-save-server').click();}return;}
 
@@ -3186,6 +3190,8 @@
             }
             if (state.inBuyMenu || !state.isLocked) return;
             if (['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(code)) e.preventDefault();
+            if(code==='KeyF'&&toggleRope()){e.preventDefault();return;}
+            if(code==='Space'&&state.climbingRope){state.climbingRope=null;playerVelocity.y=6;canJump=false;moveState.glide=true;e.preventDefault();return;}
             if (code === 'KeyW') moveState.forward = true;
             if (code === 'KeyS') moveState.backward = true;
             if (code === 'KeyA') moveState.left = true;
@@ -3365,6 +3371,20 @@
             return false;
         }
 
+        function toggleRope(){
+            if(!realMap.ready||!state.isLocked||state.inBuyMenu||state.hp<=0||state.roundEnding)return false;
+            if(state.climbingRope){state.climbingRope=null;playerVelocity.set(0,0,0);return true;}
+            const nearest=realMap.nearestRope(yawObject.position);if(!nearest)return false;
+            const point=realMap.ropePosition(nearest.rope,nearest.distance);if(checkPlayerCollision(point))return false;
+            state.climbingRope=nearest;yawObject.position.copy(point);playerVelocity.set(0,0,0);setScope(false);canJump=false;return true;
+        }
+        function updateRope(dt){
+            const active=state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.roundEnding;if(!active)state.climbingRope=null;
+            const attached=state.climbingRope;
+            if(attached){const speed=moveState.walk?attached.rope.walkSpeed:attached.rope.runSpeed;const direction=Number(moveState.forward)-Number(moveState.backward);const target=Math.max(0,Math.min(attached.rope.length,attached.distance+direction*speed*dt));const steps=Math.max(1,Math.ceil(Math.abs(target-attached.distance)/.14)),start=attached.distance;
+                for(let i=1;i<=steps;i++){const d=start+(target-start)*i/steps,point=realMap.ropePosition(attached.rope,d);if(checkPlayerCollision(point))break;attached.distance=d;yawObject.position.copy(point);}playerVelocity.set(0,0,0);canJump=false;}
+            const show=active;document.getElementById('rope-hint').textContent=!show?'':attached?'W／S 攀爬 · F／空白鍵離開':realMap.nearestRope(yawObject.position)?'[F] 使用繩索':'';
+        }
         function updateViewmodelAnimations(dt, isMoving) {
             // Walk bobbing & breathing sway
             if (isMoving && canJump) {
@@ -3725,8 +3745,9 @@
             camera.position.y = -0.75 * state.crouchAmount;
             document.getElementById('stance-status').textContent = state.crouchAmount > 0.5 ? '蹲下' : moveState.walk ? '靜走' : isMoving ? '移動' : '站立';
 
+            updateRope(dt);
             // Player Movement Physics
-            if (state.isLocked && state.hp > 0 && !state.roundEnding) {
+            if (state.isLocked && state.hp > 0 && !state.roundEnding && !state.climbingRope) {
                 const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position);
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
