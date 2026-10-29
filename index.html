@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=abyss1">
+    <link rel="stylesheet" href="./shop.css?v=abilities1">
 </head>
 <body class="relative select-none">
 
@@ -387,7 +387,7 @@
                 </div>
 
                 <!-- Center: 4 Tactical Abilities Bar (C, Q, E, X Ultimate) -->
-                <div class="flex items-center space-x-2 sm:space-x-3 bg-[#0F1923]/90 px-4 py-2 border-t-2 border-white/20 val-clip-sm shadow-2xl">
+                <div id="ability-hud" class="flex items-center space-x-2 sm:space-x-3 bg-[#0F1923]/90 px-4 py-2 border-t-2 border-white/20 val-clip-sm shadow-2xl">
                     <!-- Ability C: Smoke -->
                     <div class="flex flex-col items-center w-16">
                         <div class="w-10 h-10 bg-white/10 border border-white/30 flex items-center justify-center font-bold text-base text-[#00F5D4] relative">
@@ -407,9 +407,7 @@
                             <span id="skill-q-icon">▲</span>
                             <span id="skill-q-cd" class="hidden absolute inset-0 bg-black/85 flex items-center justify-center text-xs text-[#FF4655] font-val"></span>
                         </div>
-                        <div class="flex space-x-1 mt-1">
-                            <span class="w-1.5 h-1.5 rotate-45 bg-[#00F5D4]"></span>
-                        </div>
+                        <div id="skill-q-charges" class="flex space-x-1 mt-1"></div>
                         <span id="skill-q-name" class="text-[9px] mt-0.5 text-white/80 font-bold">[Q] 氣流竄升</span>
                     </div>
 
@@ -681,6 +679,7 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=abyss1';
         import {loadWeaponModel} from './weapon-models.js';
         import {quoteExchange} from './shop-economy.mjs';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeSlowField,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=abilities1';
         import {FootstepTracker} from './movement-audio.mjs';
         import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=abyss1';
 
@@ -1424,6 +1423,7 @@
          ********************************************************************/
         const gunGroup = new THREE.Group();
         camera.add(gunGroup);
+        const abilityCast=new AbilityCastView(camera);
 
         let gunMagazineMesh = null;
         let muzzleFlashGroup = null;
@@ -2223,6 +2223,7 @@
 
         function fireWeapon() {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
+            abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
             if (now - state.lastShotTime > 200) state.consecutiveShots = 0;
@@ -2558,36 +2559,20 @@
         let canJump = true;
 
         function spawnSmokeAtPosition(smokePos) {
-            const smokeGeo = new THREE.IcosahedronGeometry(3.8, 2);
-            const smokeMat = new THREE.MeshStandardMaterial({
-                color: 0xd8e2ec,
-                emissive: 0x1b3a4b,
-                roughness: 0.9,
-                transparent: true,
-                opacity: 0.92
-            });
-            const smokeMesh = new THREE.Mesh(smokeGeo, smokeMat);
+            const smokeMesh=makeCloudburst();
             smokeMesh.position.copy(smokePos);
             smokeMesh.scale.set(0.1, 0.1, 0.1);
             scene.add(smokeMesh);
-            shootableMeshes.push(smokeMesh);
-            smokeSpheres.push({ mesh: smokeMesh, life: 2.5 });
+            smokeSpheres.push({ mesh: smokeMesh, life: 2.5, age:0 });
         }
 
         function spawnIceWallAtPosition(wallPos, yawAngle) {
-            const iceMat = new THREE.MeshStandardMaterial({
-                color: 0x00F5D4,
-                emissive: 0x005f56,
-                roughness: 0.2,
-                transparent: true,
-                opacity: 0.88
-            });
-            const iceMesh = new THREE.Mesh(new THREE.BoxGeometry(6.8, 3.6, 1.2), iceMat);
+            const iceMesh=makeBarrier();
             iceMesh.position.set(wallPos.x, wallPos.y-2.2+1.8, wallPos.z);
             iceMesh.rotation.y = yawAngle;
             scene.add(iceMesh);
             shootableMeshes.push(iceMesh);
-            iceMesh.userData.barrierHP=800;iceMesh.userData.life=40;temporaryWalls.push(iceMesh);
+            iceMesh.userData.barrierHP=800;iceMesh.userData.life=40;iceMesh.userData.age=0;iceMesh.userData.baseY=wallPos.y-2.2;iceMesh.scale.y=.04;iceMesh.position.y=iceMesh.userData.baseY+1.8*.04;temporaryWalls.push(iceMesh);
         }
 
         const slowFields=[];
@@ -2605,22 +2590,23 @@
             point.y=realMap.ready?realMap.getGroundHeight(point.clone().add(new THREE.Vector3(0,2.2,0))):0;
             return point;
         }
-        function spawnSlowField(p){const mesh=new THREE.Mesh(new THREE.CircleGeometry(5,48),new THREE.MeshBasicMaterial({color:0x76d8cb,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide}));mesh.rotation.x=-Math.PI/2;mesh.position.copy(p);mesh.position.y+=.04;scene.add(mesh);slowFields.push({mesh,life:7});}
+        function spawnSlowField(p){const mesh=makeSlowField();mesh.position.copy(p);mesh.position.y+=.06;scene.add(mesh);slowFields.push({mesh,life:7,age:0});}
         function slowMultiplier(point) {return slowFields.some(f=>Math.hypot(point.x-f.mesh.position.x,point.z-f.mesh.position.z)<5 && Math.abs(point.y-f.mesh.position.y)<3)?.5:1;}
+        let abilityIconAgent=null,abilityChargeSignature=null;
+        function beginAbilityCast(kind,duration){setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent!=='jett';
-            document.getElementById('skill-c-name').textContent=sage?'[C] 屏障靈球':'[C] 雲爆煙霧';
-            document.getElementById('skill-c-icon').textContent=sage?'▥':'☁';
-            document.getElementById('skill-q-name').textContent=AGENTS[state.agent].qName;
-            document.getElementById('skill-q-icon').textContent=AGENTS[state.agent].qIcon;
-            document.getElementById('skill-e-name').textContent=AGENTS[state.agent].eName;
-            document.getElementById('skill-e-icon').textContent=AGENTS[state.agent].eIcon;
-            document.getElementById('skill-x-name').textContent=sage?'[X] 復活 · 需倒地隊友':'[X] 暴風刃';
-            document.getElementById('skill-x-icon').textContent=sage?'✧':'◇';
+            const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃'};
+            if(abilityIconAgent!==state.agent){
+                abilityIconAgent=state.agent;
+                for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
+            }
+            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(k==='e'&&sage?state.eCooldown<=0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
+            const chargeSignature=state.agent+state.qCharges;if(abilityChargeSignature!==chargeSignature){abilityChargeSignature=chargeSignature;document.getElementById('skill-q-charges').innerHTML=Array.from({length:sage?2:1},(_,i)=>`<i class="ability-charge ${state.qCharges>i?'ready':''}"></i>`).join('');}
             for(const k of ['c','q','e']) {
                 const el=document.getElementById(`skill-${k}-cd`);
                 const charges=state[k+'Charges'];const cd=state[k+'Cooldown'];
-                el.classList.toggle('hidden',charges>0&&cd<=0);
+                el.classList.toggle('hidden',k==='e'&&!sage&&state.dashReadyUntil>performance.now()||charges>0&&cd<=0);
                 el.textContent=cd>0?Math.ceil(cd):'—';
             }
             for(let i=1;i<=2;i++)document.getElementById(`dot-c-${i}`).style.opacity=state.cCharges>=i?'1':'.2';
@@ -2638,6 +2624,7 @@
                 point.y+=2;spawnSmokeAtPosition(point);
                 broadcastRoomEvent({type:'smoke',x:point.x,y:point.y,z:point.z});
             } else {
+                beginAbilityCast('orb');
                 const wallPos=point.clone();wallPos.y+=2.2;
                 spawnIceWallAtPosition(wallPos,yawObject.rotation.y);
                 broadcastRoomEvent({type:'wall',x:wallPos.x,y:wallPos.y,z:wallPos.z,yaw:yawObject.rotation.y});
@@ -2646,9 +2633,9 @@
         }
         function triggerAbilityQ() {
             if(state.qCharges<=0||state.inBuyMenu||state.hp<=0)return;
-            if(state.agent==='jett'){state.climbingRope=null;playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
+            if(state.agent==='jett'){beginAbilityCast('wind',.55);state.climbingRope=null;playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
             else {
-                const p=aimedPoint(24);spawnSlowField(p);broadcastRoomEvent({type:'slow',x:p.x,y:p.y,z:p.z});
+                beginAbilityCast('orb');const p=aimedPoint(24);spawnSlowField(p);broadcastRoomEvent({type:'slow',x:p.x,y:p.y,z:p.z});
                 sfx.playAbilitySound('smoke');
             }
             state.qCharges--;updateAbilityHUD();
@@ -2659,7 +2646,7 @@
                 const now=performance.now();
                 if(state.dashReadyUntil>now) {
                     if(now<state.dashArmedAt)return;
-                    state.climbingRope=null;
+                    beginAbilityCast('wind',.4);state.climbingRope=null;
                     const dir=new THREE.Vector3((moveState.right?1:0)-(moveState.left?1:0),0,(moveState.backward?1:0)-(moveState.forward?1:0));
                     if(dir.lengthSq()===0)dir.z=-1;dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);
                     // Small swept steps prevent a dash from tunneling through Ascent walls.
@@ -2672,7 +2659,7 @@
             } else {
                 if(state.eCooldown>0||state.hp>=100)return;
                 if(currentRoomId)broadcastRoomEvent({type:'heal'});
-                state.healRemaining=30;state.healClock=0;state.eCooldown=45;sfx.playAbilitySound('smoke');
+                beginAbilityCast('orb',1.2);state.healRemaining=30;state.healClock=0;state.eCooldown=45;sfx.playAbilitySound('smoke');
             }
             updateAbilityHUD();
         }
@@ -2709,10 +2696,7 @@
             const ag = AGENTS[agentKey];
             document.getElementById('hud-agent-short').textContent = ag.short;
             updateAliveHUD();
-            document.getElementById('skill-q-name').textContent = ag.qName;
-            document.getElementById('skill-q-icon').textContent = ag.qIcon;
-            document.getElementById('skill-e-name').textContent = ag.eName;
-            document.getElementById('skill-e-icon').textContent = ag.eIcon;
+            abilityCast.cancel();updateAbilityHUD();
         };
 
         window.buyWeapon = function(wpnKey) {
@@ -2852,7 +2836,7 @@
                 ['c',sage?'▥':'☁',sage?'屏障靈球':'雲爆煙霧',state.cCharges],
                 ['q',sage?'◉':'▲',sage?'緩速靈球':'氣流竄升',state.qCharges],
                 ['e',sage?'✚':'➤',sage?'治癒靈球':'逐風衝刺',state.eCharges]
-            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${icon}</span><b>${name}</b><small>${state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
+            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${name}</b><small>${state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
         }
 
         function updateHealthHUD() {
@@ -2976,15 +2960,15 @@
             equipWeaponSlot(state.primaryWeaponKey);
 
             temporaryWalls.forEach(w => {
-                scene.remove(w);
+                disposeEffect(w);
                 const idx = shootableMeshes.indexOf(w);
                 if (idx > -1) shootableMeshes.splice(idx, 1);
             });
             temporaryWalls.length = 0;
-            slowFields.forEach(f=>{scene.remove(f.mesh);f.mesh.geometry.dispose();f.mesh.material.dispose();});slowFields.length=0;
+            slowFields.forEach(f=>disposeEffect(f.mesh));slowFields.length=0;
 
             smokeSpheres.forEach(s => {
-                scene.remove(s.mesh);
+                disposeEffect(s.mesh);
                 const idx = shootableMeshes.indexOf(s.mesh);
                 if (idx > -1) shootableMeshes.splice(idx, 1);
             });
@@ -3007,6 +2991,7 @@
         }
 
         function resetMovementInput() {
+            abilityCast.cancel();
             state.climbingRope=null;
             Object.keys(moveState).forEach(key => { moveState[key] = false; });
             isMouseDown = false;
@@ -3435,16 +3420,17 @@
 
         function updateBotsAndVFX(dt) {
             const playerPos = yawObject.position;
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=!abilityCast.active;
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
                 const s = smokeSpheres[i];
-                s.life -= dt;
+                s.life -= dt;s.age+=dt;updateEffect(s.mesh,s.age,Math.min(1,s.life*4));
                 const targetScale = s.life > 1.0 ? 1.0 : Math.max(0.01, s.life);
                 s.mesh.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), dt * 6);
                 s.mesh.rotation.y += dt * 0.4;
                 if (s.life <= 0) {
-                    scene.remove(s.mesh);
+                    disposeEffect(s.mesh);
                     const idx = shootableMeshes.indexOf(s.mesh);
                     if (idx > -1) shootableMeshes.splice(idx, 1);
                     smokeSpheres.splice(i, 1);
@@ -3515,7 +3501,8 @@
                         raycaster.set(botEye, toPlayer.normalize());
                         raycaster.far = dist;
                         const wallHits = raycaster.intersectObjects(shootableMeshes, false);
-                        const hasLOS = wallHits.length === 0;
+                        const sightLine=new THREE.Line3(botEye,playerPos);const smokeOccludes=smokeSpheres.some(s=>sightLine.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<(3.8*s.mesh.scale.x)**2);
+                        const hasLOS = wallHits.length === 0&&!smokeOccludes;
 
                         if (hasLOS) {
                             b.reactionTimer += dt;
@@ -3611,8 +3598,8 @@
         function updateTimersAndSpike(dt) {
             if(state.isLocked&&!state.inBuyMenu) {
                 if(state.healRemaining>0&&!currentRoomId){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
-                for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life-=dt;if(f.life<=0){scene.remove(f.mesh);f.mesh.geometry.dispose();f.mesh.material.dispose();slowFields.splice(i,1);}}
-                for(let i=temporaryWalls.length-1;i>=0;i--){const w=temporaryWalls[i];w.userData.life-=dt;if(w.userData.life<=0||w.userData.barrierHP<=0){scene.remove(w);const j=shootableMeshes.indexOf(w);if(j>=0)shootableMeshes.splice(j,1);temporaryWalls.splice(i,1);w.geometry.dispose();w.material.dispose();}}
+                for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life-=dt;f.age+=dt;updateEffect(f.mesh,f.age,Math.min(1,f.life*2));if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);}}
+                for(let i=temporaryWalls.length-1;i>=0;i--){const w=temporaryWalls[i];w.userData.life-=dt;w.userData.age+=dt;w.scale.y=Math.min(1,.04+w.userData.age*2.5);w.position.y=w.userData.baseY+1.8*w.scale.y;updateEffect(w,w.userData.age);if(w.userData.life<=0||w.userData.barrierHP<=0){scene.remove(w);const j=shootableMeshes.indexOf(w);if(j>=0)shootableMeshes.splice(j,1);temporaryWalls.splice(i,1);disposeEffect(w);}}
             }
             updateAbilityHUD();
             // Cooldowns C, Q, E

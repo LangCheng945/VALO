@@ -178,3 +178,16 @@ Sunset 依使用者要求改為 Abyss，未加入 Sunset。
 
 驗證：`node tests/test_abyss_assets.cjs`、`node tests/test_abyss_browser.cjs`、
 `node tests/test_abyss_multiplayer.cjs`。
+
+## 技能圖示與視覺
+
+`ability-effects.js` 集中管理 Jett／Sage 的白色 SVG 縮圖與程序化效果：
+Jett 流動風帶煙霧、上升／衝刺的周邊氣流，Sage 雙手玉球、四節升起冰牆及碎冰緩速區。
+圖示與 shader 為本專案重繪／實作，並非官方遊戲素材或完整技能動畫。
+C／Q／E／X 的 HUD、商店圖示隨角色切換；蓄能顯示為薄荷綠條，逐風預備期間顯示綠色圖示。
+玉球施放時會退出開鏡，射擊可取消短暫持球姿勢；選單與死亡也會取消姿勢。
+煙霧遮蔽訓練機器人視線，子彈可穿過；好友端收到煙霧、冰牆與緩速事件也使用同一組效果。
+回合重置與效果到期會釋放幾何、材質。Sage 復活仍需倒地隊友功能，未在此視覺更新中實作。
+
+驗證：`node tests/test_ability_effects.cjs` 檢查角色切圖示、實際 WebGL 編譯／畫面、
+玉球雙手、煙霧穿彈、冰牆／碎冰與資源清理；`node tests/test_gameplay.cjs` 檢查原有技能與武器流程。

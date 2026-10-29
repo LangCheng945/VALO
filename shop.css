@@ -42,3 +42,12 @@
 .network-deploy{display:block;color:#b2d9bd;font-size:11px;text-decoration:underline;margin:0 0 10px}.mode-card:disabled{opacity:.4;cursor:default}
 .map-picker{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:4px 0 22px;color:#d9e5dd}.map-picker label{font-size:12px;font-weight:600}.map-picker select{background:#172b26;color:#dcefe2;border:1px solid #90b6a177;padding:9px 32px 9px 12px;font-size:12px}.map-picker small{font-size:10px;color:#8ea398}.map-picker select:disabled{opacity:.5}#map-cover{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid #a3c2aa33;margin-bottom:12px}
 .rope-hint{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);color:#e5efeb;font-size:11px;text-shadow:0 1px 3px #000;pointer-events:none;z-index:25}
+
+/* White silhouettes and mint charge strips, with clear space around the reticle. */
+#ability-hud{background:linear-gradient(0deg,#08141955,transparent)!important;border:0!important;box-shadow:none!important;clip-path:none;gap:20px;padding:8px 22px 3px;align-items:end}
+#ability-hud>div{width:50px;border:0;padding:0}#ability-hud>div>div:first-child{background:transparent!important;border:0!important;box-shadow:none!important;width:42px;height:40px;color:#f4fff9!important}
+#ability-hud [id$="-icon"]{display:block;width:32px;height:32px;filter:drop-shadow(0 1px 2px #102c26)}#ability-hud svg{display:block;width:100%;height:100%}#ability-hud [data-available="false"]{opacity:.28}#ability-hud [data-armed="true"]{color:#74f7c4;filter:drop-shadow(0 0 5px #7dfbd4)}
+#ability-hud [id$="-name"]{color:#e8f4ef!important;font-size:10px;font-weight:500!important;margin-top:5px;line-height:1}#ability-hud>div>div:nth-child(2){height:5px;min-width:30px;justify-content:center;border-top:1px solid #e4f5eb99;padding-top:2px}
+#ability-hud>div>div:nth-child(2)>span,.ability-charge{display:block;transform:none;width:12px;height:3px;background:#86e4bd!important;box-shadow:0 0 3px #154836}.ability-charge{opacity:.2}.ability-charge.ready{opacity:1}#ability-hud [id$="-cd"]{background:#10211b99!important;color:#c6e9d7!important;font-size:13px}
+.shop-abilities svg{width:40px;height:40px;display:block;color:#e0efe8}.shop-abilities>div>span{font-size:0}
+@media(max-width:650px){#ability-hud{gap:6px;padding-inline:6px}#ability-hud>div{width:40px}}
