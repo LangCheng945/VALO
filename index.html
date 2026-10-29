@@ -149,6 +149,48 @@
         @media(max-width:1100px){.trainer-layout{grid-template-columns:minmax(0,1fr) 275px}.trainer-main{padding:24px}.trainer-loadout{padding:24px 17px}.trainer-topbar,.trainer-footer{padding-left:24px;padding-right:24px}.range-blueprint{min-width:130px;width:27%}.range-hero h1{font-size:39px}.hero-tags{gap:8px;font-size:8px}.trainer-settings-grid{gap:12px}.trainer-footer small{display:none}.mode-card{padding:13px 11px}.section-heading>small{font-size:7px}}
         @media(max-width:800px){.trainer-shell{grid-template-columns:1fr}.trainer-rail{display:none}.trainer-workspace{grid-template-rows:58px minmax(0,1fr) 73px}.trainer-layout{display:block;overflow-y:auto}.trainer-main,.trainer-loadout{overflow:visible}.trainer-loadout{border-left:0;border-top:1px solid #ffffff22}.trainer-online{display:none}.trainer-brand small{font-size:8px;letter-spacing:1px}.trainer-main{padding:22px}.range-hero h1{font-size:40px}.range-blueprint{min-width:115px;max-width:155px}.hero-description{max-width:240px;font-size:10px}.hero-tags{display:none}.trainer-summary small{display:none}.trainer-summary strong{font-size:24px}.trainer-summary span{font-size:8px}.training-modes{gap:7px}.mode-card strong{font-size:12px}.mode-card p{font-size:9px}.mode-number{font-size:7px}.mode-card small{font-size:8px}.trainer-settings-grid{grid-template-columns:1fr 1fr}.trainer-settings-grid>div{grid-column:1/-1}.crosshair-swatches{margin-top:9px}.loadout-weapons{grid-template-columns:1fr 1fr}.trainer-footer{padding:0 16px}.trainer-start{min-width:165px;padding:14px 18px;font-size:12px}.trainer-start span{margin-left:18px}.trainer-footer>div{font-size:8px}.trainer-footer>div>span{margin:0 4px}.trainer-live{gap:12px;top:14px;padding:8px 12px;left:16px;transform:none}.trainer-live strong{font-size:17px}.trainer-live>div:first-child{display:none}.is-training #hud>div:first-child>div:first-child{display:none}.trainer-live-time{padding-left:12px}}
 
+
+        /* Compact combat HUD and separate full-width armory. */
+        #ability-notice{position:fixed;bottom:125px;left:50%;transform:translateX(-50%);z-index:25;color:#eee;font:12px sans-serif;text-shadow:0 1px 3px #000;pointer-events:none;white-space:nowrap}
+        #stance-hud,#keybind-hints{display:none!important}
+        #hud{padding:18px 24px;text-shadow:0 1px 3px #0008}
+        #hud .shadow-2xl,#hud .shadow-lg{box-shadow:none!important}
+        #combat-bottom{max-width:1040px;padding:0 0 12px}
+        #combat-bottom>div:first-child>div:first-child{display:none}
+        #combat-bottom>div,#combat-bottom>div:first-child>div{background:transparent!important;border:0!important;clip-path:none!important}
+        #combat-bottom>div:nth-child(2){gap:20px;padding:8px 16px;border-bottom:1px solid #ffffff66!important}
+        #combat-bottom>div:nth-child(2)>div>div:first-child{background:transparent!important;border:0!important;box-shadow:none!important;color:#fff!important;font-size:23px}
+        #combat-bottom>div:nth-child(2)>div>span{color:#e2e5e6!important;font-size:9px;font-weight:400!important}
+        #combat-bottom>div:nth-child(2)>div:last-child{border:0;padding-left:0}
+        #combat-bottom>div:nth-child(2) .rotate-45{width:4px;height:4px;background:#c7e6db}
+        #hud-weapon-name{color:#fff!important;font-size:10px;letter-spacing:1px}
+        #hud-shield{color:#d7e3df!important;font-size:24px}#hud-hp,#hud-ammo-mag{font-size:40px}
+        #chat-messages{opacity:.35;max-width:245px;font-size:10px}#hud button{border:0;background:#14222c55;font-size:10px}
+        #kill-emblem{transform:scale(.7);transform-origin:bottom center}
+        .trainer-shell{grid-template-columns:1fr;background:#122126e8}.trainer-rail{display:none}
+        .trainer-workspace{background:linear-gradient(125deg,#152b32ed,#101b23ed);grid-template-rows:72px minmax(0,1fr) 72px}
+        .trainer-brand{font-size:20px;letter-spacing:4px}.trainer-brand>span{color:#91b6a6}.trainer-brand small{font-size:9px}
+        .menu-tabs{display:flex;height:100%;gap:30px;align-items:stretch}.menu-tabs button{padding:0 8px;background:transparent;border:0;border-bottom:2px solid transparent;color:#9caeaf;font-weight:700;cursor:pointer}.menu-tabs button.selected{color:#d9f2e6;border-color:#a3d8be}
+        .trainer-layout{grid-template-columns:1fr}.trainer-loadout{display:none}.trainer-main{max-width:1400px;width:100%;margin:auto;padding:30px 6vw}.range-hero{min-height:200px}.range-hero h1{font-size:46px}.range-hero h1 em{color:#b7dbcb}
+        #buy-menu-modal[data-view=buy] .trainer-main{display:none}
+        #buy-menu-modal[data-view=buy] .trainer-loadout{display:grid;grid-template-columns:180px minmax(0,1fr) 220px;grid-template-rows:54px minmax(0,1fr) 84px;gap:16px;padding:24px 4vw;overflow:auto;height:100%;border:0;background:transparent}
+        .trainer-loadout>.section-heading{grid-column:2;grid-row:1;margin:0}.trainer-loadout>.section-heading h2{font-size:20px;letter-spacing:4px}.trainer-loadout>.section-heading small{display:none}
+        .loadout-credits{grid-column:1;grid-row:1/3;display:block;padding:20px 16px;border-top:2px solid #b4d5c1;background:#c5dfcf0b;color:#a9c6bb}.loadout-credits strong{display:block;color:#c6ecce;font-size:32px;margin-top:10px}
+        .skin-badge{grid-column:3;grid-row:1;align-self:center;margin:0;color:#9bc8c6;font-size:9px}
+        .loadout-weapons{grid-column:2;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(130px,1fr));gap:9px;min-height:0}
+        .loadout-weapons .val-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:130px;margin:0;padding:30px 14px 12px;border:1px solid #e1eee418;background:#d8e5e40e;color:#e1e7e4;overflow:hidden;clip-path:none;transition:background .12s,border-color .12s}
+        .loadout-weapons .val-card:before{content:attr(data-category);position:absolute;top:10px;left:14px;font-size:10px;color:#98aaa6;letter-spacing:2px}
+        .loadout-weapons .val-card:hover{background:#d1e4df20;border-color:#c4ded688;transform:none}.loadout-weapons .val-card.active{background:#9cd0b645!important;border-color:#b0dcc6!important;box-shadow:inset 0 0 0 1px #b0dcc64a}
+        .loadout-weapons .val-card>div:first-child{order:2;font-size:11px}.loadout-weapons .val-card>div:first-child strong{font-weight:600;letter-spacing:.4px}.loadout-weapons .val-card>div:last-child{display:none}.loadout-weapons .val-card .text-\[\#00F5D4\]{color:#cbddcf}
+        .weapon-silhouette{display:block;width:100%;height:70px;object-fit:contain;margin:8px 0 12px;opacity:.95}
+        #wpn-card-classic{grid-column:1;grid-row:1}#wpn-card-vandal{grid-column:2;grid-row:1}#wpn-card-phantom{grid-column:2;grid-row:2}#wpn-card-operator{grid-column:3;grid-row:1}#wpn-card-odin{grid-column:3;grid-row:2}
+        .agent-selector{grid-column:1;grid-row:3;display:flex;gap:5px;margin:0}.agent-selector .val-card{padding:12px 10px;background:#c6ded511;border:1px solid #ffffff22;flex:1}.agent-selector .val-card.active{border-color:#a0cdb7;color:#c6e1d0}
+        .shield-selector{grid-column:3;grid-row:2;display:flex;flex-direction:column;gap:10px;margin:0}.shield-selector .val-card{flex:1;min-height:110px;display:flex;flex-direction:column;justify-content:center;text-align:center;border:1px solid #ffffff22;background:#d8e5e40e;font-size:14px}.shield-selector .val-card:before{content:'◈';font:42px sans-serif;margin-bottom:10px;color:#dbe4df}.shield-selector .val-card.active{background:#9cd0b645;border-color:#b0dcc6}.shield-selector .val-card span{display:block;font-size:11px;color:#abc1b6;margin-top:8px}
+        .loadout-note{grid-column:2/4;grid-row:3;border-top:1px solid #ffffff24;display:flex;align-items:center;gap:20px;margin:0;padding:12px 0;font-size:10px}.loadout-note b{font-size:12px;min-width:140px;color:#c3dfd1}.loadout-note p{margin:0;line-height:1.6;white-space:pre-line}.loadout-note p:nth-of-type(2){display:none}.loadout-note p:nth-of-type(3){max-width:160px;font-size:9px;color:#8da29b}#shop-feedback{color:#c2e5ca;font-size:11px}
+        .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
+        @media(max-width:950px){#buy-menu-modal[data-view=buy] .trainer-loadout{grid-template-columns:120px minmax(0,1fr) 150px;padding:16px;gap:10px}.trainer-brand small{display:none}.loadout-note p:nth-of-type(3){display:none}.loadout-weapons .val-card>div:first-child{flex-direction:column;gap:4px}.trainer-topbar{padding:0 20px}}
+        @media(max-height:660px){#buy-menu-modal[data-view=buy] .trainer-loadout{grid-template-rows:36px minmax(260px,1fr) 65px;padding:12px 3vw}.loadout-weapons .val-card{min-height:110px;padding-top:24px}.weapon-silhouette{height:50px;margin:6px 0}}
+
     </style>
 </head>
 <body class="relative select-none">
@@ -184,6 +226,7 @@
         <span id="stance-status">站立</span><span id="aim-status" class="text-[#00F5D4]">HIP FIRE</span>
     </div>
 
+    <div id="ability-notice" role="status" aria-live="polite"></div>
     <!-- Dynamic Crosshair + Hitmarker -->
     <div id="crosshair" class="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
         <div id="ch-center" class="w-1 h-1 bg-[#00F5D4] rounded-full shadow-[0_0_4px_#000]"></div>
@@ -336,7 +379,7 @@
             </div>
 
             <!-- Main Bottom HUD Row -->
-            <div class="flex justify-between items-end w-full max-w-7xl mx-auto">
+            <div id="combat-bottom" class="flex justify-between items-end w-full max-w-7xl mx-auto">
 
                 <!-- Left: Agent Avatar + Shield & Health Slanted Panel -->
                 <div class="flex items-end space-x-2">
@@ -364,14 +407,14 @@
                     <!-- Ability C: Smoke -->
                     <div class="flex flex-col items-center w-16">
                         <div class="w-10 h-10 bg-white/10 border border-white/30 flex items-center justify-center font-bold text-base text-[#00F5D4] relative">
-                            <span>☁</span>
+                            <span id="skill-c-icon">☁</span>
                             <span id="skill-c-cd" class="hidden absolute inset-0 bg-black/85 flex items-center justify-center text-xs text-[#FF4655] font-val"></span>
                         </div>
                         <div class="flex space-x-1 mt-1">
                             <span id="dot-c-1" class="w-1.5 h-1.5 rotate-45 bg-[#00F5D4]"></span>
                             <span id="dot-c-2" class="w-1.5 h-1.5 rotate-45 bg-[#00F5D4]"></span>
                         </div>
-                        <span class="text-[9px] mt-0.5 text-white/80 font-bold">[C] 雲爆煙霧</span>
+                        <span class="text-[9px] mt-0.5 text-white/80 font-bold" id="skill-c-name">[C] 雲爆煙霧</span>
                     </div>
 
                     <!-- Ability Q: Updraft / Flash -->
@@ -401,14 +444,14 @@
                     <!-- Ultimate Ability X: Blade Storm -->
                     <div class="flex flex-col items-center w-20 pl-2 border-l border-white/15">
                         <div id="skill-x-box" class="w-10 h-10 bg-[#FFBE0B]/20 border-2 border-[#FFBE0B] flex items-center justify-center font-bold text-base text-[#FFBE0B] shadow-[0_0_12px_rgba(255,190,11,0.4)] relative">
-                            <span>🗡</span>
+                            <span id="skill-x-icon">◇</span>
                         </div>
                         <div class="flex space-x-1 mt-1">
                             <span class="w-1.5 h-1.5 rotate-45 bg-[#FFBE0B]"></span>
                             <span class="w-1.5 h-1.5 rotate-45 bg-[#FFBE0B]"></span>
                             <span class="w-1.5 h-1.5 rotate-45 bg-[#FFBE0B]"></span>
                         </div>
-                        <span class="text-[9px] mt-0.5 text-[#FFBE0B] font-black">[X] 暴風刃大招</span>
+                        <span class="text-[9px] mt-0.5 text-[#FFBE0B] font-black" id="skill-x-name">[X] 暴風刃</span>
                     </div>
                 </div>
 
@@ -469,15 +512,15 @@
     <div id="buy-menu-modal" class="trainer-shell">
         <aside class="trainer-rail" aria-label="訓練場導覽">
             <a href="#training-home" class="range-mark" aria-label="訓練主頁">V<span>／</span></a>
-            <a href="#training-modes" title="訓練模式" aria-label="訓練模式">⌖</a>
-            <a href="#loadout-panel" title="武器庫" aria-label="武器庫">▰</a>
-            <a href="#trainer-settings" title="操作設定" aria-label="操作設定">⚙</a>
+            <a onclick="setMenuView('training')" href="#training-modes" title="訓練模式" aria-label="訓練模式">⌖</a>
+            <a href="#loadout-panel" onclick="setMenuView('buy')" title="武器庫" aria-label="武器庫">▰</a>
+            <a onclick="setMenuView('training')" href="#trainer-settings" title="操作設定" aria-label="操作設定">⚙</a>
             <span class="rail-index">RANGE<br>01 / A</span>
         </aside>
         <div class="trainer-workspace">
             <header class="trainer-topbar" id="training-home">
                 <div class="trainer-brand">VALO<span>／</span><small>ASCENT / FIELD TRAINING</small></div>
-                <div class="trainer-online"><i></i> 瀏覽器訓練場 <span>／</span> LOCAL SESSION</div>
+                <nav class="menu-tabs" aria-label="選單頁面"><button id="tab-training" onclick="setMenuView('training')">訓練</button><button id="tab-buy" onclick="setMenuView('buy')">購買裝備</button></nav>
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
@@ -601,27 +644,27 @@
                     <div class="section-heading"><h2>武器配置</h2><small>LOADOUT / 03</small></div>
                     <div class="loadout-credits">可用信用點<strong>¤ <span id="shop-creds">9000</span></strong></div>
                     <p class="skin-badge"><i></i> SMITE COLLECTION <span>神罰</span></p>
-                    <div class="loadout-weapons">                    <button id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-4 text-left space-y-3">
+                    <div class="loadout-weapons">                    <button data-category="步槍" id="wpn-card-vandal" onclick="buyWeapon('vandal')" class="val-card active p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰暴徒 VANDAL</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 160 · 身體 40 · 25 發</div>
                     </button>
-                    <button id="wpn-card-phantom" onclick="buyWeapon('phantom')" class="val-card  p-4 text-left space-y-3">
+                    <button data-category="步槍" id="wpn-card-phantom" onclick="buyWeapon('phantom')" class="val-card  p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰幻象 PHANTOM</strong><span class="text-[#00F5D4]">¤ 2900</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 140 · 身體 39 · 30 發</div>
                     </button>
-                    <button id="wpn-card-odin" onclick="buyWeapon('odin')" class="val-card p-4 text-left space-y-3">
+                    <button data-category="機關槍" id="wpn-card-odin" onclick="buyWeapon('odin')" class="val-card p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰奧丁 ODIN</strong><span class="text-[#00F5D4]">¤ 3200</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M3 10h111v8H75v12H49V18H26l-5 10h-9l3-10H3zM35 4h42v4H35zM115 11h12v5h-12z"/></svg>
                         <div class="text-xs text-white/70">爆頭 95 · 身體 38 · 100 發 · 1.15× 瞄準</div>
                     </button>
-                    <button id="wpn-card-operator" onclick="buyWeapon('operator')" class="val-card  p-4 text-left space-y-3">
+                    <button data-category="狙擊槍" id="wpn-card-operator" onclick="buyWeapon('operator')" class="val-card  p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰間諜 OPERATOR</strong><span class="text-[#00F5D4]">¤ 4700</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 255 · 身體 150 · 右鍵開鏡</div>
                     </button>
-                    <button id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card  p-4 text-left space-y-3">
+                    <button data-category="隨身武器" id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card  p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰手槍 CLASSIC</strong><span class="text-[#00F5D4]">¤ 0</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
                         <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換雷槌</div>
@@ -629,7 +672,7 @@
 </div>
                     <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
                     <div class="shield-selector"><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card">輕型護盾 <span>25 / ¤400</span></button></div>
-                    <div class="loadout-note"><b>裝備已就緒。</b><p>Ctrl 蹲下 · Shift 靜走 · 右鍵瞄準<br>3 雷槌 · Y 檢視 · R 換彈</p></div>
+                    <div class="loadout-note"><b id="shop-detail-title">VANDAL</b><p id="shop-detail-body">爆頭 160 · 身體 40 · 25 發</p><p>神罰系列 · 訓練場配置</p><p>技能於重置時補充；多人連線尚未設定。</p><div id="shop-feedback" role="status"></div></div>
                 </aside>
             </div>
             <footer class="trainer-footer"><div><kbd>B</kbd> 購買／暫停 <span>·</span> <kbd>Esc</kbd> 釋放滑鼠 <small>地圖：Riot Games · 來源 open-aim / ishoutu</small></div><button id="btn-start-combat" disabled class="trainer-start">進入 Ascent <span>↗</span></button></footer>
@@ -643,16 +686,18 @@
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
         import {AscentMapRuntime} from './ascent-map.js';
+        import {loadWeaponModel} from './weapon-models.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         /********************************************************************
-         * 1. SOUND SYNTHESIS ENGINE (Crisp Shots, Reaver Bell Kill, Blade Storm)
+         * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
          ********************************************************************/
         class SoundEngine {
             constructor() {
                 this.ctx = null;
+                this.samples = new Map(); this.loadingSamples = new Set();
             }
             init() {
                 if (!this.ctx) {
@@ -663,10 +708,24 @@
                     this.ctx.resume();
                 }
             }
+            preloadSamples() {
+                this.init();
+                return Promise.all(['vandal','phantom','classic','operator','odin'].map(async key=>{
+                    if(this.samples.has(key)||this.loadingSamples.has(key))return;
+                    this.loadingSamples.add(key);
+                    try {const r=await fetch(`./assets/weapons/${key}.ogg`);if(!r.ok)throw Error('Audio load');this.samples.set(key,await this.ctx.decodeAudioData(await r.arrayBuffer()));}
+                    catch(e){console.warn('Using fallback audio',key);}finally{this.loadingSamples.delete(key);}
+                }));
+            }
             playGunshot(type) {
                 this.init();
                 if (!this.ctx) return;
                 const now = this.ctx.currentTime;
+                if(this.samples.has(type)) {
+                    const source=this.ctx.createBufferSource(), gain=this.ctx.createGain();
+                    source.buffer=this.samples.get(type);gain.gain.value=.32;
+                    source.connect(gain);gain.connect(this.ctx.destination);source.onended=()=>{source.disconnect();gain.disconnect()};source.start();return;
+                }
 
                 if (type === 'melee' || type === 'bladestorm') {
                     // Whoosh / metallic kunai throw sound
@@ -1011,9 +1070,9 @@
             phoenix: {
                 id: 'phoenix',
                 short: 'SAGE',
-                qName: '[Q] 閃光曲球',
-                qIcon: '☀',
-                eName: '[E] 結晶冰牆',
+                qName: '[Q] 緩速靈球',
+                qIcon: '◉',
+                eName: '[E] 治癒靈球',
                 eIcon: '✚'
             }
         };
@@ -1056,6 +1115,7 @@
             recoilAccum: 0,
             cCharges: 2,
             cCooldown: 0,
+            qCharges: 1, eCharges: 1, xCharges: 1, dashReadyUntil: 0, dashArmedAt: 0,
             qCooldown: 0,
             eCooldown: 0,
             bladeStormActive: false,
@@ -1386,6 +1446,7 @@
         let knifeSpinGroup = null;
         let bladeStormGroup = null;
 
+        const WEAPON_LENGTHS={vandal:.79,phantom:.75,classic:.225,operator:1.195,odin:1.21};
         function buildFirstPersonViewmodel() {
             while (gunGroup.children.length > 0) {
                 gunGroup.remove(gunGroup.children[0]);
@@ -1555,19 +1616,20 @@
             rig.add(grip);
 
             // First-Person Tactical Gloved Hands (Left supporting handguard + Right trigger hand)
-            const rightForearm = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.085, 0.34), gloveMat);
+            const rightForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.038,0.055,0.34,12).rotateX(Math.PI/2), gloveMat);
             rightForearm.position.set(0.30, -0.32, -0.18);
             rightForearm.rotation.y = -0.15;
-            const rightWrist = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.075, 0.06), skinMat);
+            const rightWrist = new THREE.Mesh(new THREE.SphereGeometry(0.045,12,8), skinMat);
             rightWrist.position.set(0.27, -0.30, -0.32);
+            rightForearm.userData.keepArm=true;rightWrist.userData.keepArm=true;
             rig.add(rightForearm, rightWrist);
 
             if (!isPistol) {
-                const leftForearm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.42), gloveMat);
+                const leftForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.052,0.42,12).rotateX(Math.PI/2), gloveMat);
                 leftForearm.position.set(0.08, -0.31, -0.38);
                 leftForearm.rotation.y = 0.42;
                 leftForearm.rotation.x = 0.18;
-                rig.add(leftForearm);
+                leftForearm.userData.keepArm=true;rig.add(leftForearm);
             }
 
             // 3D Star-Cross Muzzle Flash Mesh
@@ -1586,6 +1648,13 @@
             rig.add(muzzleFlashGroup);
 
             gunGroup.add(rig);
+            const placeholder=rig.children.filter(child=>child!==muzzleFlashGroup && !child.userData.keepArm);
+            loadWeaponModel(wpnKey,darkMetal).then(mesh=>{
+                if(!mesh || state.weaponKey!==wpnKey || !gunGroup.children.includes(rig))return;
+                placeholder.forEach(child=>rig.remove(child));
+                rig.add(mesh);gunMagazineMesh=null;
+                muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
+            }).catch(error=>console.warn('Weapon model fallback',error));
         }
         buildFirstPersonViewmodel();
 
@@ -2190,6 +2259,7 @@
                 if (ev.killerUid === currentUser.uid) {
                     state.kills++;
                     state.roundKills++;
+            if(state.agent==='jett'&&state.roundKills%2===0)state.eCharges=1;
                     state.creds = Math.min(9000, state.creds + 300);
                     sfx.playHeadshotKill(state.roundKills);
                     showKillEmblem(state.roundKills, ev.isHead);
@@ -2507,6 +2577,7 @@
                         }
                     }
                 } else {
+                    if(hit.object.userData.barrierHP!==undefined)hit.object.userData.barrierHP-=wpn.bodyDmg;
                     // Hit wall/floor: spawn bullet hole decal + yellow sparks
                     if (hit.face) {
                         const worldNormal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
@@ -2595,6 +2666,7 @@
             bot.alive = false;
             bot.dyingTimer = 0.65; // Smooth fall-back death animation
             state.roundKills++;
+            if(state.agent==='jett'&&state.roundKills%2===0)state.eCharges=1;
             state.kills++;
             if (isTraining()) state.training.kills++;
             state.creds = Math.min(9000, state.creds + 300);
@@ -2729,7 +2801,7 @@
             smokeMesh.scale.set(0.1, 0.1, 0.1);
             scene.add(smokeMesh);
             shootableMeshes.push(smokeMesh);
-            smokeSpheres.push({ mesh: smokeMesh, life: 11.0 });
+            smokeSpheres.push({ mesh: smokeMesh, life: 2.5 });
         }
 
         function spawnIceWallAtPosition(wallPos, yawAngle) {
@@ -2745,115 +2817,97 @@
             iceMesh.rotation.y = yawAngle;
             scene.add(iceMesh);
             shootableMeshes.push(iceMesh);
-            temporaryWalls.push(iceMesh);
+            iceMesh.userData.barrierHP=800;iceMesh.userData.life=40;temporaryWalls.push(iceMesh);
         }
 
+        const slowFields=[];
+        let abilityNoticeTimeout;
+        function abilityNotice(text) {
+            const el=document.getElementById('ability-notice');el.textContent=text;
+            clearTimeout(abilityNoticeTimeout);abilityNoticeTimeout=setTimeout(()=>el.textContent='',1800);
+        }
+        function aimedPoint(distance=16) {
+            const dir=new THREE.Vector3();camera.getWorldDirection(dir);
+            const origin=camera.getWorldPosition(new THREE.Vector3());
+            const ray=new THREE.Raycaster(origin,dir,0,distance);
+            const hit=ray.intersectObjects(shootableMeshes,false)[0];
+            const point=hit?hit.point.clone().addScaledVector(dir,-.5):origin.addScaledVector(dir,distance);
+            point.y=realMap.ready?realMap.getGroundHeight(point.clone().add(new THREE.Vector3(0,2.2,0))):0;
+            return point;
+        }
+        function slowMultiplier(point) {return slowFields.some(f=>Math.hypot(point.x-f.mesh.position.x,point.z-f.mesh.position.z)<5 && Math.abs(point.y-f.mesh.position.y)<3)?.5:1;}
+        function updateAbilityHUD() {
+            const sage=state.agent!=='jett';
+            document.getElementById('skill-c-name').textContent=sage?'[C] 屏障靈球':'[C] 雲爆煙霧';
+            document.getElementById('skill-c-icon').textContent=sage?'▥':'☁';
+            document.getElementById('skill-q-name').textContent=AGENTS[state.agent].qName;
+            document.getElementById('skill-q-icon').textContent=AGENTS[state.agent].qIcon;
+            document.getElementById('skill-e-name').textContent=AGENTS[state.agent].eName;
+            document.getElementById('skill-e-icon').textContent=AGENTS[state.agent].eIcon;
+            document.getElementById('skill-x-name').textContent=sage?'[X] 復活 · 需倒地隊友':'[X] 暴風刃';
+            document.getElementById('skill-x-icon').textContent=sage?'✧':'◇';
+            for(const k of ['c','q','e']) {
+                const el=document.getElementById(`skill-${k}-cd`);
+                const charges=state[k+'Charges'];const cd=state[k+'Cooldown'];
+                el.classList.toggle('hidden',charges>0&&cd<=0);
+                el.textContent=cd>0?Math.ceil(cd):'—';
+            }
+            for(let i=1;i<=2;i++)document.getElementById(`dot-c-${i}`).style.opacity=state.cCharges>=i?'1':'.2';
+            document.getElementById('skill-x-box').style.opacity=state.xCharges>0?'1':'.3';
+        }
+        function resetAbilities() {
+            state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
+            state.eCharges=1;state.xCharges=1;state.cCooldown=state.qCooldown=state.eCooldown=0;
+            state.dashReadyUntil=0;state.dashArmedAt=0;updateAbilityHUD();
+        }
         function triggerAbilityC() {
-            if (state.cCharges <= 0 || state.cCooldown > 0 || state.inBuyMenu || state.hp <= 0) return;
-            state.cCharges--;
-            state.cCooldown = 2.5;
-            sfx.playAbilitySound('smoke');
-
-            document.getElementById('dot-c-2').className = state.cCharges >= 2 ? 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]' : 'w-1.5 h-1.5 rotate-45 bg-white/20';
-            document.getElementById('dot-c-1').className = state.cCharges >= 1 ? 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]' : 'w-1.5 h-1.5 rotate-45 bg-white/20';
-
-            const forward = new THREE.Vector3();
-            camera.getWorldDirection(forward);
-            const smokePos = yawObject.position.clone().add(forward.multiplyScalar(13));
-            smokePos.y = yawObject.position.y;
-
-            spawnSmokeAtPosition(smokePos);
-            broadcastRoomEvent({
-                type: 'smoke',
-                x: Number(smokePos.x.toFixed(2)),
-                y: Number(smokePos.y.toFixed(2)),
-                z: Number(smokePos.z.toFixed(2))
-            });
-
-            showCenterBanner('CLOUDBURST // 雲爆煙霧彈', '已展開球形戰術煙霧阻斷敵方視線', 1400);
+            if(state.cCharges<=0||state.inBuyMenu||state.hp<=0)return;
+            const point=aimedPoint(state.agent==='jett'?16:6);
+            if(state.agent==='jett') {
+                point.y+=2;spawnSmokeAtPosition(point);
+                broadcastRoomEvent({type:'smoke',x:point.x,y:point.y,z:point.z});
+            } else {
+                const wallPos=point.clone();wallPos.y+=2.2;
+                spawnIceWallAtPosition(wallPos,yawObject.rotation.y);
+                broadcastRoomEvent({type:'wall',x:wallPos.x,y:wallPos.y,z:wallPos.z,yaw:yawObject.rotation.y});
+            }
+            state.cCharges--;sfx.playAbilitySound('smoke');updateAbilityHUD();
         }
-
         function triggerAbilityQ() {
-            if (state.qCooldown > 0 || state.inBuyMenu || state.hp <= 0) return;
-            state.qCooldown = 7;
-            sfx.playAbilitySound('updraft');
-
-            if (state.agent === 'jett') {
-                playerVelocity.y = 14.0;
-                canJump = false;
-                showCenterBanner('UPDRAFT // 氣流竄升', '高空戰術制高點飛躍', 1100);
-            } else {
-                const flashEl = document.getElementById('flash-overlay');
-                flashEl.style.opacity = '0.92';
-                setTimeout(() => { flashEl.style.opacity = '0'; }, 320);
-
-                bots.forEach(b => {
-                    if (b.alive) {
-                        b.blindTimer = 4.5;
-                        b.visor.material.color.setHex(0xffffff);
-                    }
-                });
-                broadcastRoomEvent({ type: 'flash', senderTeam: state.team });
-                showCenterBanner('CURVEBALL // 閃光曲球', '敵方特務已全數致盲 4.5 秒！', 1600);
+            if(state.qCharges<=0||state.inBuyMenu||state.hp<=0)return;
+            if(state.agent==='jett'){playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
+            else {
+                const p=aimedPoint(24);const mesh=new THREE.Mesh(new THREE.CircleGeometry(5,48),new THREE.MeshBasicMaterial({color:0x76d8cb,transparent:true,opacity:.35,depthWrite:false,side:THREE.DoubleSide}));
+                mesh.rotation.x=-Math.PI/2;mesh.position.copy(p);mesh.position.y+=.04;scene.add(mesh);slowFields.push({mesh,life:7});
+                sfx.playAbilitySound('smoke');
             }
+            state.qCharges--;updateAbilityHUD();
         }
-
         function triggerAbilityE() {
-            if (state.eCooldown > 0 || state.inBuyMenu || state.hp <= 0) return;
-            state.eCooldown = 9;
-            sfx.playAbilitySound('dash');
-
-            if (state.agent === 'jett') {
-                setScope(false);
-                const dashDir = new THREE.Vector3();
-                camera.getWorldDirection(dashDir);
-                dashDir.y = 0;
-                dashDir.normalize();
-                playerVelocity.x = dashDir.x * 38;
-                playerVelocity.z = dashDir.z * 38;
-
-                const sl = document.getElementById('speedlines-overlay');
-                sl.style.opacity = '1';
-                camera.fov = 88;
-                camera.updateProjectionMatrix();
-                setTimeout(() => {
-                    sl.style.opacity = '0';
-                    if (!state.isScoped) {
-                        camera.fov = 75;
-                        camera.updateProjectionMatrix();
-                    }
-                }, 260);
-
-                showCenterBanner('TAILWIND // 逐風衝刺', '瞬間高速位移擺脫火力線', 1100);
+            if(state.inBuyMenu||state.hp<=0)return;
+            if(state.agent==='jett') {
+                const now=performance.now();
+                if(state.dashReadyUntil>now) {
+                    if(now<state.dashArmedAt)return;
+                    const dir=new THREE.Vector3((moveState.right?1:0)-(moveState.left?1:0),0,(moveState.backward?1:0)-(moveState.forward?1:0));
+                    if(dir.lengthSq()===0)dir.z=-1;dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);
+                    // Small swept steps prevent a dash from tunneling through Ascent walls.
+                    const step=dir.multiplyScalar(.16);
+                    for(let i=0;i<55;i++){const next=yawObject.position.clone().add(step);if(checkPlayerCollision(next))break;yawObject.position.copy(next);}
+                    state.dashReadyUntil=0;setScope(false);sfx.playAbilitySound('dash');abilityNotice('');
+                } else if(state.eCharges>0) {
+                    state.eCharges--;state.dashArmedAt=now+750;state.dashReadyUntil=now+8250;abilityNotice('逐風就緒 · 再按 E 衝刺');
+                }
             } else {
-                state.hp = Math.min(100, state.hp + 50);
-                updateHealthHUD();
-                pushMyStateToFirestore(true);
-
-                const forward = new THREE.Vector3();
-                camera.getWorldDirection(forward);
-                forward.y = 0;
-                forward.normalize();
-
-                const wallPos = yawObject.position.clone().add(forward.multiplyScalar(5.5));
-                spawnIceWallAtPosition(wallPos, yawObject.rotation.y);
-                broadcastRoomEvent({
-                    type: 'wall',
-                    x: Number(wallPos.x.toFixed(2)),
-                    y: 1.8,
-                    z: Number(wallPos.z.toFixed(2)),
-                    yaw: Number(yawObject.rotation.y.toFixed(3))
-                });
-
-                showCenterBanner('BARRIER ORB // 結晶冰牆', '回復 +50 HP 並升起高強度玉石冰牆', 1500);
+                if(state.eCooldown>0||state.hp>=100)return;
+                state.healRemaining=30;state.healClock=0;state.eCooldown=45;sfx.playAbilitySound('smoke');
             }
+            updateAbilityHUD();
         }
-
         function triggerUltimateX() {
-            if (state.inBuyMenu || state.hp <= 0) return;
-            equipWeaponSlot('bladestorm');
-            sfx.playAbilitySound('updraft');
-            showCenterBanner('BLADE STORM // 終極技能：暴風刃', '空中射擊 100% 精準！擊殺敵人自動補滿 5 把飛刀', 2000);
+            if(state.inBuyMenu||state.hp<=0||state.xCharges<=0)return;
+            if(state.agent!=='jett'){abilityNotice('復活需要可連線的倒地隊友');return;}
+            state.xCharges--;equipWeaponSlot('bladestorm');sfx.playAbilitySound('updraft');updateAbilityHUD();
         }
 
         /********************************************************************
@@ -2875,7 +2929,8 @@
         }
 
         window.selectAgent = function(agentKey) {
-            state.agent = agentKey;
+            state.agent = agentKey;resetAbilities();state.healRemaining=0;
+            if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             document.getElementById('agent-card-jett').classList.toggle('active', agentKey === 'jett');
             document.getElementById('agent-card-phoenix').classList.toggle('active', agentKey === 'phoenix');
 
@@ -2893,7 +2948,7 @@
             if (!wpn) return;
             if (state.primaryWeaponKey !== wpnKey) {
                 if (state.creds < wpn.cost) {
-                    showCenterBanner('CREDITS', '信用點不足，無法購買這把武器', 1800);
+                    shopFeedback('信用點不足，無法購買');
                     return;
                 }
                 state.creds -= wpn.cost;
@@ -2902,11 +2957,13 @@
                 state.primaryWeaponKey = wpnKey;
             }
             equipWeaponSlot(wpnKey);
-            updateShopUI();
+            updateShopUI();shopFeedback('已裝備 '+wpn.name);
         };
 
         window.buyShield = function(amount) {
+            if(state.shield===amount)return;
             const cost = amount === 50 ? 1000 : 400;
+            if(state.creds<cost){shopFeedback("信用點不足");return;}
             if (state.shield < amount && state.creds >= cost) {
                 state.creds -= cost;
             }
@@ -2938,6 +2995,27 @@
                 document.getElementById(id).style.backgroundColor = hex;
             });
         };
+
+        let shopFeedbackTimer;
+        function shopFeedback(text) {const el=document.getElementById('shop-feedback');el.textContent=text;clearTimeout(shopFeedbackTimer);shopFeedbackTimer=setTimeout(()=>el.textContent='',2200);}
+        window.setMenuView=function(view) {
+            document.getElementById('buy-menu-modal').dataset.view=view;
+            document.getElementById('tab-buy').classList.toggle('selected',view==='buy');
+            document.getElementById('tab-training').classList.toggle('selected',view!=='buy');
+        };
+        setMenuView('training');
+        for(const key of ['vandal','phantom','classic','operator','odin']) {
+            const card=document.getElementById('wpn-card-'+key);
+            const old=card.querySelector('svg');const canvas=document.createElement('canvas');canvas.width=420;canvas.height=130;canvas.className='weapon-silhouette';old.replaceWith(canvas);
+            const info=()=>{const w=WEAPONS[key];document.getElementById('shop-detail-title').textContent=w.name;document.getElementById('shop-detail-body').textContent=`爆頭 ${w.headDmg} · 身體 ${w.bodyDmg} · ${w.magSize} 發\n射速 ${(1/(w.fireRate||.1)).toFixed(1)} 發/秒`;};
+            card.addEventListener('mouseenter',info);card.addEventListener('focus',info);
+            loadWeaponModel(key,new THREE.MeshBasicMaterial()).then(mesh=>{
+                const g=mesh.geometry,p=g.attributes.position.array,ix=g.index.array;
+                g.computeBoundingBox();const box=g.boundingBox,scale=Math.min(380/(box.max.x-box.min.x),104/(box.max.z-box.min.z));
+                const ctx=canvas.getContext('2d');ctx.fillStyle='#e5e9e5';
+                for(let i=0;i<ix.length;i+=3){ctx.beginPath();for(let k=0;k<3;k++){const n=ix[i+k]*3,x=20+(p[n]-box.min.x)*scale,y=115-(p[n+2]-box.min.z)*scale;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();}mesh.material.dispose();
+            }).catch(()=>{});
+        }
 
         function updateShopUI() {
             document.getElementById('shop-creds').textContent = state.creds;
@@ -3071,7 +3149,7 @@
             state.shield = 50;
             state.roundTimeLeft = 100;
             state.roundKills = 0;
-            state.cCharges = 2;
+            resetAbilities();state.healRemaining=0;
             state.spikePlanted = false;
             state.spikeTimer = 45;
             state.plantingProgress = 0;
@@ -3088,6 +3166,7 @@
                 if (idx > -1) shootableMeshes.splice(idx, 1);
             });
             temporaryWalls.length = 0;
+            slowFields.forEach(f=>{scene.remove(f.mesh);f.mesh.geometry.dispose();f.mesh.material.dispose();});slowFields.length=0;
 
             smokeSpheres.forEach(s => {
                 scene.remove(s.mesh);
@@ -3122,7 +3201,8 @@
             playerVelocity.z = 0;
         }
 
-        function showBuyMenu() {
+        function showBuyMenu(view = state.training.finished ? 'training' : 'buy') {
+            setMenuView(view);
             resetMovementInput();
             setScope(false);
             state.isLocked = false;
@@ -3160,7 +3240,7 @@
         function lockPointerAndPlay() {
             if(!realMap.ready)return;
             if (state.training.finished) resetRound();
-            sfx.init();
+            sfx.init();sfx.preloadSamples();
             resetMovementInput();
             safeRequestPointerLock();
         }
@@ -3239,6 +3319,7 @@
 
         document.addEventListener('keydown', (e) => {
             const code = e.code;
+            if(e.repeat&&['KeyB','KeyC','KeyQ','KeyE','KeyX','KeyY'].includes(code))return;
 
             // Handle Enter key for In-Game Multiplayer Chat
             if (code === 'Enter') {
@@ -3272,7 +3353,7 @@
 
             if (isChatFocused || document.activeElement?.tagName === 'INPUT') return;
 
-            if (code === 'Tab') {
+            if (code === 'Tab' && !state.inBuyMenu) {
                 e.preventDefault();
                 updateScoreboardUI();
                 document.getElementById('scoreboard-modal').classList.remove('hidden');
@@ -3316,7 +3397,7 @@
 
         document.addEventListener('keyup', (e) => {
             const code = e.code;
-            if (code === 'Tab') {
+            if (code === 'Tab' && !state.inBuyMenu) {
                 e.preventDefault();
                 document.getElementById('scoreboard-modal').classList.add('hidden');
             }
@@ -3458,6 +3539,7 @@
                 new THREE.Vector3(nextPos.x - 0.6, nextPos.y - 2.0, nextPos.z - 0.6),
                 new THREE.Vector3(nextPos.x + 0.6, nextPos.y + 0.3 - crouchAmount * 0.75, nextPos.z + 0.6)
             );
+            for(const wall of temporaryWalls){if(playerBox.intersectsBox(new THREE.Box3().setFromObject(wall)))return true;}
             for (let i = 0; i < mapColliders.length; i++) {
                 if (playerBox.intersectsBox(mapColliders[i])) return true;
             }
@@ -3477,10 +3559,10 @@
             }
 
             // Reload Magazine Drop & Insert Animation
-            if (state.isReloading && gunMagazineMesh) {
+            if (state.isReloading) {
                 state.reloadTimer += dt;
                 const phase = Math.sin((state.reloadTimer / ((WEAPONS[state.weaponKey].reloadTimeMs || 1350) / 1000)) * Math.PI);
-                gunMagazineMesh.position.y = -0.34 - phase * 0.28;
+                if(gunMagazineMesh)gunMagazineMesh.position.y = -0.34 - phase * 0.28;
                 gunGroup.rotation.z = phase * 0.26;
                 gunGroup.rotation.x = phase * 0.18;
             } else if (state.isInspecting) {
@@ -3565,7 +3647,7 @@
                 }
 
                 if (state.gameMode !== 'stationary') {
-                    const candidate=b.group.position.clone();candidate.x+=b.dir*b.speed*dt;
+                    const candidate=b.group.position.clone();candidate.x+=b.dir*b.speed*dt*slowMultiplier(b.group.position);
                     const eye=candidate.clone();eye.y+=2.2;
                     if(realMap.ready && realMap.collides(eye))b.dir*=-1;
                     else {b.group.position.x=candidate.x;if(realMap.ready)b.group.position.y=realMap.getGroundHeight(eye);}
@@ -3683,10 +3765,16 @@
         }
 
         function updateTimersAndSpike(dt) {
+            if(state.isLocked&&!state.inBuyMenu) {
+                if(state.healRemaining>0){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
+                for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life-=dt;if(f.life<=0){scene.remove(f.mesh);f.mesh.geometry.dispose();f.mesh.material.dispose();slowFields.splice(i,1);}}
+                for(let i=temporaryWalls.length-1;i>=0;i--){const w=temporaryWalls[i];w.userData.life-=dt;if(w.userData.life<=0||w.userData.barrierHP<=0){scene.remove(w);const j=shootableMeshes.indexOf(w);if(j>=0)shootableMeshes.splice(j,1);temporaryWalls.splice(i,1);w.geometry.dispose();w.material.dispose();}}
+            }
+            updateAbilityHUD();
             // Cooldowns C, Q, E
             ['c', 'q', 'e'].forEach(k => {
                 const prop = `${k}Cooldown`;
-                if (state[prop] > 0) {
+                if (state[prop] > 0 && state.isLocked && !state.inBuyMenu) {
                     state[prop] = Math.max(0, state[prop] - dt);
                     const el = document.getElementById(`skill-${k}-cd`);
                     if (el) {
@@ -3823,7 +3911,7 @@
 
             // Player Movement Physics
             if (state.isLocked && state.hp > 0 && !state.roundEnding) {
-                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped);
+                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position);
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
 
@@ -3876,8 +3964,7 @@
             pushMyStateToFirestore(false);
             drawRadar();
 
-            realMap.updateCulling(camera);
-            renderer.render(scene, camera);
+            if(!state.inBuyMenu){realMap.updateCulling(camera);renderer.render(scene, camera);}
         }
 
         window.addEventListener('resize', () => {
