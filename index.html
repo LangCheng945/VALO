@@ -681,14 +681,14 @@
     <script type="module">
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,disposeViewmodel} from './first-person-view.js?v=hands1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=motion1';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=hands1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=motion1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=slow1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -1434,7 +1434,8 @@
          ********************************************************************/
         const VIEWMODEL_REST_Z=-.14;
         const gunGroup = new THREE.Group();gunGroup.position.z=VIEWMODEL_REST_Z;
-        camera.add(gunGroup);
+        const weaponMotionRoot=new THREE.Group();camera.add(weaponMotionRoot);weaponMotionRoot.add(gunGroup);
+        let weaponDrawElapsed=1;
         const abilityCast=new AbilityCastView(camera);
         const viewEnvironmentTarget=createViewEnvironment(renderer);
         let firstPersonHands=null;
@@ -2332,6 +2333,7 @@
                 return;
             }
 
+            weaponDrawElapsed=weaponDrawDuration(state.weaponKey);weaponMotionRoot.position.set(0,0,0);weaponMotionRoot.rotation.set(0,0,0);
             state.lastShotTime = now;
             state.consecutiveShots++;
             state.isInspecting = false;
@@ -2491,6 +2493,7 @@
             setScope(false);
             if (state.isReloading || state.mag === wpn.magSize || state.reserve <= 0) return;
 
+            weaponDrawElapsed=weaponDrawDuration(state.weaponKey);
             state.isReloading = true;
             state.isInspecting = false;
             state.reloadTimer = 0;
@@ -2938,6 +2941,8 @@
             state.mag = wpn.magSize;
             state.reserve = wpn.reserve;
             buildFirstPersonViewmodel();
+            weaponDrawElapsed=0;gunGroup.position.set(0,0,VIEWMODEL_REST_Z);gunGroup.rotation.set(0,0,0);
+            updateViewmodelAnimations(0,false);
             updateAmmoHUD();
         }
 
@@ -3634,6 +3639,9 @@
         function updateViewmodelAnimations(dt, isMoving) {
             if(state.isReloading)state.reloadTimer+=dt;
             const reloadProgress=state.isReloading?Math.min(.999,state.reloadTimer/((WEAPONS[state.weaponKey].reloadTimeMs||1350)/1000)):0;
+            weaponDrawElapsed+=dt;
+            const motion=weaponMotion(state.weaponKey,{reload:reloadProgress,draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration(state.weaponKey))});
+            weaponMotionRoot.position.fromArray(motion.position);weaponMotionRoot.rotation.set(...motion.rotation);
             updateMagazine(gunMagazineMesh,reloadProgress,state.weaponKey);
             firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Walk bobbing & breathing sway
@@ -3647,11 +3655,9 @@
                 gunGroup.position.y = (state.isScoped ? 0.095 : 0) + Math.sin(state.walkBobTime) * (state.isScoped ? 0.001 : 0.004);
             }
 
-            // Reload Magazine Drop & Insert Animation
+            // Reload/draw motion has its own parent so it never accumulates with recoil or bob.
             if (state.isReloading) {
-                const phase = Math.sin((state.reloadTimer / ((WEAPONS[state.weaponKey].reloadTimeMs || 1350) / 1000)) * Math.PI);
-                gunGroup.rotation.z = phase * 0.26;
-                gunGroup.rotation.x = phase * 0.18;
+                gunGroup.rotation.x=0;gunGroup.rotation.y=0;gunGroup.rotation.z=0;
             } else if (state.isInspecting) {
                 // [Y] Key Weapon / Kunai Spin Inspect Animation
                 state.inspectTimer += dt;

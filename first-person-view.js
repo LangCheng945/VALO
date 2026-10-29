@@ -49,6 +49,18 @@ const profiles={
  orb:{right:[.29,-.26,-.68],left:[-.10,-.26,-.68],mag:[0,0,0]},
  bladestorm:{right:[.30,-.30,-.55],left:[-.30,-.30,-.55],mag:[0,0,0]}
 };
+// Normalized keyframes use eased segments: pauses make removal, insertion and settling legible.
+function track(t,frames){
+ for(let i=1;i<frames.length;i++){const a=frames[i-1],b=frames[i];if(t<=b[0]){const f=smooth((t-a[0])/(b[0]-a[0]));return a.slice(1).map((v,j)=>v+(b[j+1]-v)*f);}}
+ return frames[frames.length-1].slice(1);
+}
+export function weaponMotion(key,{reload=0,draw=1}={}){
+ const heavy=key==='odin',pistol=key==='classic',melee=key==='melee'||key==='bladestorm';
+ const [lift,tilt,pitch]=reload>0?track(reload,[[0,0,0,0],[.16,.025,pistol?-.24:.22,-.06],[.30,.035,heavy?.16:.30,-.09],[.65,.035,heavy?.16:.30,-.09],[.78,.018,.16,-.035],[.84,.008,-.035,.025],[.95,0,0,0],[1,0,0,0]]):[0,0,0];
+ const [lower,roll,forward]=track(draw,[[0,1,1,1],[.22,.76,.85,.7],[.70,-.035,-.08,0],[1,0,0,0]]);
+ return {position:[lower*.065,-lower*(heavy?.40:melee?.34:.30)+lift,forward*.12],rotation:[pitch+lower*.26,lower*-.12,tilt+roll*(melee?-.42:.26)]};
+}
+export function weaponDrawDuration(key){return key==='odin'?.72:key==='operator'?.64:key==='classic'?.40:key==='melee'||key==='bladestorm'?.44:.52;}
 export class FirstPersonHands{
  constructor(agent,key,environment){
   this.key=key;this.profile=profiles[key]||profiles.vandal;this.root=new T.Group();this.root.name='first-person-hands';this.elapsed=0;
@@ -72,7 +84,13 @@ export class FirstPersonHands{
   for(const a of this.arms){
    let target=new T.Vector3(...(a.side<0?p.left:p.right));let roll=a.side<0?1.12:-1.15;
    if(a.side<0&&reload>0&&magazine){
-    const grasp=magazine.position.clone().add(new T.Vector3(-.045,-.04,.01));const blend=reload<.18?smooth(reload/.18):reload>.82?1-smooth((reload-.82)/.18):1;target.lerp(grasp,blend);roll=T.MathUtils.lerp(roll,.65,blend);
+    const grasp=new T.Vector3(-.045,-.04,.01).applyEuler(magazine.rotation).add(magazine.position);
+    const blend=reload<.16?smooth(reload/.16):reload>.78?1-smooth((reload-.78)/.20):1;
+    target.lerp(grasp,blend);roll=T.MathUtils.lerp(roll,.65+magazine.rotation.z,blend);
+    // After seating, briefly tap the receiver before returning to the support grip.
+    const tap=reload>.79&&reload<.96?Math.sin((reload-.79)/.17*Math.PI)**2:0;
+    const receiver=new T.Vector3(...p.mag).add(new T.Vector3(-.045,.115,.02));
+    target.lerp(receiver,tap*.72);roll=T.MathUtils.lerp(roll,.25,tap*.6);
    }
    if(this.key==='melee'&&a.side>0){a.hand.rotation.set(Math.PI/2,0,0);}else a.hand.rotation.set(-.08,a.side*.08,roll);
    if(this.key==='orb')a.hand.rotation.set(-.15,a.side*-.15,a.side*-.18);
@@ -101,9 +119,11 @@ export function createMagazine(key,material,steel){
 }
 export function updateMagazine(magazine,progress,key){
  if(!magazine)return;const base=magazine.userData.basePosition;magazine.position.copy(base);magazine.rotation.set(0,0,0);
- if(key==='classic')magazine.visible=progress>.2&&progress<.86;
- if(progress>0){let amount;if(progress<.2)amount=0;else if(progress<.42)amount=smooth((progress-.2)/.22);else if(progress<.57)amount=1;else if(progress<.82)amount=1-smooth((progress-.57)/.25);else amount=0;
-  magazine.position.y-=amount*.32;magazine.position.x-=amount*.08;magazine.rotation.z=amount*.18;
- }
+ const active=progress>0;
+ // The old magazine exits below frame; the fresh one enters from the belt on a new path.
+ const [x,y,z,roll]=active?track(progress,[[0,0,0,0,0],[.17,0,0,0,0],[.40,-.08,-.34,.035,.22],[.48,-.13,-.58,.08,.30],[.52,-.13,-.58,.08,-.18],[.60,-.07,-.32,.04,-.12],[.76,0,-.025,0,-.02],[.80,0,.008,0,0],[.84,0,0,0,0],[1,0,0,0,0]]):[0,0,0,0];
+ magazine.position.add(new T.Vector3(x,y,z));magazine.rotation.set(0,0,roll);
+ magazine.visible=key==='classic'?active&&progress>.17&&progress<.84:!(progress>.46&&progress<.54);
+ magazine.userData.reloadStage=!active?'idle':progress<.17?'reach':progress<.46?'remove':progress<.54?'replace':progress<.80?'insert':progress<.96?'settle':'idle';
 }
 export function disposeViewmodel(root){const gs=new Set(),ms=new Set();root.traverse(o=>{if(o.geometry&&!o.geometry.userData.sharedWeaponGeometry)gs.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])ms.add(m);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());root.clear();}
