@@ -1,0 +1,35 @@
+{
+  "jett": {
+    "verts": 4398,
+    "tris": 5189,
+    "layout": [
+      0,
+      26388,
+      39584,
+      57176,
+      74768,
+      92360,
+      123496
+    ],
+    "bin": "jett.bin",
+    "albedo": "jett.albedo.jpg",
+    "orm": "jett.orm.jpg"
+  },
+  "sage": {
+    "verts": 4434,
+    "tris": 5362,
+    "layout": [
+      0,
+      26604,
+      39908,
+      57644,
+      75380,
+      93116,
+      125288
+    ],
+    "bin": "sage.bin",
+    "albedo": "sage.albedo.jpg",
+    "orm": "sage.orm.jpg"
+  },
+  "rig": "rig.json"
+}

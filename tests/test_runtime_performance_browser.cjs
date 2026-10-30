@@ -35,7 +35,7 @@ const {promisify}=require('util'),run=promisify(require('child_process').execFil
   await page.locator('#render-quality').selectOption('performance');const low=await page.evaluate(()=>__perf.renderer.domElement.width*__perf.renderer.domElement.height);assert(low<=923000);
   await page.evaluate(()=>{__perf.state.inBuyMenu=false;document.getElementById('buy-menu-modal').classList.add('hidden');__perf.render()});await page.screenshot({path:'/tmp/valo-performance-mode.png'});
   await page.locator('#render-quality').evaluate(el=>{el.value='quality';el.dispatchEvent(new Event('change'))});assert.equal(await page.evaluate(()=>__perf.renderer.getPixelRatio()),1.5);
-  await page.setViewportSize({width:1000,height:700});assert.equal(await page.evaluate(()=>__perf.renderer.domElement.width),1500);
+  await page.setViewportSize({width:1000,height:700});await page.waitForFunction(()=>__perf.renderer.domElement.width===1500);assert.equal(await page.evaluate(()=>__perf.renderer.domElement.width),1500);
   await page.reload();await page.waitForFunction(()=>window.__perf);assert.equal(await page.locator('#render-quality').inputValue(),'quality');
   console.log('PASS pixel budgets, live mode switching, resize, persistence and UI changes');
  }

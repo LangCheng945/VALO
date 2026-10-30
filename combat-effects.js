@@ -31,7 +31,7 @@ export function moveRoamingBot(bot,dt,map,extraCollision=()=>false,speedMultipli
 }
 
 export function disposeActor(root){
- root.parent?.remove(root);const geometries=new Set(),materials=new Set();
- root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
- geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
+ root.userData.disposed=true;root.parent?.remove(root);const geometries=new Set(),materials=new Set(),skeletons=new Set();
+ root.traverse(o=>{if(o.skeleton)skeletons.add(o.skeleton);if(o.geometry&&!o.geometry.userData.sharedWeaponGeometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});
+ skeletons.forEach(s=>s.dispose());geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
 }

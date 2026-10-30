@@ -308,3 +308,13 @@ Sage 預設噴漆換為 All Good（冰牆前比讚），Jett 換為 Love > Hate�
 位置快照不再重建沒有變動的房間成員、隊伍名單和戰績表，血量文字只在數值改變時更新；小地圖限制為每秒 20 次。遠端玩家腳步聲的地板高度最多快取 0.12 秒，移動超過 1 單位或高度變化超過 0.4 立即重查；遠處、靜走及未遊玩時跳過聲音專用查詢。玩家及機器人的實際地板碰撞查詢保持原樣。
 
 驗證：`node --test tests/test_runtime_performance.mjs`、`node tests/test_runtime_performance_browser.cjs`。以同一個 1920×1080、DPR 2 的 Chromium 視窗比較 `cd58c79`，初始渲染像素由 4,665,600 降至 1,798,728；100 次僅改位置的快照，觀察名單／戰績／血量 DOM 變動由 1,200 次降至 0；120 幀的遠端聲音地板查詢由 120 次降至 15 次。這是相同情境的工作量比較，並非玩家裝置的 FPS 保證。可用 `PERF_BASELINE=1 node tests/test_runtime_performance_browser.cjs` 重現基準，另可用 `PERF_BASELINE_REF` 指定版本。
+
+## 好友角色外觀與第一人稱觀戰
+
+好友的角色由方塊外觀改為本機 Jett／Sage 蒙皮模型與貼圖，附持槍姿勢、站立／走跑／蹲下動畫及隊伍輪廓。每個角色約 5,200–5,400 三角面、117 根骨骼，兩種角色與共用動畫資料合計約 730 KB，只下載並快取一次；後續加入玩家共用來源貼圖，個別持有骨架、可釋放的幾何與材質。載入失敗仍保留原人形；原本頭部、身體、腿部的命中盒及服務端傷害規則不變。內部 `phoenix` 仍對應 Sage。來源、版本及檔案雜湊見 `assets/agents/provenance.json`，`tools/export-agents.py <本機 open-aim checkout>` 可重製資料，程式只解析指定資料字面值，不執行上游腳本。
+
+死亡且仍在遊玩時自動選取存活、已進場的同隊玩家，以獨立攝影機追蹤位置、瞄準方向、蹲姿、角色手部與持用槍枝；左／右鍵或 ←／→ 切換，沒有隊友時顯示等待，絕不自動切到敵人。選中角色本體在該觀戰客戶端暫時隱藏，避免頭髮或身體擋住鏡頭；切換、復活、回合結束、離線及離房均還原。觀戰不移動自己的角色、不允許射擊或施放技能；隱藏自己的血量、彈量和技能列，顯示被觀戰者姓名、角色與血量。單人戰術模式也可跟隨存活 AI 隊友。
+
+本版使用既有位置、pitch、武器和射擊事件，無需變更連線後端。觀戰是客戶端平滑重建，尚未同步精確彈量、換彈進度、開鏡倍率及完整技能手部動畫，也不是官方完整觀戰系統；不顯示虛構的隊友彈量或技能次數。
+
+驗證：`node tests/test_agent_assets.cjs`、`node --test tests/test_spectator_rules.mjs`、`node tests/test_avatars_spectator_browser.cjs`，涵蓋素材完整性、角色與骨架、動畫、shader、保留命中盒、敵我限制、切換、失效目標及還原。`tests/test_multiplayer_browser.cjs` 驗證兩個真實客戶端射擊、重生與重連；`tests/test_resurrection_multiplayer.cjs` 以三個真實客戶端確認陣亡後觀戰存活 Sage、Sage X 復活後退出觀戰，以及團滅換回合。

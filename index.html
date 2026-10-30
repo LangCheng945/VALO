@@ -458,6 +458,11 @@
         </div>
     </div>
 
+    <div id="spectator-panel" hidden style="position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:24;text-align:center;padding:10px 20px;background:#0f1923df;border-top:2px solid #8bcbb8;pointer-events:none">
+        <div style="font-size:10px;letter-spacing:3px;color:#8bcbb8">隊友第一人稱觀戰</div><strong id="spectator-name"></strong>
+        <div style="font-size:11px;color:#cad6d9;margin-top:4px">左鍵／← 上一位　右鍵／→ 下一位 · 復活後返回自己</div>
+    </div>
+    <style>body.is-spectating #combat-bottom,body.is-spectating #stance-hud,body.is-spectating #scope-overlay{visibility:hidden}body.is-spectating #hud-weapon-name,body.is-spectating #hud-ammo-mag,body.is-spectating #hud-ammo-res{visibility:hidden}</style>
     <!-- ==================== [TAB] MULTIPLAYER SCOREBOARD OVERLAY ==================== -->
     <div id="scoreboard-modal" class="hidden pointer-events-none absolute inset-0 z-25 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="w-full max-w-4xl bg-[#0F1923]/95 border border-white/25 val-clip p-5 shadow-2xl">
@@ -683,6 +688,9 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=motion1';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=avatars1';
+        import {SpectatorView} from './spectator-view.js?v=spectate1';
+        import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
@@ -691,7 +699,7 @@
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
         import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=motion1';
-        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=slow1';
+        import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
         import {SpikeModel} from './spike-model.js?v=spike1';
@@ -1445,6 +1453,20 @@
         const abilityCast=new AbilityCastView(camera);
         const viewEnvironmentTarget=createViewEnvironment(renderer);
         let firstPersonHands=null;
+        const spectatorView=new SpectatorView(scene,{skinTexture:smiteTexture,environment:viewEnvironmentTarget.texture});
+        preloadAgentAvatars();
+        let spectatorUiState=false;
+        function updateSpectatorView(dt){
+            const eligible=state.hp<=0&&!state.inBuyMenu&&!state.roundEnding;
+            if(eligible!==spectatorUiState){spectatorUiState=eligible;document.getElementById('spectator-panel').hidden=!eligible;document.body.classList.toggle('is-spectating',eligible);}
+            if(!eligible){spectatorView.update(dt,[],false);return camera;}
+            const sources=currentRoomId?[...remotePlayers.values()].map(r=>({...r.data,actor:r})):bots.map((b,i)=>({uid:'bot-'+i,name:b.name,team:b.team,hp:b.alive?b.hp:0,active:b.alive,agent:i%2?'phoenix':'jett',weapon:'vandal',yaw:b.group.rotation.y+Math.PI,pitch:0,crouching:false,actor:b}));
+            const candidates=eligible?spectatorCandidates(sources,{uid:currentUser?.uid,team:state.team}):[];
+            const target=spectatorView.update(dt,candidates,eligible);
+            setHudText('spectator-name',target?`${target.name||'隊友'} · ${target.agent==='jett'?'JETT':'SAGE'} · ${Math.ceil(target.hp)} HP`:'沒有存活隊友 · 等待下一回合');
+            return spectatorView.active?spectatorView.camera:camera;
+        }
+
 
         let gunMagazineMesh = null;
         let muzzleFlashGroup = null;
@@ -1919,7 +1941,7 @@
             ctx.fillStyle = '#FFFFFF';
             ctx.font = 'bold 20px "Noto Sans TC", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`${nameText} [${agentKey.toUpperCase()}]`, 128, 39);
+            ctx.fillText(`${nameText} [${agentKey==='jett'?'JETT':'SAGE'}]`, 128, 39);
 
             const tex = new THREE.CanvasTexture(c);
             tex.encoding = THREE.sRGBEncoding;
@@ -2011,6 +2033,9 @@
             const nameSprite = createNameplateSprite(pData.name || 'Player', pData.team || 'attack', pData.agent || 'jett');
 
             group.add(bodyMesh, leftLeg, rightLeg, leftArm, rightArm, gunMesh, headMesh, hpBg, hpFill, nameSprite);
+            const appearance=new AgentAvatar(group,pData.agent,{color:highlightHex,skinTexture:smiteTexture,onReady:()=>{
+                armorMat.visible=false;trimMat.visible=false;outlineMat.visible=false;visorMat.visible=false;gunMesh.visible=false;
+            }});
             group.position.set(pData.x ?? 0, (pData.y ?? 2.2) - 2.2, pData.z ?? 20);
             group.visible=true;
             scene.add(group);
@@ -2018,6 +2043,7 @@
             return {
                 uid,
                 data: pData,
+                appearance,
                 group,
                 bodyMesh,
                 headMesh,
@@ -2037,6 +2063,7 @@
         }
 
         function clearAllRemotePlayers() {
+            spectatorView.stop();spectatorUiState=false;document.getElementById('spectator-panel').hidden=true;document.body.classList.remove('is-spectating');
             clearFieldObjects();clearCorpses();roomRound=null;roomMode='practice';
             remotePlayers.forEach(rp => disposeActor(rp.group));
             remotePlayers.clear();
@@ -2118,7 +2145,7 @@
                 const s = new THREE.Vector3(ev.sx, ev.sy, ev.sz);
                 const e = new THREE.Vector3(ev.ex, ev.ey, ev.ez);
                 createBulletTracer(s, e, ev.color || 0x00F5D4);
-                sfx.playGunshot(ev.weapon || 'vandal');
+                sfx.playGunshot(ev.weapon || 'vandal');spectatorView.shot(ev.senderUid);
                 return;
             }
 
@@ -3352,7 +3379,7 @@
         document.addEventListener('pointerlockerror',()=>{if(!immersiveEntryPending){showBuyMenu();abilityNotice('請再次點擊「進入戰場」鎖定滑鼠');}});
 
         document.addEventListener('mousemove', (e) => {
-            if (!state.isLocked || state.inBuyMenu) return;
+            if (!state.isLocked || state.inBuyMenu || state.hp<=0) return;
             const zoom = WEAPONS[state.weaponKey].zoomLevels?.[state.scopeLevel - 1] || 1;
             const sens = 0.006 * state.sensitivity / zoom;
             yawObject.rotation.y -= e.movementX * sens;
@@ -3365,6 +3392,7 @@
             if (document.pointerLockElement !== renderer.domElement && e.target === renderer.domElement) {
                 safeRequestPointerLock();
             }
+            if(state.hp<=0){if(e.button===0||e.button===2){e.preventDefault();spectatorView.cycle(e.button===0?-1:1);}return;}
             if(state.slowEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)throwSlowOrb();return;}
             if(state.barrierEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)placeBarrier();else rotateBarrier();return;}
             if(state.healingEquipped&&(e.button===0||e.button===2)){e.preventDefault();castHealing(e.button===2);return;}
@@ -3451,6 +3479,7 @@
             }
             if (state.inBuyMenu || !state.isLocked) return;
             if (['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(code)) e.preventDefault();
+            if(state.hp<=0){if(code==='ArrowLeft'||code==='ArrowRight'){e.preventDefault();spectatorView.cycle(code==='ArrowLeft'?-1:1);}return;}
             if(code==='KeyF'&&toggleRope()){e.preventDefault();return;}
             if(code==='Space'&&state.climbingRope){state.climbingRope=null;playerVelocity.y=6;canJump=false;moveState.glide=true;e.preventDefault();return;}
             if (code === 'KeyW') moveState.forward = true;
@@ -3550,8 +3579,9 @@
             });
 
             // Player View Cone
-            const pp = toRadar(yawObject.position.x, yawObject.position.z);
-            const angle = -yawObject.rotation.y - Math.PI / 2;
+            const viewPosition=spectatorView.active?spectatorView.camera.position:yawObject.position;
+            const pp = toRadar(viewPosition.x,viewPosition.z);
+            const angle = -(spectatorView.active?spectatorView.camera.rotation.y:yawObject.rotation.y) - Math.PI / 2;
             rCtx.fillStyle = 'rgba(0, 245, 212, 0.16)';
             rCtx.beginPath();
             rCtx.moveTo(pp.x, pp.y);
@@ -3701,7 +3731,7 @@
         }
 
         function updateBotsAndVFX(dt) {
-            const playerPos = yawObject.position;
+            const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
             abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active&&!(state.isScoped&&state.weaponKey==='operator');
 
             // Update Expanding Smokes
@@ -3786,8 +3816,11 @@
                 const quiet=rp.data.walking||rp.data.crouching;
                 const soundGround=realMap.ready&&audible&&!quiet?soundGroundCache.get(rp,rp.targetPos,dt,()=>realMap.getGroundHeight(rp.targetPos.clone().add(new THREE.Vector3(0,2.2,0)))):rp.group.position.y;
                 const footfall=rp.footsteps.update(rp.group.position,{active:audible,grounded:Math.abs(soundGround-rp.group.position.y)<.4,quiet});if(footfall){const delta=rp.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const pan=delta.normalize().dot(new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y)),volume=.35*(1-distance/36)**2;sfx.playFootstep(footfall==='land',volume,pan);if(slowMultiplier(rp.group.position,0)<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
+                rp.appearance.setAgent(rp.data.agent);rp.appearance.setColor(rp.data.team===state.team?0x00f5d4:0xff4655);rp.appearance.setWeapon(rp.data.weapon||'vandal');
+                rp.appearance.update(dt,{moving:distMove>.03,walking:rp.data.walking,crouching:rp.data.crouching,pitch:rp.data.pitch||0});
                 rp.group.rotation.y = rp.targetYaw;
                 rp.group.scale.y += ((rp.data.crouching ? 0.68 : 1) - rp.group.scale.y) * Math.min(1, dt * 18);
+                if(rp.appearance.skin)rp.appearance.root.scale.y=1/rp.group.scale.y;
                 rp.hpBg.lookAt(playerPos);
                 rp.hpFill.lookAt(playerPos);
 
@@ -3914,8 +3947,10 @@
             if(spikeCarryRoot.visible)gunGroup.visible=false;
         }
 
+        function renderGameplayFrame(camera){realMap.updateCulling(camera);renderer.render(scene,camera);}
         function animate() {
             requestAnimationFrame(animate);
+            spectatorView.restoreHidden();
 
             const now = performance.now();
             const realDt = (now - prevTime) / 1000;
@@ -4023,10 +4058,12 @@
             pushMyNetworkState(false);
             if(now-lastRadarDraw>=50){drawRadar();lastRadarDraw=now;}
 
-            if(!state.inBuyMenu){realMap.updateCulling(camera);renderer.render(scene, camera);}
+            const activeCamera=updateSpectatorView(dt);
+            if(!state.inBuyMenu)renderGameplayFrame(activeCamera);
         }
 
         window.addEventListener('resize', () => {
+            spectatorView.resize(window.innerWidth,window.innerHeight);
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);

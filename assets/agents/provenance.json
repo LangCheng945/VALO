@@ -1,0 +1,42 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourceMetadata": "site/_assets/r20261021-1/next/js/CnrSARj_.js",
+  "sourcePath": "site/aim-agents",
+  "credit": "ishoutu aim trainer; VALORANT character assets belong to Riot Games. The repository MIT license does not cover character assets.",
+  "processing": "Original packed meshes and textures; selected rig and locomotion data decoded from literals. No upstream executable JavaScript is included.",
+  "files": {
+    "jett.albedo.jpg": {
+      "bytes": 98414,
+      "sha256": "e3f6f7bf8d430f593eb809ffc85b4ddcd1a50aea3c1ff8f160c63f74f028a1b9"
+    },
+    "jett.bin": {
+      "bytes": 130984,
+      "sha256": "2178a9dc9c2bb3890d53d9b56d98cacb251a423d897b9254b51f7752a227e4b2"
+    },
+    "jett.orm.jpg": {
+      "bytes": 69729,
+      "sha256": "bda7c71be31508bb408ce9704802691adc8a6a7014ba196d9cabc378e8a91995"
+    },
+    "manifest.json": {
+      "bytes": 515,
+      "sha256": "bcf813969a0e7f92727da7f5c75b47cfbf9c3c5ccba4fbb4a81b4858e15de44d"
+    },
+    "rig.json": {
+      "bytes": 158985,
+      "sha256": "74f12d49456225bec921f41f18ebfcbddbd6941d2b88482a3d8757828721db9a"
+    },
+    "sage.albedo.jpg": {
+      "bytes": 70395,
+      "sha256": "4c68f1abb39efb44603a245907afae338735d0ab64b8942be7d1078cd32ebc0f"
+    },
+    "sage.bin": {
+      "bytes": 132776,
+      "sha256": "edf471b46932fc673de49ff5ed1986f6247274f5bcd3e09a5b7bbc0a583b8013"
+    },
+    "sage.orm.jpg": {
+      "bytes": 65404,
+      "sha256": "83933b6cb0a6b11e9cd0fbd7cf91df3fc06c02722ea75291523fe2ba47373605"
+    }
+  }
+}
