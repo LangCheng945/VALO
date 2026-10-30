@@ -115,7 +115,7 @@ node tests/test_ascent_assets.cjs
 
 同一次購買階段換主武器／護盾時，先退還該欄本次支付的金額，再檢查與扣除新裝備價格。
 初始免費配給沒有退款金額；切回原有裝備不收費。Classic 不會取代主武器。
-右鍵點擊本次購買的卡片，或按左側退款按鈕，可取消購買；成功進入戰場後不再退還已使用裝備。
+右鍵點擊本次購買的卡片，或按左側退款按鈕，可取消購買；本回合買入的槍即使開槍後仍可退款；進入下一回合結清退款資格。護盾仍於進入戰場後完成購買。
 同一張卡片重複點擊不會再次扣款。重置訓練會先取消尚未提交的購買。
 
 購買頁依使用者提供的原版截圖排列：隨身武器、衝鋒槍／霰彈槍、步槍、狙擊槍／機關槍、護盾與下方技能列。
@@ -380,3 +380,33 @@ BANDIT 的名稱可在社群 API client 更新及武器輪盤找到，WARDEN 只
 商店縮圖改用固定來源的 18 張槍枝 PNG，以及輕型、重型、再生護盾圖示，原始圖片位元組保留，詳細來源／雜湊見 assets/ui/buy/provenance.json。來源是 open-aim 第三方保存的遊戲美術，不是 Riot 官方下載或完整原版購買 UI。商店不再為了縮圖預先載入、排序並投影全部 18 個 3D 模型；第一人稱仍在裝備時載入相應模型。BANDIT／WARDEN 的模型與數值仍待核對。
 
 重建素材：`python tools/export-buy-icons.py /path/to/open-aim`。本次只替換購買頁圖片與顯示，原版完整介面流程／動畫沒有取得。
+
+### 商店排序與補彈
+
+排列調整為 Bandit 在 Sheriff 前、Warden 在 Phantom 前，護盾順序為輕型 → 再生 → 重型。兩把待核對武器仍維持未開放。槍枝圖示、名稱、價格與擁有狀態共用置中軸線，空白的擁有狀態也保留固定高度。
+
+本回合購買紀錄保留到下一回合，開槍不會失去退款資格。開商店後右鍵退款，再購買會取得全滿彈匣與備彈；點擊目前同一把已裝備武器也會免費補滿，不重複扣款。已進入遊玩的回合在重設時只結清紀錄，保留已買的槍，不自動退款或換回原槍；尚未開始遊玩的選單重設沿用取消未使用購買的規則。這是目前允許開啟商店時的原型規則，購買階段倒數／屏障仍未實作。
+
+
+### Bot navigation and Sage placement update
+
+Solo bots now random-walk from safe authored anchors at round start, with floor,
+ledge, capsule and spacing checks, and randomly wear the available Jett/Sage rigs.
+Tactical allies follow in a loose formation, share nearby last-seen contacts and
+continue toward sites after the player dies. Both teams retain line-of-sight and
+smoke checks before damaging enemies. Actual-map A* runs incrementally (20 node
+expansions / 2.5 ms target per frame); map samples are cached, vision runs at about
+5 Hz, character poses at 20 Hz, and every movement checks a swept capsule. This is
+basic solo team AI, not the original game's full agent/Spike strategy or navmesh.
+
+Sage walls sample the aimed floor rather than the caster's floor, validate each
+section independently, retain supported sections beside obstacles, and lift agents
+standing on their support floor while growing. Unsupported/obstructed sections
+remain absent. Three-dimensional cast range and ceiling clearance still apply.
+The Worker accepts validated four-section masks and preserves absent sections.
+
+Plant detection now uses the same bounds, inclusive edges and floor-height bands
+on client and Worker. Approach lanes, Haven C's unstriped courtyard and overlapping
+upper/lower floors no longer count as sites. Reference and reconstruction limits:
+[multiplayer/map-sites-reference.md](multiplayer/map-sites-reference.md). These are
+reconstructed planting regions, not verified original game trigger volumes.

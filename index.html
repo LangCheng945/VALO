@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=buyicons1">
+    <link rel="stylesheet" href="./shop.css?v=shopfix3">
 </head>
 <body class="relative select-none">
 
@@ -685,7 +685,7 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=spikenet1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=armory1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
@@ -703,6 +703,7 @@
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
         import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=armory1';
+        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -1106,7 +1107,7 @@
             hp: 100,
             shield: 50,armorType:'heavy',shieldReserve:0,regenReadyAt:0,regenTickAt:0,
             creds: 9000,
-            pendingWeapon: null, pendingSidearm:null,pendingShield: null,
+            pendingWeapon: null, pendingSidearm:null,pendingShield: null,hasPlayedThisRound:false,
             mag: 25,
             reserve: 75,
             kills: 0,
@@ -1470,7 +1471,7 @@
                 hemiLight.intensity=1.3;sunLight.intensity=1.6;renderer.toneMappingExposure=.95;
                 camera.far=900;camera.updateProjectionMatrix();
                 // Loading the map must not cancel purchases already made in the initial menu.
-                const loadout={creds:state.creds,primaryWeaponKey:state.primaryWeaponKey,weaponKey:state.weaponKey,shield:state.shield,pendingWeapon:state.pendingWeapon,pendingShield:state.pendingShield};
+                const loadout=Object.fromEntries(['creds','primaryWeaponKey','secondaryWeaponKey','weaponKey','shield','armorType','shieldReserve','regenReadyAt','regenTickAt','pendingWeapon','pendingSidearm','pendingShield','hasPlayedThisRound'].map(key=>[key,state[key]]));
                 buildArena();resetRound();Object.assign(state,loadout);equipWeaponSlot(state.weaponKey);updateShopUI();updateHealthHUD();button.disabled=false;document.querySelector('.free-roam-button').disabled=false;
                 realMap.updateCulling(camera);renderer.render(scene,camera);
                 label.textContent=mapDefinition.name+' 模型與碰撞已就緒';document.getElementById('map-retry').classList.add('hidden');
@@ -1510,7 +1511,7 @@
             const eligible=state.hp<=0&&!state.inBuyMenu&&!state.roundEnding;
             if(eligible!==spectatorUiState){spectatorUiState=eligible;document.getElementById('spectator-panel').hidden=!eligible;document.body.classList.toggle('is-spectating',eligible);}
             if(!eligible){spectatorView.update(dt,[],false);return camera;}
-            const sources=currentRoomId?[...remotePlayers.values()].map(r=>({...r.data,actor:r})):bots.map((b,i)=>({uid:'bot-'+i,name:b.name,team:b.team,hp:b.alive?b.hp:0,active:b.alive,agent:i%2?'phoenix':'jett',weapon:'vandal',yaw:b.group.rotation.y+Math.PI,pitch:0,crouching:false,actor:b}));
+            const sources=currentRoomId?[...remotePlayers.values()].map(r=>({...r.data,actor:r})):bots.map((b,i)=>({uid:'bot-'+i,name:b.name,team:b.team,hp:b.alive?b.hp:0,active:b.alive,agent:b.agent,weapon:'vandal',yaw:b.group.rotation.y+Math.PI,pitch:0,crouching:false,actor:b}));
             const candidates=eligible?spectatorCandidates(sources,{uid:currentUser?.uid,team:state.team}):[];
             const target=spectatorView.update(dt,candidates,eligible);
             setHudText('spectator-name',target?`${target.name||'隊友'} · ${target.agent==='jett'?'JETT':'SAGE'} · ${Math.ceil(target.hp)} HP`:'沒有存活隊友 · 等待下一回合');
@@ -1714,7 +1715,7 @@
                 r.effect.children.forEach((mesh,i)=>{if(i)mesh.position.y=(mesh.position.y+dt*.9)%2.5;});
                 if(Date.now()<r.until||r.network)continue;
                 if(!state.roundEnding&&bots.includes(r.actor)){
-                    const bot=r.actor;bot.alive=true;bot.hp=100;bot.dyingTimer=0;bot.deathGround=undefined;bot.group.rotation.x=0;bot.group.position.copy(corpses.get(uid).position);bot.hpBg.visible=bot.hpFill.visible=true;bot.hpFill.scale.x=1;bot.roamTime=0;
+                    const bot=r.actor;bot.alive=true;bot.hp=100;bot.dyingTimer=0;bot.deathGround=undefined;bot.group.rotation.x=0;bot.group.position.copy(corpses.get(uid).position);bot.hpBg.visible=bot.hpFill.visible=true;bot.hpFill.scale.x=1;bot.roamTime=0;bot.navPath=[];bot.navGoal=null;bot.visibleTarget=null;bot.combatVisible=false;bot.contact=null;bot.orderTime=0;
                 }
                 removeCorpse(uid);updateAliveHUD();
             }
@@ -1730,7 +1731,7 @@
         function receiveRoomRound(round){
             if(!round){roomRound=null;return;}
             const previous=roomRound;roomRound={...round,clockOffset:round.serverNow-Date.now()};
-            if(!previous||previous.number!==round.number){clearFieldObjects();clearCorpses();state.roundEnding=false;}
+            if(!previous||previous.number!==round.number){if(previous){state.pendingWeapon=null;state.pendingSidearm=null;state.hasPlayedThisRound=false;updateShopUI();}clearFieldObjects();clearCorpses();state.roundEnding=false;}
             if(round.phase==='ending'&&previous?.phase!=='ending'){state.roundEnding=true;resetMovementInput();showCenterBanner('回合結束',round.reason+' · 下一回合重生',3100);}
             state.roundEnding=['ending','finished'].includes(round.phase);
             if(round.phase==='finished'&&previous?.phase!=='finished'){resetMovementInput();safeExitPointerLock();showBuyMenu('training');document.getElementById('network-panel').open=true;showCenterBanner(round.matchWinner==='attack'?'攻擊方贏得比賽':'守備方贏得比賽',`${round.scoreAttack} : ${round.scoreDefend} · ${currentRoomId==='PUBLIC'?'稍後自動隨機換圖':'可由房主重新開局'}`,8000);}
@@ -1749,6 +1750,7 @@
         }
 
         const bots = [];
+        let botNavigation=null;
         const BOT_SPAWNS = [
             { x: 34, z: -18, patrol: 2 },
             { x: -34, z: -18, patrol: 2 },
@@ -1831,15 +1833,20 @@
             hpBg.position.y = 2.68;
             const hpFill = new THREE.Mesh(
                 new THREE.PlaneGeometry(1.08, 0.09),
-                new THREE.MeshBasicMaterial({ color: 0xFF4655, side: THREE.DoubleSide })
+                new THREE.MeshBasicMaterial({ color: ally?0x00f5d4:0xFF4655, side: THREE.DoubleSide })
             );
             hpFill.position.set(0, 2.68, 0.01);
 
             group.add(bodyMesh, leftLeg, rightLeg, leftArm, rightArm, botGun, headMesh, hpBg, hpFill);
             scene.add(group);
 
+            const agent=idx<0?state.agent:(Math.random()<.5?'jett':'phoenix');
+            const appearance=new AgentAvatar(group,agent,{color:ally?0x00f5d4:0xff4655,skinTexture:smiteTexture,onReady:()=>{
+                for(const material of [armorMat,outlineRedMat,chestTrimMat,headHelmetMat,visorMat])material.visible=false;botGun.visible=false;
+            }});
+            appearance.root.rotation.y=Math.PI;
             return {
-                index: idx,team,
+                index: idx,team,agent,appearance,
                 name: ally?`友軍 AI-${idx-4}`:`敵方 AI-${idx+1}`,
                 group,
                 bodyMesh,
@@ -1857,7 +1864,7 @@
                 baseZ: sp.z,
                 patrolRange: sp.patrol,
                 dir: idx % 2 === 0 ? 1 : -1,
-                speed: 3.5 + (idx * 0.3),
+                speed: 4.5 + Math.random()*.6,
                 walkCycle: idx * 1.2,
                 reactionTimer: 0,
                 blindTimer: 0
@@ -1866,7 +1873,7 @@
 
         function spawnBots() {
             bots.forEach(b => disposeActor(b.group));clearCorpses();
-            bots.length = 0;
+            bots.length = 0;botNavigation=realMap.ready?new BotNavigation(realMap):null;
             if (!state.enableBots) {
                 updateAliveHUD();
                 return;
@@ -1875,11 +1882,11 @@
                 : [{x:0,z:25,patrol:1.5},{x:-30,z:45,patrol:1.5},{x:30,z:45,patrol:1.5},{x:-40,z:8,patrol:1.5},{x:40,z:8,patrol:1.5}];
             const points=realMap.ready?realMap.getBotSpawns(state.gameMode==='tactical'):spawns;
             points.forEach((sp, idx) => {
-                bots.push(createHumanoidBot(idx, sp));
+                bots.push(createHumanoidBot(idx,realMap.ready?randomBotSpawn(realMap,sp,bots.map(b=>b.group.position)):sp));
             });
             if(state.gameMode==='tactical'&&!currentRoomId&&realMap.ready){
                 const [x,z,floor]=realMap.definition.spawns[state.team];
-                for(const [dx,dz]of [[1.5,1.5],[-1.5,1.5],[3,2],[-3,2]]){try{const p=realMap.safePoint(x+dx,z+dz,floor);const ally=createHumanoidBot(bots.length,{x:p.x,y:p.y-2.2,z:p.z,patrol:12},state.team);bots.push(ally);}catch{}}
+                for(const [dx,dz]of [[1.5,1.5],[-1.5,1.5],[3,2],[-3,2]]){try{const p=realMap.safePoint(x+dx,z+dz,floor);const ally=createHumanoidBot(bots.length,randomBotSpawn(realMap,{x:p.x,y:p.y-2.2,z:p.z,patrol:12},[yawObject.position,...bots.map(b=>b.group.position)]),state.team);bots.push(ally);}catch{}}
             }
             updateAliveHUD();
         }
@@ -2135,7 +2142,7 @@
             try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1,mapChange:1,publicRules:1,armoryVersion:1,map:selectedMap});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
-            if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
+            if(!roomSocket?.connected||!currentUser||!currentRoomId)return;if(state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.roundEnding)state.hasPlayedThisRound=true;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
             roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.roundEnding,holdingSpike:state.holdingSpike,primaryWeapon:state.primaryWeaponKey,secondaryWeapon:state.secondaryWeaponKey,shield:state.shield});
         }
         function broadcastRoomEvent(payload){if(payload.type==='shot'){if(shotgunContext)payload.pellet=shotgunContext;if(bladeVolleyContext&&payload.weapon==='bladestorm')payload.volley={id:bladeVolleyContext.id,count:bladeVolleyContext.count,index:bladeVolleyContext.index};if(!shotgunContext||shotgunContext.index===0)pushMyNetworkState(true);}roomSocket?.send(payload);}
@@ -2403,7 +2410,7 @@
             }
 
             weaponDrawElapsed=weaponDrawDuration(state.weaponKey);weaponMotionRoot.position.set(0,0,0);weaponMotionRoot.rotation.set(0,0,0);
-            state.lastShotTime = now;
+            state.hasPlayedThisRound=true;state.lastShotTime = now;
             state.consecutiveShots++;
             state.isInspecting = false;
             if (isTraining() && !wpn.isMelee && state.weaponKey !== 'bladestorm') state.training.shots++;
@@ -2739,6 +2746,16 @@
         }
         function updateIceBarrier(entry,now){
             const w=entry.data;advanceBarrier(w,now);const age=(now-w.createdAt)/1000,growth=Math.min(1,.04+Math.max(0,age)*2.5);
+            if(age<.5){
+                const oldTop=w.y+BARRIER.height*(entry.growth||0),top=w.y+BARRIER.height*growth;
+                const lift=(position,eyeOffset)=>{const feet=position.y-eyeOffset;
+                    if(feet<oldTop-.3||feet>oldTop+.7||!w.hp.some((hp,i)=>hp>0&&insideSegment(w,i,{x:position.x,y:w.y+1,z:position.z},.36)))return;
+                    const eye=new THREE.Vector3(position.x,top+2.2,position.z);if(!realMap.collides(eye))position.y=top+eyeOffset;
+                };
+                if(state.hp>0)lift(yawObject.position,2.2);
+                if(!currentRoomId)for(const bot of bots)if(bot.alive)lift(bot.group.position,0);
+            }
+            entry.growth=growth;
             for(let i=0;i<4;i++){
                 let m=entry.meshes[i];if(w.hp[i]<=0){if(m){removeBarrierSegment(m,true);entry.meshes[i]=null;}continue;}
                 if(!m){m=makeBarrier();m.userData.barrierId=w.id;m.userData.segment=i;m.rotation.y=w.yaw;scene.add(m);shootableMeshes.push(m);temporaryWalls.push(m);entry.meshes[i]=m;}
@@ -2753,22 +2770,29 @@
             const now=performance.now();if(!force&&now-barrierPreviewTick<60)return;barrierPreviewTick=now;
             scene.updateMatrixWorld(true);const origin=camera.getWorldPosition(new THREE.Vector3()),dir=camera.getWorldDirection(new THREE.Vector3());
             const ray=new THREE.Raycaster(origin,dir,0,BARRIER.range),hit=ray.intersectObjects([realMap.collisionMesh,...temporaryWalls],false)[0];
-            const p=hit?hit.point.clone().addScaledVector(dir,-.7):origin.clone().addScaledVector(dir,BARRIER.range-.2);
+            const p=hit?hit.point.clone().addScaledVector(dir,-.04):origin.clone().addScaledVector(dir,BARRIER.range-.2);
             const w={x:p.x,z:p.z,y:0,yaw:yawObject.rotation.y+barrierRotation};let valid=realMap.ready;
-            const floors=Array.from({length:4},(_,i)=>{const c=segmentPosition(w,i);return realMap.getGroundHeight(new THREE.Vector3(c.x,yawObject.position.y+2,c.z));});
-            w.y=Math.max(...floors);if(Math.max(...floors)-Math.min(...floors)>.65||Math.abs(w.y-(yawObject.position.y-2.2))>4||Math.hypot(w.x-origin.x,w.z-origin.z)>BARRIER.range)valid=false;
-            const actors=[{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z},...bots.filter(b=>b.alive).map(b=>({x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z})),...Array.from(remotePlayers.values()).filter(r=>r.data.hp>0).map(r=>({x:r.data.x,y:r.data.y-1,z:r.data.z}))];
+            // Sample from the aimed surface, so boxes, ledges and lower floors
+            // work independently of the caster's current floor height.
+            w.y=realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.25,p.z));
+            if(w.y<-90||Math.hypot(w.x-origin.x,w.y-(origin.y-2.2),w.z-origin.z)>BARRIER.range+.1)valid=false;
+            const actors=[{x:yawObject.position.x,y:yawObject.position.y-2.2,z:yawObject.position.z},...bots.filter(b=>b.alive).map(b=>b.group.position),...Array.from(remotePlayers.values()).filter(r=>r.data.hp>0).map(r=>({x:r.data.x,y:r.data.y-2.2,z:r.data.z}))];
+            w.segments=Array(4).fill(false);
             for(let i=0;i<4&&valid;i++){
-                const c=segmentPosition(w,i);if(actors.some(a=>insideSegment(w,i,a,.45))){valid=false;break;}
-                // Test the oriented wall volume against map triangles, leaving a small floor margin.
+                const c=segmentPosition(w,i),floor=realMap.getGroundHeight(new THREE.Vector3(c.x,w.y+2.3,c.z));
+                if(Math.abs(floor-w.y)>.7)continue;
                 const inv=new THREE.Matrix4().makeRotationY(-w.yaw).multiply(new THREE.Matrix4().makeTranslation(-c.x,-c.y,-c.z));
-                const localBox=new THREE.Box3(new THREE.Vector3(-.79,.22,-.56),new THREE.Vector3(.79,3.55,.56));
+                const localBox=new THREE.Box3(new THREE.Vector3(-.79,.24,-.56),new THREE.Vector3(.79,3.55,.56));
                 const worldBox=localBox.clone().applyMatrix4(new THREE.Matrix4().makeTranslation(c.x,c.y,c.z).multiply(new THREE.Matrix4().makeRotationY(w.yaw)));
-                const tri=new THREE.Triangle();if(realMap.collisionMesh.geometry.boundsTree.shapecast({intersectsBounds:b=>b.intersectsBox(worldBox),intersectsTriangle:t=>{tri.a.copy(t.a).applyMatrix4(inv);tri.b.copy(t.b).applyMatrix4(inv);tri.c.copy(t.c).applyMatrix4(inv);return localBox.intersectsTriangle(tri);}})){valid=false;break;}
-                if(temporaryWalls.some(m=>new THREE.Box3().setFromObject(m).intersectsBox(worldBox))){valid=false;break;}
+                const tri=new THREE.Triangle();if(realMap.collisionMesh.geometry.boundsTree.shapecast({intersectsBounds:b=>b.intersectsBox(worldBox),intersectsTriangle:t=>{tri.a.copy(t.a).applyMatrix4(inv);tri.b.copy(t.b).applyMatrix4(inv);tri.c.copy(t.c).applyMatrix4(inv);return localBox.intersectsTriangle(tri);}}))continue;
+                if(temporaryWalls.some(m=>new THREE.Box3().setFromObject(m).intersectsBox(worldBox)))continue;
+                // A wall may lift a standing agent; never push one into a ceiling.
+                if(actors.some(a=>insideSegment(w,i,{x:a.x,y:a.y+1,z:a.z},.42)&&(Math.abs(a.y-w.y)>.7||realMap.collides(new THREE.Vector3(a.x,w.y+BARRIER.height+2.2,a.z)))))continue;
+                w.segments[i]=true;
             }
+            valid=valid&&w.segments.some(Boolean);
             barrierPlacement={...w,valid};barrierPreview.position.set(w.x,w.y,w.z);barrierPreview.rotation.y=w.yaw;barrierPreview.visible=w.y>-90;
-            barrierPreview.traverse(m=>{if(m.material)m.material.color.setHex(valid?0x65ffd0:0xff5b69);});
+            barrierPreview.children.forEach((part,i)=>part.traverse(m=>{if(m.material)m.material.color.setHex(valid&&w.segments[i]?0x65ffd0:0xff5b69);}));
         }
         function equipBarrier(){
             if(state.barrierEquipped){cancelBarrierPlacement();return;}
@@ -2778,10 +2802,10 @@
         function rotateBarrier(){barrierRotation=(barrierRotation+Math.PI/2)%(Math.PI*2);updateBarrierPlacement(true);}
         function placeBarrier(){
             if(!state.barrierEquipped||state.cCharges<=0||Date.now()<(state.barrierPendingUntil||0))return;updateBarrierPlacement(true);
-            if(!barrierPlacement?.valid){abilityNotice('此處無法放置：請選擇平坦、無障礙的空地');return;}
-            const {x,y,z,yaw}=barrierPlacement;
-            if(currentRoomId){state.barrierPendingUntil=Date.now()+2500;pushMyNetworkState(true);broadcastRoomEvent({type:'wall',x,y,z,yaw});return;}
-            receiveIceBarrier({id:crypto.randomUUID(),x,y,z,yaw,createdAt:Date.now(),fortified:false,hp:Array(4).fill(BARRIER.initialHP)});confirmBarrier();
+            if(!barrierPlacement?.valid){abilityNotice('此處沒有可支撐冰牆的地面或上方空間不足');return;}
+            const {x,y,z,yaw,segments}=barrierPlacement;
+            if(currentRoomId){state.barrierPendingUntil=Date.now()+2500;pushMyNetworkState(true);broadcastRoomEvent({type:'wall',x,y,z,yaw,segments});return;}
+            receiveIceBarrier({id:crypto.randomUUID(),x,y,z,yaw,createdAt:Date.now(),fortified:false,hp:segments.map(ok=>ok?BARRIER.initialHP:0)});confirmBarrier();
         }
         function confirmBarrier(){state.barrierPendingUntil=0;state.cCharges=Math.max(0,state.cCharges-1);cancelBarrierPlacement();beginAbilityCast('orb',.7);sfx.playAbilitySound('smoke');updateAbilityHUD();}
         function damageBarrier(mesh,damage){
@@ -3035,8 +3059,13 @@
             if(currentRoomId&&!roomSocket?.serverFeatures?.includes('armory')&&!['vandal','phantom','classic','operator','odin'].includes(key)){shopFeedback('後端尚未支援新武器，請更新後重新加入');return;}
             const side=isSidearm(key),prop=side?'pendingSidearm':'pendingWeapon',slot=side?'secondaryWeaponKey':'primaryWeaponKey';
             const q=quoteExchange(state.creds,state[prop],state[slot],key,w.cost);if(!q.ok){shopFeedback('信用點不足（已計入可退金額）');return;}
-            state.creds=q.credits;state[prop]=q.pending;state[slot]=key;if(state.weaponKey!==key)equipWeaponSlot(key);updateShopUI();shopFeedback(q.refund?`已退還 ${q.refund}，新武器扣款 ${q.charge}`:'已裝備 '+w.name);
+            state.creds=q.credits;state[prop]=q.pending;state[slot]=key;if(state.weaponKey!==key)equipWeaponSlot(key);refillShopWeapon(key);updateShopUI();shopFeedback(q.refund?`已退還 ${q.refund}，新武器扣款 ${q.charge}`:'已裝備 '+w.name);
         };
+        function refillShopWeapon(key){
+            const w=FIREARMS[key];if(!w||!state.inBuyMenu)return;
+            state.weaponAmmo[key]={mag:w.magSize,reserve:w.reserve};
+            if(state.weaponKey===key){clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.mag=w.magSize;state.reserve=w.reserve;updateMagazine(gunMagazineMesh,0,key);updateAmmoHUD();}
+        }
         function armorSnapshot(){return {armorType:state.armorType,shield:state.shield,shieldReserve:state.shieldReserve,regenReadyAt:state.regenReadyAt,regenTickAt:state.regenTickAt};}
         function sendArmorPurchase(type,refund=false){if(!currentRoomId)return;pushMyNetworkState(true);roomSocket?.send({type:'armor_buy',armor:type,refund});}
         window.buyShield=function(value){
@@ -3054,7 +3083,7 @@
         window.sellShopItem=function(slot){
             if(!state.inBuyMenu)return;const prop=slot==='weapon'?'pendingWeapon':slot==='sidearm'?'pendingSidearm':'pendingShield',receipt=state[prop];if(!receipt)return;
             state.creds+=receipt.cost;state[prop]=null;
-            if(slot==='weapon'||slot==='sidearm'){state[slot==='weapon'?'primaryWeaponKey':'secondaryWeaponKey']=receipt.baseKey;equipWeaponSlot(receipt.baseKey);}
+            if(slot==='weapon'||slot==='sidearm'){delete state.weaponAmmo[receipt.key];state[slot==='weapon'?'primaryWeaponKey':'secondaryWeaponKey']=receipt.baseKey;equipWeaponSlot(receipt.baseKey);}
             else{Object.assign(state,receipt.baseArmor);sendArmorPurchase(state.armorType,true);updateHealthHUD();}
             updateShopUI();shopFeedback(`已退還 ${receipt.cost} 信用點`);
         };
@@ -3097,8 +3126,8 @@
             let card=document.getElementById('wpn-card-'+key);if(!card){card=document.createElement('button');card.id='wpn-card-'+key;card.className='val-card p-4 text-left space-y-3';card.innerHTML=`<div><strong>${WEAPONS[key].name}</strong><span>¤ ${WEAPONS[key].cost}</span></div><svg></svg><div>${WEAPONS[key].magSize} 發</div>`;card.addEventListener('click',()=>buyWeapon(key));}
             document.getElementById(groupIds[FIREARMS[key].category]).appendChild(card);const status=document.createElement('span');status.className='weapon-owned';card.appendChild(status);card.addEventListener('contextmenu',e=>{e.preventDefault();const side=isSidearm(key),receipt=state[side?'pendingSidearm':'pendingWeapon'];if(receipt?.key===key)sellShopItem(side?'sidearm':'weapon');});
         }
-        for(const [key,group]of [['BANDIT','shop-sidearms'],['WARDEN','shop-rifles']]){const el=document.createElement('button');el.disabled=true;el.className='unavailable-weapon pending-reference';el.innerHTML=`<span>${key}</span><small>模型與數值待核對</small>`;document.getElementById(group).appendChild(el);}
-        document.getElementById('shield-card-light').parentNode.insertBefore(document.getElementById('shield-card-light'),document.getElementById('shield-card-heavy'));
+        for(const [key,before]of [['BANDIT','sheriff'],['WARDEN','phantom']]){const el=document.createElement('button');el.id='wpn-card-'+key.toLowerCase();el.disabled=true;el.className='unavailable-weapon pending-reference';el.innerHTML=`<span>${key}</span><small>模型與數值待核對</small>`;const next=document.getElementById('wpn-card-'+before);next.parentNode.insertBefore(el,next);}
+        for(const type of ['light','regen','heavy']){const card=document.getElementById('shield-card-'+type);card.parentNode.appendChild(card);}
         for(const [id,type]of [['shield-card-light','light'],['shield-card-heavy','heavy'],['shield-card-regen','regen']])document.getElementById(id).addEventListener('contextmenu',e=>{e.preventDefault();if(state.pendingShield?.key===type)sellShopItem('shield');});
 
         for(const key of FIREARM_KEYS) {
@@ -3231,7 +3260,7 @@
 
         function resetRound(syncRoomDoc = true) {
             clearTimeout(roundResetTimer);clearFieldObjects();
-            for(const prop of ['pendingWeapon','pendingSidearm','pendingShield']){const receipt=state[prop];if(receipt){state.creds+=receipt.cost;if(prop==='pendingWeapon')state.primaryWeaponKey=receipt.baseKey;else if(prop==='pendingSidearm')state.secondaryWeaponKey=receipt.baseKey;else if(receipt.baseArmor)Object.assign(state,receipt.baseArmor);state[prop]=null;}}
+            for(const prop of ['pendingWeapon','pendingSidearm','pendingShield']){const receipt=state[prop];if(receipt){if(prop==='pendingShield'||!state.hasPlayedThisRound){state.creds+=receipt.cost;if(prop==='pendingWeapon')state.primaryWeaponKey=receipt.baseKey;else if(prop==='pendingSidearm')state.secondaryWeaponKey=receipt.baseKey;else if(receipt.baseArmor)Object.assign(state,receipt.baseArmor);}state[prop]=null;}}state.hasPlayedThisRound=false;
             state.roundEnding = false;
             state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
             document.getElementById('trainer-result').classList.add('hidden');
@@ -3315,7 +3344,7 @@
             const hasLock=document.pointerLockElement===renderer.domElement;
             if(hasLock){
                 if(immersiveEntryPending&&immersiveEntryCancelled){safeExitPointerLock();return;}
-                state.pendingWeapon=null;state.pendingSidearm=null;state.pendingShield=null;updateShopUI();
+                state.hasPlayedThisRound=true;state.pendingShield=null;updateShopUI();
                 state.isLocked=true;state.inBuyMenu=false;document.getElementById('buy-menu-modal').classList.add('hidden');
             }else if(!state.inBuyMenu&&!immersiveEntryPending)showBuyMenu();
         }
@@ -3644,8 +3673,8 @@
             return ground;
         }
 
-        function checkPlayerCollision(nextPos, crouchAmount = state.crouchAmount) {
-            if(realMap.ready && realMap.collides(nextPos,crouchAmount))return true;
+        function checkPlayerCollision(nextPos, crouchAmount = state.crouchAmount,skipStaticMap=false) {
+            if(!skipStaticMap&&realMap.ready && realMap.collides(nextPos,crouchAmount))return true;
             if(!realMap.ready && (Math.abs(nextPos.x)>59 || Math.abs(nextPos.z)>70))return true;
             const playerBox = new THREE.Box3(
                 new THREE.Vector3(nextPos.x - 0.6, nextPos.y - 2.0, nextPos.z - 0.6),
@@ -3717,6 +3746,14 @@
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
         }
 
+        function botCanSee(eye,target){
+            const delta=target.clone().sub(eye),distance=delta.length();if(distance>42||distance<.001)return false;
+            const line=new THREE.Line3(eye,target);
+            if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<(3.8*s.mesh.scale.x)**2))return false;
+            raycaster.set(eye,delta.divideScalar(distance));raycaster.near=0;raycaster.far=Math.max(0,distance-.4);
+            return raycaster.intersectObjects(shootableMeshes,false).length===0;
+        }
+
         function updateBotsAndVFX(dt) {
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
             abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
@@ -3750,6 +3787,8 @@
                 }
             }
 
+            // Navigation jobs share a small per-frame CPU budget.
+            if(state.isLocked&&!state.inBuyMenu&&!state.roundEnding)botNavigation?.tick(dt);
             // Update Bots
             bots.forEach(b => {
                 if (!b.alive) {
@@ -3771,21 +3810,57 @@
                 }
 
                 if (state.gameMode !== 'stationary'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
-                    if(moveRoamingBot(b,dt,realMap,checkPlayerCollision,slowMultiplier(b.group.position,0))){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;}
+                    let moved=false;
+                    if(botNavigation&&state.gameMode==='tactical'){
+                        b.orderTime=(b.orderTime||0)-dt;
+                        if(b.orderTime<=0){
+                            b.orderTime=.7+Math.random()*.4;
+                            if(b.contact&&performance.now()-b.contact.at<4500)b.orderGoal=b.contact.pos.clone();
+                            else if(b.team===state.team&&state.hp>0){
+                                b.orderGoal=yawObject.position.clone();b.orderGoal.y-=2.2;
+                                const angle=(b.index-5)*Math.PI/2+yawObject.rotation.y,offset=b.orderGoal.clone().add(new THREE.Vector3(Math.cos(angle)*2.6,0,Math.sin(angle)*2.6));
+                                offset.y=realMap.getGroundHeight(offset.clone().add(new THREE.Vector3(0,2.2,0)));
+                                if(botNavigation.step(b.orderGoal,offset))b.orderGoal=offset;
+                            }
+                            else if(state.spikePlanted)b.orderGoal=spikeGroup.position.clone();
+                            else{const sites=realMap.getBotSpawns(true);const p=sites[b.index%sites.length];b.orderGoal=new THREE.Vector3(p.x,p.y,p.z);}
+                        }
+                        if(b.orderGoal&&!b.combatVisible)moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),slowMultiplier(b.group.position,0));
+                    }else if(botNavigation){
+                        b.roamTime=(b.roamTime||0)-dt;
+                        if(b.roamTime<=0||!b.orderGoal||b.group.position.distanceTo(b.orderGoal)<1.8){
+                            b.roamTime=3+Math.random()*4;
+                            const p=randomBotSpawn(realMap,{x:b.group.position.x,y:b.group.position.y,z:b.group.position.z},bots.filter(t=>t!==b&&t.alive).map(t=>t.group.position));
+                            b.orderGoal=new THREE.Vector3(p.x,p.y,p.z);
+                        }
+                        moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),slowMultiplier(b.group.position,0));
+                    }else moved=moveRoamingBot(b,dt,realMap,p=>checkPlayerCollision(p,0,true),slowMultiplier(b.group.position,0));
+                    b.moving=moved;
+                    if(moved){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;if(b.roamDirection)b.group.rotation.y=Math.atan2(b.roamDirection.x,b.roamDirection.z);}
+                    else b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;
                 }else{b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;}
 
+                b.poseTime=(b.poseTime||0)+dt;if(b.poseTime>=.05){b.appearance?.update(b.poseTime,{moving:!!b.moving});b.poseTime=0;}
                 b.footsteps ||= new FootstepTracker();
                 const footfall=b.footsteps.update(b.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:true,quiet:false});
                 if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);const pan=delta.normalize().dot(right),volume=.35*(1-distance/36)**2;sfx.playFootstep(false,volume,pan);if(slowMultiplier(b.group.position,0)<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
                 if (state.gameMode==='tactical'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
+                    b.sightTime=(b.sightTime||0)-dt;let visible=b.visibleTarget;
+                    if(b.sightTime<=0){b.sightTime=.18+Math.random()*.06;
                     const targets=bots.filter(t=>t.alive&&t.team!==b.team).map(t=>({pos:t.group.position.clone().add(new THREE.Vector3(0,2,0)),bot:t}));
                     if(state.hp>0&&b.team!==state.team)targets.push({pos:playerPos.clone(),bot:null});
                     targets.sort((a,c)=>a.pos.distanceToSquared(b.group.position)-c.pos.distanceToSquared(b.group.position));
-                    const botEye=b.group.position.clone().add(new THREE.Vector3(0,2,0));let visible=null;
-                    for(const t of targets){const dir=t.pos.clone().sub(botEye),dist=dir.length();if(dist>42)continue;raycaster.set(botEye,dir.normalize());raycaster.far=dist-.4;
-                        const line=new THREE.Line3(botEye,t.pos),blockedBySmoke=smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<(3.8*s.mesh.scale.x)**2);
-                        if(!blockedBySmoke&&!raycaster.intersectObjects(shootableMeshes,false).length){visible=t;break;}}
-                    if(visible){b.group.lookAt(visible.pos.x,b.group.position.y,visible.pos.z);b.reactionTimer+=dt;if(b.reactionTimer>.9+Math.random()*.2){b.reactionTimer=0;createBulletTracer(botEye,visible.pos,b.team===state.team?0x00f5d4:0xff4655);
+                    const botEye=b.group.position.clone().add(new THREE.Vector3(0,2,0));visible=null;
+                    for(const t of targets)if(botCanSee(botEye,t.pos)){visible=t;break;}
+                    b.visibleTarget=visible;}
+                    if(visible?.bot&&!visible.bot.alive)visible=null;
+                    if(visible&&!visible.bot&&state.hp<=0)visible=null;
+                    b.combatVisible=!!visible;
+                    const botEye=b.group.position.clone().add(new THREE.Vector3(0,2,0));
+                    if(visible){visible.pos=visible.bot?visible.bot.group.position.clone().add(new THREE.Vector3(0,2,0)):yawObject.position.clone();b.contact={pos:visible.pos.clone().add(new THREE.Vector3(0,-2,0)),at:performance.now()};
+                        // Nearby teammates advance toward a shared last-seen contact.
+                        for(const ally of bots)if(ally!==b&&ally.alive&&ally.team===b.team&&ally.group.position.distanceToSquared(b.group.position)<35*35)ally.contact=b.contact;
+                        b.group.lookAt(visible.pos.x,b.group.position.y,visible.pos.z);b.reactionTimer+=dt;if(b.reactionTimer>.9+Math.random()*.2){b.reactionTimer=0;if(!botCanSee(botEye,visible.pos)){b.visibleTarget=null;b.combatVisible=false;return;}createBulletTracer(botEye,visible.pos,b.team===state.team?0x00f5d4:0xff4655);
                         if(visible.bot){visible.bot.hp=Math.max(0,visible.bot.hp-18);visible.bot.lastDamage=performance.now();visible.bot.hpFill.scale.x=Math.max(.01,visible.bot.hp/100);if(visible.bot.hp<=0)handleBotKilled(visible.bot,false,false,b.name);}else applyDamageToPlayer(14,b.name,'VANDAL',false);}}
                     else{b.reactionTimer=0;if(b.roamDirection)b.group.rotation.y=Math.atan2(b.roamDirection.x,b.roamDirection.z);}
                 }
@@ -3883,7 +3958,7 @@
             if(!state.isLocked||state.inBuyMenu){cancelSpikeAction();if(state.spikePlanted)advanceSpikeFuse(dt);return;}
 
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
-            const canPlant = state.hp>0 && getPlantSite()!==null && !state.spikePlanted && state.team==='attack' && canJump && !moving;
+            const canPlant = state.hp>0 && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
             const canDefuse = state.hp>0 && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
             // A defuse finishing after the charge expires cannot cancel the explosion.
             const defuseLeft=SPIKE_RULES.defuseSeconds*(1-(state.spikeAction==='defuse'?state.plantingProgress:state.defuseCheckpoint));
@@ -3950,7 +4025,7 @@
             badge.classList.toggle('hidden',!['carried','dropped','planted'].includes(s.phase));setHudText('spike-hud-badge',s.phase==='planted'?'SPIKE 已安裝':s.phase==='dropped'?'SPIKE 已掉落':s.carrierUid===currentUser?.uid?'攜帶 SPIKE · [4] 裝備 · [G] 丟下':state.team==='attack'?'SPIKE · '+(remotePlayers.get(s.carrierUid)?.data.name||'隊友')+' 攜帶中':'SPIKE 未安裝');
             const active=live&&state.hp>0&&state.isLocked&&!state.inBuyMenu;
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
-            const plant=active&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&canJump&&!moving;
+            const plant=active&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25&&canJump&&!moving;
             const defuse=active&&state.team==='defend'&&s.phase==='planted'&&networkSpikeDistance()<3.3&&!moving;
             const pickup=state.hp>0&&state.isLocked&&!state.inBuyMenu&&state.team==='attack'&&s.phase==='dropped'&&networkSpikeDistance()<3.3;
             prompt.classList.toggle('hidden',!(plant||defuse||pickup));setHudText('site-prompt',pickup?'[F] 撿取 SPIKE':defuse?'按住 [4] 或 [F] 拆除 Spike · 半程保存':'按住 [4] 或 [F] 安裝 Spike · 4 秒');

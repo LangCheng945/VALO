@@ -8,10 +8,11 @@ export async function barrierEvent(room,ws,p,m,now){
  if(p.hp<=0||!p.active||(room.rounds.enabled&&room.meta.round.phase==='ending'))return fail('目前無法使用冰牆');
  if(m.type==='wall'){
   if(p.agent!=='phoenix'||p.cUsed>=1)return fail('屏障靈球已用完');
-  if(!validPose(m)||Math.hypot(m.x-p.x,m.z-p.z)>BARRIER.range+.2||Math.abs(m.y-(p.y-2.2))>4)return fail('冰牆位置超出範圍');
-  const w={id:crypto.randomUUID(),ownerUid:p.uid,x:m.x,y:m.y,z:m.z,yaw:m.yaw,createdAt:now,fortified:false,hp:Array(4).fill(BARRIER.initialHP)};
-  // Reject a footprint containing a player. Map support is checked by the preview client.
-  if(room.players().some(v=>v.hp>0&&v.active&&w.hp.some((_,i)=>insideSegment(w,i,{x:v.x,y:v.y-1,z:v.z},.45))))return fail('冰牆不能與玩家重疊');
+  if(!validPose(m)||Math.hypot(m.x-p.x,m.y-(p.y-2.2),m.z-p.z)>BARRIER.range+.2)return fail('冰牆位置超出範圍');
+  if(m.segments!==undefined&&(!Array.isArray(m.segments)||m.segments.length!==4||!m.segments.every(v=>typeof v==='boolean')||!m.segments.some(Boolean)))return fail('冰牆沒有可放置的區塊');
+  const w={id:crypto.randomUUID(),ownerUid:p.uid,x:m.x,y:m.y,z:m.z,yaw:m.yaw,createdAt:now,fortified:false,hp:(m.segments||Array(4).fill(true)).map(v=>v?BARRIER.initialHP:0)};
+  // Allow agents standing on the support floor to ride the rising wall. The client checks support and overhead clearance per section.
+  if(room.players().some(v=>v.hp>0&&v.active&&w.hp.some((hp,i)=>hp>0&&insideSegment(w,i,{x:v.x,y:v.y-1,z:v.z},.45)&&Math.abs(v.y-2.2-w.y)>.7)))return fail('冰牆不能與玩家重疊');
   p.cUsed++;room.save(ws,p);room.barriers=liveBarriers(room,now);room.barriers.push(w);await persist(room);
   room.broadcast({type:'event',event:{type:'wall',...w,senderUid:p.uid}});await room.ctx.storage.setAlarm(now+250);return true;
  }

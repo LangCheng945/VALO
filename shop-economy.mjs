@@ -1,4 +1,4 @@
-// Only purchases made since the last successful entry into combat are refundable.
+// The caller manages current-round receipts; firing does not consume a weapon receipt.
 export function quoteExchange(credits, pending, currentKey, requestedKey, price) {
     if (currentKey === requestedKey) return {ok:true, credits, pending, refund:0, charge:0};
     const baseKey = pending?.baseKey ?? currentKey;

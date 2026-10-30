@@ -60,3 +60,11 @@
 
 /* Native equipment images replace projected mesh previews and placeholder shields. */
 .shield-selector .val-card:before{display:none}.shield-selector .shield-icon{display:block;width:clamp(40px,4.5vw,72px);height:clamp(40px,4.5vw,72px);object-fit:contain;margin:0 auto 6px}.weapon-silhouette{filter:none}
+
+/* Keep icon and label on one centerline; the owned badge never shifts the image. */
+.loadout-weapons .val-card{grid-template-rows:minmax(0,1fr) auto;justify-items:center;text-align:center}
+.loadout-weapons .val-card>div:first-child{width:100%;align-items:center;text-align:center}
+.loadout-weapons .weapon-silhouette{justify-self:center;object-position:center;max-width:100%}
+.loadout-weapons .weapon-owned{grid-area:auto;margin:0!important;position:absolute;top:2px;right:4px;width:auto;height:10px;min-height:0;line-height:10px;font-size:7px;text-align:right}.loadout-weapons .weapon-owned:empty{display:none}
+.pending-reference{align-items:center;text-align:center}
+.shield-selector .val-card{align-items:center;text-align:center}

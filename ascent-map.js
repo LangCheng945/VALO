@@ -1,5 +1,5 @@
-import {MAP_SITES,MAP_SCALE} from './multiplayer/map-sites.mjs';
-export {MAP_SCALE} from './multiplayer/map-sites.mjs';
+import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=sites2';
+export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=sites2';
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
@@ -204,9 +204,7 @@ export class AscentMapRuntime {
         return sources.map(([x,z,y])=>{const p=this.safePoint(x,z,y);return{x:p.x,y:p.y-2.2,z:p.z,patrol:1.2}});
     }
     getPlantSite(position) {
-        const x=position.x/this.scale,z=position.z/this.scale;
-        for(const site of this.definition.sites)if(x>site.minX&&x<site.maxX&&z>site.minZ&&z<site.maxZ)return site.name;
-        return null;
+        return spikeSite(this.id,position);
     }
     toRadar(x,z,size=176) {
         const t=this.metadata.transform;

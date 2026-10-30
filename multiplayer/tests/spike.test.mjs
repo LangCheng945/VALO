@@ -9,6 +9,20 @@ async function setup(){
  return h;
 }
 test('all map site coordinates are shared and unknown maps reject planting',()=>{for(const [map,sites]of Object.entries(MAP_SITES))for(const s of sites)assert.equal(spikeSite(map,{x:(s.minX+s.maxX)/2*MAP_SCALE,z:(s.minZ+s.maxZ)/2*MAP_SCALE}),s.name);assert.equal(spikeSite('ascent',{x:0,z:0}),null);assert.equal(spikeSite('invalid',{x:0,z:0}),null);});
+test('plant boundaries include edges but reject overlapping upper/lower floors and old approach areas',()=>{
+ for(const [map,sites]of Object.entries(MAP_SITES))for(const site of sites){
+  const x=(site.minX+site.maxX)/2*MAP_SCALE,z=(site.minZ+site.maxZ)/2*MAP_SCALE,y=(site.minFloor+site.maxFloor)/2*MAP_SCALE+2.2;
+  assert.equal(spikeSite(map,{x,y,z}),site.name);
+  assert.equal(spikeSite(map,{x:site.minX*MAP_SCALE,y,z:site.minZ*MAP_SCALE}),site.name);
+  assert.equal(spikeSite(map,{x,y:(site.maxFloor+1)*MAP_SCALE+2.2,z}),null);
+  assert.equal(spikeSite(map,{x,y:(site.minFloor-1)*MAP_SCALE+2.2,z}),null);
+ }
+ assert.equal(spikeSite('ascent',{x:-58*MAP_SCALE,y:5*MAP_SCALE+2.2,z:-60*MAP_SCALE}),null);
+ assert.equal(spikeSite('ascent',{x:-75*MAP_SCALE,y:MAP_SCALE+2.2,z:19*MAP_SCALE}),null);
+ assert.equal(spikeSite('haven',{x:-82*MAP_SCALE,y:2*MAP_SCALE+2.2,z:26*MAP_SCALE}),null);
+ assert.equal(spikeSite('abyss',{x:-12*MAP_SCALE,y:10*MAP_SCALE+2.2,z:44*MAP_SCALE}),null);
+ assert.equal(spikeSite('ascent',{x:NaN,z:0}),null);
+});
 test('carrier/side/site are checked; hold requires fresh input and movement cancels planting',async()=>{
  const h=await setup(),{room,a,b}=h;assert.equal(room.spike.state().carrierUid,'a');await h.send(b,{type:'spike_action',action:'plant'});assert(b.messages.some(m=>m.type==='spike_error'));
  const p=room.data(a.ws);p.x=0;p.z=0;room.save(a.ws,p);await h.send(a,{type:'spike_action',action:'plant'});assert.equal(room.spike.state().action,null);
