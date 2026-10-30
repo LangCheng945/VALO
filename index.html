@@ -513,7 +513,7 @@
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
-                    <div class="map-picker"><label id="map-picker-label" for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option></select><small id="map-picker-help">切換會重置訓練；好友房間由房主帶領全員一起換圖。</small></div>
+                    <div id="match-result-panel" class="hidden border border-[#00F5D4]/50 bg-black/40 p-3 mb-3"><strong id="match-result-text"></strong><p id="match-result-help" class="text-xs my-2"></p><button id="btn-rematch" onclick="restartRoomMatch()" class="bg-[#00F5D4] text-black font-bold px-3 py-2">重新開局</button></div><div class="map-picker"><label id="map-picker-label" for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option></select><small id="map-picker-help">切換會重置訓練；好友房間由房主帶領全員一起換圖。</small></div>
                     <section class="range-hero">
                         <div class="range-hero-copy">
                             <p class="range-eyebrow" data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</p>
@@ -566,7 +566,7 @@
                         </div>
                     </section>
                     <details class="trainer-network" id="network-panel"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
-        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://valonow.langcheng.uk" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房為自由練習。Spike 安拆目前在單人戰術模式。</small></div>
+        <div class="network-server"><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://valonow.langcheng.uk" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房隨機選圖；先到 13 勝，12:12 後須領先 2 局。Spike 安拆目前在單人戰術模式。</small></div>
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
@@ -589,7 +589,7 @@
                             + 建立好友房間
                         </button>
                         <button onclick="joinQuickPublicLobby()" class="bg-[#FFBE0B]/20 hover:bg-[#FFBE0B]/40 border border-[#FFBE0B] text-[#FFBE0B] font-bold px-3 py-1.5 text-xs val-clip-sm transition cursor-pointer">
-                            ⚡ 快速加入公開房 (#PUBLIC)
+                            ⚡ 隨機地圖公開對戰 (#PUBLIC)
                         </button>
                         <div class="flex items-center bg-black/60 border border-white/25 px-2">
                             <input id="input-room-code" type="text" maxlength="10" placeholder="輸入6碼房號" class="bg-transparent text-xs font-val font-bold text-white uppercase w-24 focus:outline-none" />
@@ -710,7 +710,8 @@
         import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=mapchange1';
+        import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=match1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1412,7 +1413,7 @@
             const host=!!currentRoomId&&roomHostUid===currentUser?.uid;
             mapSelect.disabled=!!currentRoomId&&(!host||currentRoomId==='PUBLIC'||!roomSocket?.serverFeatures?.includes('map-change'));
             document.getElementById('map-picker-label').textContent=currentRoomId?'房間地圖':'訓練地圖';
-            document.getElementById('map-picker-help').textContent=!currentRoomId?'切換會重置訓練；好友房間由房主帶領全員一起換圖。':currentRoomId==='PUBLIC'?'公開房固定使用 Ascent。':!roomSocket?.serverFeatures?.includes('map-change')?'後端尚未支援整隊換圖，請等待最新部署後重新加入。':host?'你是房主：換圖會帶全員重新載入，保留房號與陣營，重置比分與回合。':'由房主切換地圖；全員會自動跟隨，保留房號與陣營。';
+            document.getElementById('map-picker-help').textContent=!currentRoomId?'切換會重置訓練；好友房間由房主帶領全員一起換圖。':currentRoomId==='PUBLIC'?'公開房由系統隨機選圖；整場結束後會自動載入下一張。':!roomSocket?.serverFeatures?.includes('map-change')?'後端尚未支援整隊換圖，請等待最新部署後重新加入。':host?'你是房主：換圖會帶全員重新載入，保留房號與陣營，重置比分與回合。':'由房主切換地圖；全員會自動跟隨，保留房號與陣營。';
         }
         function followRoomMap(message){
             clearTimeout(mapChangeTimer);
@@ -1710,16 +1711,19 @@
             const previous=roomRound;roomRound={...round,clockOffset:round.serverNow-Date.now()};
             if(!previous||previous.number!==round.number){clearFieldObjects();clearCorpses();state.roundEnding=false;}
             if(round.phase==='ending'&&previous?.phase!=='ending'){state.roundEnding=true;resetMovementInput();showCenterBanner('回合結束',round.reason+' · 下一回合重生',3100);}
-            if(round.phase!=='ending')state.roundEnding=false;
+            state.roundEnding=['ending','finished'].includes(round.phase);
+            if(round.phase==='finished'&&previous?.phase!=='finished'){resetMovementInput();safeExitPointerLock();showBuyMenu('training');document.getElementById('network-panel').open=true;showCenterBanner(round.matchWinner==='attack'?'攻擊方贏得比賽':'守備方贏得比賽',`${round.scoreAttack} : ${round.scoreDefend} · ${currentRoomId==='PUBLIC'?'稍後自動隨機換圖':'可由房主重新開局'}`,8000);}
             state.scoreAlly=round.scoreAttack;state.scoreEnemy=round.scoreDefend;
             document.getElementById('score-ally').textContent=round.scoreAttack;document.getElementById('score-enemy').textContent=round.scoreDefend;renderRoomRound();
         }
         function renderRoomRound(){
-            if(!roomRound){document.getElementById('round-timer').textContent='∞';return;}
+            if(!roomRound){document.getElementById('match-result-panel').classList.add('hidden');setHudText('round-timer','∞');return;}
             const now=Date.now()+roomRound.clockOffset,deadline=roomRound.phase==='ending'?roomRound.nextAt:roomRound.endsAt;
             const remaining=Math.max(0,Math.ceil((deadline-now)/1000));
-            document.getElementById('round-timer').textContent=roomRound.phase==='waiting'?'準備':deadline?Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0'):'∞';
-            document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' // ROUND '+roomRound.number;
+            setHudText('round-timer',roomRound.phase==='finished'?'結束':roomRound.phase==='waiting'?'準備':deadline?Math.floor(remaining/60)+':'+String(remaining%60).padStart(2,'0'):'∞');
+            setHudText('round-phase-label',mapDefinition.name.toUpperCase()+(roomRound.phase==='finished'?' // MATCH END':(isOvertime(roomRound.scoreAttack,roomRound.scoreDefend)?' // OVERTIME · 須領先 2 局':' // ROUND '+roomRound.number)));
+            const result=document.getElementById('match-result-panel');result.classList.toggle('hidden',roomRound.phase!=='finished');
+            if(roomRound.phase==='finished'){setHudText('match-result-text',`${roomRound.matchWinner===state.team?'勝利':'戰敗'} · ${roomRound.scoreAttack} : ${roomRound.scoreDefend}`);setHudText('match-result-help',currentRoomId==='PUBLIC'?`約 ${Math.max(0,Math.ceil((roomRound.nextAt-now)/1000))} 秒後隨機選下一張地圖`:'整場結束，由房主重新開局或選擇新地圖。');document.getElementById('btn-rematch').classList.toggle('hidden',currentRoomId==='PUBLIC'||roomHostUid!==currentUser?.uid);}
         }
 
         const bots = [];
@@ -2046,7 +2050,7 @@
 
         function clearAllRemotePlayers() {
             spectatorView.stop();spectatorUiState=false;document.getElementById('spectator-panel').hidden=true;document.body.classList.remove('is-spectating');
-            clearFieldObjects();clearCorpses();roomRound=null;roomMode='practice';
+            clearFieldObjects();clearCorpses();roomRound=null;roomMode='practice';document.getElementById('match-result-panel').classList.add('hidden');
             remotePlayers.forEach(rp => disposeActor(rp.group));
             remotePlayers.clear();
         }
@@ -2057,7 +2061,8 @@
         };
         window.toggleBotsInMatch=function(enabled){if(currentRoomId){networkFeedback('好友房間停用單機靶');return;}state.enableBots=enabled;spawnBots();};
         window.createMultiplayerRoom=async function(){try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();networkFeedback('正在建立房間…');const code=await client.createRoom(selectedMap,{duration:state.trainingDuration});await connectToMultiplayerRoom(code);}catch(error){networkFeedback(error.message);}};
-        window.joinQuickPublicLobby=()=>{if(selectedMap!=='ascent'){networkFeedback('公開房固定使用 Ascent；'+mapDefinition.name+' 請建立好友房間');return;}return connectToMultiplayerRoom('PUBLIC');};
+        window.joinQuickPublicLobby=()=>connectToMultiplayerRoom('PUBLIC');
+        window.restartRoomMatch=()=>{if(currentRoomId&&roomSocket?.connected&&roomHostUid===currentUser?.uid&&roomRound?.phase==='finished')roomSocket.send({type:'match_restart'});};
         window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
         window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
         window.leaveMultiplayerRoom=function(){
@@ -2094,7 +2099,7 @@
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
                     if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(['jett','phoenix'].includes(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(WEAPONS[message.player.weapon]&&!['classic','melee','bladestorm'].includes(message.player.weapon))state.primaryWeaponKey=message.player.weapon;}
-                    applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
                 players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
@@ -2103,11 +2108,11 @@
             });return roomSocket;
         }
         async function connectToMultiplayerRoom(code){
-            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1,mapChange:1,map:selectedMap});}catch(error){networkFeedback(error.message);}
+            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1,mapChange:1,publicRules:1,map:selectedMap});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
-            roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0,shield:state.shield});
+            roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.roundEnding,shield:state.shield});
         }
         function broadcastRoomEvent(payload){if(payload.type==='shot'){if(bladeVolleyContext&&payload.weapon==='bladestorm')payload.volley={id:bladeVolleyContext.id,count:bladeVolleyContext.count,index:bladeVolleyContext.index};pushMyNetworkState(true);}roomSocket?.send(payload);}
 

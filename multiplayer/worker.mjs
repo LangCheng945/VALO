@@ -1,3 +1,4 @@
+import {choosePublicMap} from './match-rules.mjs';
 import {acceptBladeVolley} from './blade-volley.mjs';
 import {slowEvent,liveSlowFields,liveSlowFlights,updateSlowObjects} from './slow-events.mjs';
 import {barrierEvent,liveBarriers,updateBarriers} from './barriers.mjs';
@@ -59,8 +60,8 @@ export class GameRoom {
    return new Response(null,{status:entry.count>20?429:204});
   }
   if(path==='/create'){
-   let body={};try{body=await request.json();}catch{}if(this.meta){if(body.public){this.meta.public=true;await this.ctx.storage.put('meta',this.meta);}return json({error:'EXISTS'},409);}
-   this.meta={createdAt:Date.now(),map:MAP_IDS.includes(body.map)?body.map:'ascent',mode:body.mode==='rounds'?'rounds':'practice',duration:body.duration??300,public:body.public===true,mapEpoch:0,round:{number:1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0}};await this.ctx.storage.put('meta',this.meta);await this.ctx.storage.setAlarm(Date.now()+120000);return json({ok:true});
+   let body={};try{body=await request.json();}catch{}if(this.meta){if(body.public&&!this.meta.public){this.meta.public=true;await this.ctx.storage.put('meta',this.meta);}if(body.public&&this.meta.mode!=='rounds'){this.meta.mode='rounds';await this.resetMatchMap(choosePublicMap(MAP_IDS,this.meta.map),Date.now());}return json({error:'EXISTS'},409);}
+   this.meta={createdAt:Date.now(),map:body.public?choosePublicMap(MAP_IDS):MAP_IDS.includes(body.map)?body.map:'ascent',mode:body.public||body.mode==='rounds'?'rounds':'practice',duration:body.duration??300,public:body.public===true,mapEpoch:0,round:{number:1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0}};await this.ctx.storage.put('meta',this.meta);await this.ctx.storage.setAlarm(Date.now()+120000);return json({ok:true});
   }
   if(path!=='/connect'||!this.meta)return json({error:'ROOM_NOT_FOUND'},404);
   if(this.sockets().length>=10)return json({error:'ROOM_FULL'},409);
@@ -76,7 +77,7 @@ export class GameRoom {
   p.lastSeen=now;this.save(ws,p);
   if(!m||typeof m.type!=='string')return;
   if(m.type==='join'){
-   if(p.joined)return;p.mapChange=m.mapChange===1;if(this.rounds.enabled&&m.roundRules!==1){ws.close(1008,'Update client for rounds');return;}if(this.meta?.map&&this.meta.map!=='ascent'&&m.mapVersion!==1){ws.close(1008,'Update client for this map');return;}
+   if(p.joined)return;if(this.meta.public&&m.publicRules!==1){ws.close(1008,'Update client for public matches');return;}p.mapChange=m.mapChange===1;if(this.rounds.enabled&&m.roundRules!==1){ws.close(1008,'Update client for rounds');return;}if(this.meta?.map&&this.meta.map!=='ascent'&&m.mapVersion!==1){ws.close(1008,'Update client for this map');return;}
    if(typeof m.resumeToken==='string'&&/^[a-f0-9]{64}$/.test(m.resumeToken)){
     let saved;await this.ctx.blockConcurrencyWhile(async()=>{saved=await this.ctx.storage.get('resume:'+m.resumeToken);if(saved)await this.ctx.storage.delete('resume:'+m.resumeToken);});
     if(!saved||saved.expires<now){ws.close(1008,'Resume expired');return;}
@@ -92,17 +93,19 @@ export class GameRoom {
    if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+15000);return;
   }
   if(!p.joined||p.leaving)return;
+  if(m.type==='match_restart'&&!p.mapPending){if(this.meta.public||this.hostUid()!==p.uid||this.meta.round.phase!=='finished'){this.send(ws,{type:'map_error',reason:'比賽結束後由房主重新開局；公開房會自動換圖'});return;}await this.resetMatchMap(this.meta.map,now);return;}
   if(m.type==='map_change'&&!p.mapPending){await this.changeMap(ws,p,m.map,now);return;}
   if(m.type==='leave'){if(this.meta.hostUid===p.uid){this.meta.hostUid=null;this.meta.hostUntil=0;}p.leaving=true;this.save(ws,p);ws.close(1000,'Leave');return;}
   if(p.mapPending)return;
   if(m.type==='ping'){this.send(ws,{type:'pong',at:m.at});return;}
   if(m.type==='state'&&validPose(m)){
-   if(p.hp>0){if(this.rounds.enabled&&this.meta.round.phase==='ending')return;if(m.active)p.inRound=true;if(!p.active&&[0,25,50].includes(m.shield))p.shield=m.shield;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
+   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&[0,25,50].includes(m.shield))p.shield=m.shield;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
    this.save(ws,p);await this.rounds.activated();this.queueSnapshot();return;
   }
+  if(this.rounds.enabled&&this.meta.round.phase==='finished'&&!['chat','ping'].includes(m.type))return;
   if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){p.team=m.team;Object.assign(p,spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});this.snapshot();return;}
   if(m.type==='revive'){await this.rounds.revive(ws,p,m.targetUid);return;}
-  if(this.rounds.enabled&&this.meta.round.phase==='ending'&&['shot','hit','heal','smoke_launch'].includes(m.type))return;
+  if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase)&&['shot','hit','heal','smoke_launch'].includes(m.type))return;
   if(await slowEvent(this,ws,p,m,now))return;
   if(await barrierEvent(this,ws,p,m,now))return;
   if(await skillEvent(this,ws,p,m,now))return;
@@ -134,15 +137,18 @@ export class GameRoom {
  }
  async changeMap(ws,p,map,now){
   const fail=reason=>this.send(ws,{type:'map_error',reason});
-  if(this.meta.public)return fail('公開房固定使用 Ascent，請建立好友房間');
+  if(this.meta.public)return fail('公開房由系統隨機選圖，無法手動更換');
   if(this.hostUid()!==p.uid)return fail('只有房主可以更換地圖');
   if(!MAP_IDS.includes(map))return fail('不支援這張地圖');
   if(map===this.meta.map)return fail('目前已是這張地圖');
   if(now-(this.meta.lastMapChange||0)<10000)return fail('正在換圖，請稍候再試');
   if(this.sockets().some(s=>{const v=this.data(s);return v?.joined&&!v.mapChange;}))return fail('請所有玩家先重新整理網站，再更換地圖');
+  await this.resetMatchMap(map,now);
+ }
+ async resetMatchMap(map,now=Date.now()){
   await this.ctx.blockConcurrencyWhile(async()=>{
    this.meta.map=map;this.meta.mapEpoch=(this.meta.mapEpoch||0)+1;this.meta.lastMapChange=now;this.meta.hostUntil=now+180000;this.meta.transferUntil=now+180000;
-   this.meta.round={number:(this.meta.round?.number||0)+1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0};
+   this.meta.round={number:1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0};
    this.slowFlights=[];this.slowFields=[];this.sprays=[];this.barriers=[];
    await this.ctx.storage.delete(['slow','sprays','barriers']);
    await this.ctx.storage.put('meta',this.meta);

@@ -78,12 +78,12 @@ Worker 測試實際連到本機 workerd 的 WebSocket，檢查兩人同步、房
 POST /rooms 接受 JSON `{ "map": "ascent" }` 、`{ "map": "haven" }` 、`{ "map": "summit" }` 或 `{ "map": "abyss" }`，未指定時使用 Ascent。
 welcome 回傳房間 map；地圖是房間固定屬性，重連與重生沿用該地圖出生點。
 Haven、Summit 與 Abyss 要求 join 具有 mapVersion:1，避免舊客戶端載入 Ascent 造成位置錯位。
-公開 PUBLIC 房維持 Ascent。/health 的 maps 列出目前支援地圖。
+公開 PUBLIC 房使用隨機地圖。/health 的 maps 列出目前支援地圖。
 
 ## 回合與 Sage 復活
 
 POST /rooms 可傳 `{ "map":"ascent", "mode":"rounds", "duration":300 }`。
-新版前端預設建立 rounds；省略 mode 的舊客戶端仍為 practice，PUBLIC 亦維持 practice。
+新版前端預設建立 rounds；省略 mode 的舊客戶端仍為 practice，PUBLIC 固定使用 rounds。
 回合房要求 join.roundRules=1，welcome 回傳 mode／round；players 快照附 round、ultUsed、reviveAt。
 雙方開始參戰後計時，duration 可為 0、60、90、120、180、300、600；0 表示不限時。
 全隊倒地或計時結束會公布 round.phase=ending，3.3 秒後所有在線成員於各自出生點重生。
@@ -146,10 +146,20 @@ Durable Object storage 保存牆體、welcome 回播剩餘段，新回合清除�
 
 ## 整隊換地圖
 
-新版 `/health` 和 `welcome.features` 包含 `map-change`。好友房第一位加入者成為房主，房主可在選單「房間地圖」切換 Ascent／Haven／Summit／Abyss，所有線上隊員自動重新載入並加入同一房號，保留 UID、名稱、特務及陣營。新地圖重置雙方比分、擊殺／死亡、生命、技能、出生點和場上物件；回合序號遞增，等待雙方開始。公開房固定 Ascent。
+新版 `/health` 和 `welcome.features` 包含 `map-change`。好友房第一位加入者成為房主，房主可在選單「房間地圖」切換 Ascent／Haven／Summit／Abyss，所有線上隊員自動重新載入並加入同一房號，保留 UID、名稱、特務及陣營。新地圖重置雙方比分、擊殺／死亡、生命、技能、出生點和場上物件；回合序號重設為 1，等待雙方開始。公開房由系統隨機選圖。
 
 伺服器驗證房主、地圖白名單、10 秒換圖間隔，並要求所有線上成員支援新版功能，否則拒絕並通知房主。換圖前持久化每位玩家的重連資料；前端將短效票券暫存於同分頁 sessionStorage，載入地圖後自動使用並清除。換圖保留 3 分鐘載入時間，舊地圖連線無法再移動或攻擊；離線玩家稍後重連時以地圖世代判斷並重置到新出生點。票券到期後須手動重新加入。
 
 房主主動離房立即交接給下一位在線成員；一般斷線保留約 60 秒，換圖期間保留最多 3 分鐘，方便原房主回來。伺服器與前端都需更新；舊後端前端會顯示尚未支援並停用房內換圖。
 
 驗證：`node --test multiplayer/tests/map-change.test.mjs`；`node tests/test_multiplayer_map_browser.cjs`（先啟動 8000 靜態伺服器與 8790 Worker）。雙瀏覽器實際測試全員導頁、Haven 出生點、UID／陣營保留、換圖後聊天及房主交接；不代表已驗證公開 Worker 的部署。
+
+## 整場勝負與公開房輪替
+
+`match-rules.mjs` 判定先到 13 且至少領先 2 局；12:12 起為延長賽，不設延長上限。`round` 包含 `winTarget:13`、`winBy:2`、`overtime`。勝出時 phase 變為 `finished`，帶 `matchWinner`，伺服器停止移動、攻擊、技能與復活，不再走 3.3 秒下一回合流程。聊天、離房仍可使用。
+
+PUBLIC 初次建立只抽一次地圖，同場後續加入／重連都使用房間已儲存的地圖。PUBLIC 統一 rounds，join 必須帶 `publicRules:1`，防止舊版客戶端繼續使用自由練習規則。舊 PUBLIC practice 房在下次連線時升級並通知在線玩家換圖；更新前的玩家需重新整理網站。完成整場後保留結果 12 秒，由伺服器從其餘三張地圖隨機抽下一張，以既有 map_changed／重連票券流程整房轉移，重置比分及回合為 1。
+
+好友房完成整場後持續顯示結果；僅房主能傳 `match_restart` 在同張地圖重開，或傳 `map_change` 換新地圖。一般隊員與比賽進行中不得使用重新開局訊息。`/health.features` 包含 `match-rules` 與 `public-random-map`，部署時請一起包含新模組。
+
+測試：`tests/match-rules.test.mjs` 覆蓋 13:0、13:11、12:12、13:12、14:12、15:13、長延長賽、整場結束後封鎖戰鬥／復活、房主重開、全員一致的隨機地圖與結算倒數。`node ../tests/test_public_match_browser.cjs`（從 multiplayer 目錄）使用兩個不同地圖的真實瀏覽器加入實際 Worker 公開房，驗證跟隨同圖與 HUD 結算／延長賽顯示。正式公開 Worker 的部署仍需另行確認。

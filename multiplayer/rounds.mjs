@@ -1,10 +1,11 @@
-import {spawn} from './protocol.mjs';
+import {matchWinner,isOvertime,choosePublicMap} from './match-rules.mjs';
+import {MAP_IDS,spawn} from './protocol.mjs';
 
 // Durable Object attachments own health and ultimate charges; clients only request actions.
 export class RoundRules {
  constructor(room){this.room=room;}
  get enabled(){return this.room.meta?.mode==='rounds';}
- state(){const m=this.room.meta;if(!this.enabled)return null;return {...m.round,serverNow:Date.now()};}
+ state(){const m=this.room.meta;if(!this.enabled)return null;return {...m.round,overtime:isOvertime(m.round.scoreAttack,m.round.scoreDefend),winTarget:13,winBy:2,serverNow:Date.now()};}
  async publish(){await this.room.ctx.storage.put('meta',this.room.meta);this.room.broadcast({type:'round',round:this.state()});}
  async activated(){
   if(!this.enabled||this.room.meta.round.phase!=='waiting')return;
@@ -17,6 +18,8 @@ export class RoundRules {
   if(!this.enabled||this.room.meta.round.phase!=='playing')return;
   const r=this.room.meta.round;r.phase='ending';r.winner=winner;r.reason=reason;r.nextAt=Date.now()+3300;
   if(winner==='attack')r.scoreAttack++;else if(winner==='defend')r.scoreDefend++;
+  const champion=matchWinner(r.scoreAttack,r.scoreDefend);
+  if(champion){r.phase='finished';r.matchWinner=champion;r.endsAt=0;r.nextAt=this.room.meta.public?Date.now()+12000:0;for(const ws of this.room.sockets()){const p=this.room.data(ws);if(!p?.joined)continue;p.active=false;p.healRemaining=0;p.reviveAt=0;p.smokeFlights={};this.room.save(ws,p);}}
   await this.publish();await this.room.ctx.storage.setAlarm(Date.now()+250);
  }
  async elimination(){
@@ -50,6 +53,9 @@ export class RoundRules {
   }
   if(!this.enabled)return pending;
   const r=room.meta.round;
+  if(r.phase==='finished'){
+   if(room.meta.public&&r.nextAt){if(now>=r.nextAt){await room.resetMatchMap(choosePublicMap(MAP_IDS,room.meta.map),now);return true;}return true;}return false;
+  }
   if(r.phase==='playing'){
    pending=true;if(r.endsAt&&now>=r.endsAt)await this.finish('defend','回合時間結束');
   }else if(r.phase==='ending'){
