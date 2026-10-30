@@ -1,4 +1,5 @@
-import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=motion1';
+import {makeKarambit,updateKarambit} from './karambit.js?v=karambit1';
+import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=karambit1';
 import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;
@@ -9,12 +10,13 @@ export class SpectatorView {
   this.uid=null;this.candidates=[];this.generation=0;this.kick=0;this.hidden=null;this.active=false;
  }
  restoreHidden(){if(this.hidden){if(!this.hidden.userData.disposed)this.hidden.visible=true;this.hidden=null;}}
- stop(){this.restoreHidden();this.uid=null;this.active=false;this.weaponRoot.visible=false;this.modelKey=null;this.generation++;disposeViewmodel(this.weaponRoot);this.hands=null;}
+ stop(){this.restoreHidden();this.uid=null;this.active=false;this.weaponRoot.visible=false;this.modelKey=null;this.generation++;disposeViewmodel(this.weaponRoot);this.hands=null;this.melee=null;}
  cycle(direction){this.uid=pickSpectatorTarget(this.candidates,this.uid,direction);this.snap=true;}
  shot(uid){if(this.active&&uid===this.uid)this.kick=.065;}
  resize(width,height){this.camera.aspect=width/height;this.camera.updateProjectionMatrix();}
  buildWeapon(agent,key){
-  const modelKey=agent+':'+key;if(this.modelKey===modelKey)return;this.modelKey=modelKey;const generation=++this.generation;disposeViewmodel(this.weaponRoot);this.hands=new FirstPersonHands(agent,key,this.environment);this.weaponRoot.add(this.hands.root);
+  const modelKey=agent+':'+key;if(this.modelKey===modelKey)return;this.modelKey=modelKey;this.melee=null;const generation=++this.generation;disposeViewmodel(this.weaponRoot);this.hands=new FirstPersonHands(agent,key,this.environment);this.weaponRoot.add(this.hands.root);
+  if(key==='melee'){this.melee=makeKarambit(this.environment);this.weaponRoot.add(this.melee);return;}
   if(!['vandal','phantom','classic','operator','odin'].includes(key))return;
   const paint=new T.MeshStandardMaterial({color:0xffffff,map:this.skinTexture,emissive:0x60bfff,emissiveMap:this.skinTexture,emissiveIntensity:.055,metalness:.48,roughness:.39,envMap:this.environment,envMapIntensity:.65});
   loadWeaponModel(key,paint).then(mesh=>{
@@ -33,6 +35,6 @@ export class SpectatorView {
   const blend=this.snap?1:1-Math.exp(-dt*18);this.camera.position.lerp(new T.Vector3(pos.x,pos.y+2.2-eye,pos.z),blend);
   const yawDelta=Math.atan2(Math.sin(target.yaw-this.camera.rotation.y),Math.cos(target.yaw-this.camera.rotation.y));this.camera.rotation.y+=yawDelta*blend;this.camera.rotation.x+=(target.pitch-this.camera.rotation.x)*blend;this.snap=false;
   actor.group.visible=false;this.hidden=actor.group;
-  this.buildWeapon(target.agent,target.weapon);this.kick*=Math.exp(-dt*16);this.weaponRoot.rotation.x=this.kick;this.weaponRoot.position.z=-.14+this.kick*.6;this.hands?.update({dt});return target;
+  this.buildWeapon(target.agent,target.weapon);this.kick*=Math.exp(-dt*16);this.weaponRoot.rotation.x=this.kick;this.weaponRoot.position.z=-.14+this.kick*.6;const meleeGrip=this.melee?updateKarambit(this.melee,{}):null;this.hands?.update({dt,meleeGrip});return target;
  }
 }

@@ -1,3 +1,4 @@
+import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
 const T=globalThis.THREE;
 const up=new T.Vector3(0,1,0),smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
@@ -60,7 +61,7 @@ export function weaponMotion(key,{reload=0,draw=1}={}){
  const [lower,roll,forward]=track(draw,[[0,1,1,1],[.22,.76,.85,.7],[.70,-.035,-.08,0],[1,0,0,0]]);
  return {position:[lower*.065,-lower*(heavy?.40:melee?.34:.30)+lift,forward*.12],rotation:[pitch+lower*.26,lower*-.12,tilt+roll*(melee?-.42:.26)]};
 }
-export function weaponDrawDuration(key){return key==='odin'?.72:key==='operator'?.64:key==='classic'?.40:key==='melee'||key==='bladestorm'?.44:.52;}
+export function weaponDrawDuration(key){return key==='odin'?.72:key==='operator'?.64:key==='classic'?.40:key==='melee'?KARAMBIT_DRAW_SECONDS:key==='bladestorm'?.44:.52;}
 export class FirstPersonHands{
  constructor(agent,key,environment){
   this.key=key;this.profile=profiles[key]||profiles.vandal;this.root=new T.Group();this.root.name='first-person-hands';this.elapsed=0;
@@ -79,7 +80,7 @@ export class FirstPersonHands{
   this.update({});
  }
  setAgent(agent){const sage=agent!=='jett';this.materials.glove.color.setHex(sage?0xa3674d:0x030b10).convertSRGBToLinear();this.materials.sleeve.color.setHex(sage?0x546761:0x08171b).convertSRGBToLinear();this.materials.cuff.color.setHex(sage?0x0e7566:0x21616a).convertSRGBToLinear();}
- update({reload=0,magazine=null,inspect=0,dt=0}={}){
+ update({reload=0,magazine=null,inspect=0,meleeGrip=null,dt=0}={}){
   this.elapsed+=dt;const p=this.profile;
   for(const a of this.arms){
    let target=new T.Vector3(...(a.side<0?p.left:p.right));let roll=a.side<0?1.12:-1.15;
@@ -92,7 +93,7 @@ export class FirstPersonHands{
     const receiver=new T.Vector3(...p.mag).add(new T.Vector3(-.045,.115,.02));
     target.lerp(receiver,tap*.72);roll=T.MathUtils.lerp(roll,.25,tap*.6);
    }
-   if(this.key==='melee'&&a.side>0){a.hand.rotation.set(Math.PI/2,0,0);}else a.hand.rotation.set(-.08,a.side*.08,roll);
+   if(this.key==='melee'&&a.side>0){if(meleeGrip){target.fromArray(meleeGrip.handPosition);a.hand.rotation.set(...meleeGrip.handRotation);}else a.hand.rotation.set(.35,0,-1.15);}else a.hand.rotation.set(-.08,a.side*.08,roll);
    if(this.key==='orb')a.hand.rotation.set(-.15,a.side*-.15,a.side*-.18);
    if(this.key==='bladestorm')a.hand.rotation.set(-.1,a.side*-.25,a.side*.3);
    a.hand.position.copy(target);

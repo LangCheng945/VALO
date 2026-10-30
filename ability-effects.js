@@ -1,4 +1,4 @@
-import {FirstPersonHands} from './first-person-view.js?v=motion1';
+import {FirstPersonHands} from './first-person-view.js?v=karambit1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;

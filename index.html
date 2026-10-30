@@ -250,7 +250,7 @@
                 </div>
                 <div id="keybind-hints" class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
                     <div class="font-black text-[#00F5D4] tracking-wider" id="hud-mode-label">1v5 擬真戰術攻防</div>
-                    <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 神罰雷槌 [Y] 檢視武器</div>
+                    <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 金環爪刀 [Y] 檢視武器</div>
                     <div class="text-white/80">[Ctrl] 蹲下 [Shift] 靜走 [右鍵] 瞄準／倍率</div>
                     <div class="text-white/80">[C / Q / E / X] 特務技能　[T] 噴漆</div>
                     <div class="text-[#FF4655] font-bold">[4/F] 裝包/拆包 | [B] 商店與連線大廳 | [TAB] 計分板</div>
@@ -664,7 +664,7 @@
                     <button data-category="隨身武器" id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card  p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰手槍 CLASSIC</strong><span class="text-[#00F5D4]">¤ 0</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
-                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換雷槌</div>
+                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換金環爪刀</div>
                     </button>
 </div>
                     <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
@@ -687,11 +687,13 @@
     <script type="module">
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=motion1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=karambit1';
+        import {makeKarambit,updateKarambit} from './karambit.js?v=karambit1';
+        import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=avatars1';
-        import {SpectatorView} from './spectator-view.js?v=spectate1';
+        import {SpectatorView} from './spectator-view.js?v=karambit1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -700,7 +702,7 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=motion1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=karambit1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -1008,7 +1010,7 @@
             },
             melee: {
                 id: 'melee',
-                name: '神罰雷槌 SMITE HAMMER',
+                name: '金環爪刀 GOLD KARAMBIT',
                 cost: 0,
                 headDmg: 150,
                 bodyDmg: 75,
@@ -1044,9 +1046,9 @@
         };
 
         Object.values(WEAPONS).forEach(weapon => {
-            weapon.skin = SMITE_SKIN.id;
+            weapon.skin = weapon.id==='melee'?'gold-karambit':SMITE_SKIN.id;
             weapon.color = SMITE_SKIN.accent;
-            weapon.glowColor = SMITE_SKIN.energy;
+            weapon.glowColor = weapon.id==='melee'?0xe5b448:SMITE_SKIN.energy;
         });
 
         const AGENTS = {
@@ -1501,46 +1503,10 @@
                 return;
             }
 
-            // Smite-inspired lightning hammer, matching the supplied reference.
+            // Gold/black ring-hilt karambit, authored from the user's reference.
             if (wpnKey === 'melee') {
-                knifeSpinGroup = new THREE.Group();
-                knifeSpinGroup.name = 'smite-hammer';
-                knifeSpinGroup.position.set(0.30, -0.22, -0.65);
-                knifeSpinGroup.rotation.z = -0.16;
-                const headShape = new THREE.Shape();
-                [[-0.09,-0.15],[0.09,-0.15],[0.12,-0.12],[0.12,0.12],
-                 [0.09,0.15],[-0.09,0.15],[-0.12,0.12],[-0.12,-0.12]].forEach(([x,y],i) => {
-                    if (i === 0) headShape.moveTo(x,y); else headShape.lineTo(x,y);
-                });
-                headShape.closePath();
-                const headGeometry = new THREE.ExtrudeGeometry(headShape, {
-                    depth: 0.15, bevelEnabled: true, bevelThickness: 0.008,
-                    bevelSize: 0.008, bevelSegments: 1, steps: 1
-                });
-                const position = headGeometry.attributes.position;
-                const uv = headGeometry.attributes.uv;
-                const normal = headGeometry.attributes.normal;
-                for (let i = 0; i < uv.count; i++) {
-                    uv.setXY(i, Math.abs(normal.getZ(i)) > 0.5
-                        ? (position.getX(i) + 0.13) / 0.26 : position.getZ(i) / 0.15,
-                        (position.getY(i) + 0.16) / 0.32);
-                }
-                const head = new THREE.Mesh(headGeometry, skinAccent);
-                head.name = 'lightning-hammer-head';
-                head.position.set(0, 0.29, -0.075);
-                knifeSpinGroup.add(head);
-                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.027, 0.42, 12), darkMetal);
-                handle.position.y = -0.02;
-                knifeSpinGroup.add(handle);
-                [0.12, 0.085, -0.20, -0.23].forEach(y => {
-                    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.024, 12), gunSteel);
-                    collar.position.y = y;
-                    knifeSpinGroup.add(collar);
-                });
-                const pommel = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.031, 0.045, 8), gunSteel);
-                pommel.position.y = -0.26;
-                knifeSpinGroup.add(pommel);
-                gunGroup.add(knifeSpinGroup);
+                knifeSpinGroup=makeKarambit(viewEnvironmentTarget.texture);gunGroup.add(knifeSpinGroup);
+                for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
                 return;
             }
 
@@ -3690,7 +3656,7 @@
             const motion=weaponMotion(state.weaponKey,{reload:reloadProgress,draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration(state.weaponKey))});
             weaponMotionRoot.position.fromArray(motion.position);weaponMotionRoot.rotation.set(...motion.rotation);
             updateMagazine(gunMagazineMesh,reloadProgress,state.weaponKey);
-            firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
+
             // Walk bobbing & breathing sway
             if (isMoving && canJump) {
                 state.walkBobTime += dt * (moveState.walk ? 6 : 11);
@@ -3708,17 +3674,13 @@
             } else if (state.isInspecting) {
                 // [Y] Key Weapon / Kunai Spin Inspect Animation
                 state.inspectTimer += dt;
-                if (knifeSpinGroup) {
-                    knifeSpinGroup.rotation.y = Math.sin(state.inspectTimer / 2.2 * Math.PI) * 0.9;
-                    knifeSpinGroup.rotation.z = -0.16 + Math.sin(state.inspectTimer / 2.2 * Math.PI) * 0.35;
-                } else {
+                if (!knifeSpinGroup) {
                     const p = Math.sin((state.inspectTimer / 2.2) * Math.PI);
                     gunGroup.rotation.x=-p*.08;gunGroup.rotation.z=p*.20;gunGroup.rotation.y=p*.48;gunGroup.position.x-=p*.04;gunGroup.position.y+=p*.025;
                 }
                 if (state.inspectTimer >= 2.2) {
                     state.isInspecting = false;
                     gunGroup.rotation.set(0, 0, 0);
-                    if (knifeSpinGroup) knifeSpinGroup.rotation.set(0, 0, -0.16);
                 }
             } else {
                 gunGroup.rotation.x += (0 - gunGroup.rotation.x) * Math.min(1,12*dt);
@@ -3726,6 +3688,8 @@
                 gunGroup.rotation.y += (0 - gunGroup.rotation.y) * 10 * dt;
             }
 
+            const meleeGrip=knifeSpinGroup?updateKarambit(knifeSpinGroup,{draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration('melee')),inspect:state.isInspecting?state.inspectTimer/KARAMBIT_INSPECT_SECONDS:0}):null;
+            firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,dt});
             // Floating Blade Storm Daggers hover animation
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
         }

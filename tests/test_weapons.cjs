@@ -15,8 +15,9 @@ assert.equal(odin.auto, true);
 assert.equal(odin.zoomLevels[0], 1.15);
 assert.ok(odin.fullAutoFireRate < odin.fireRate);
 assert.equal(odin.reloadTimeMs, 5000);
-for (const key of ['vandal', 'phantom', 'odin', 'operator', 'classic', 'melee']) {
+for (const key of ['vandal', 'phantom', 'odin', 'operator', 'classic']) {
     assert.equal(context.weapons[key].skin, 'smite', key);
     assert.equal(context.weapons[key].glowColor, 0xb9f5ff, key);
 }
-console.log('PASS ODIN capacity, cost, ADS, accelerated fire and reload; all weapons share Smite skin');
+assert.equal(context.weapons.melee.skin,'gold-karambit');
+console.log('PASS ODIN capacity, cost, ADS, accelerated fire and reload; firearms share Smite and melee uses gold karambit');
