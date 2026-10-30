@@ -139,3 +139,7 @@ Durable Object storage 保存牆體、welcome 回播剩餘段，新回合清除�
 `slow-events.mjs` 與共用 `slow-rules.mjs` 實作 `thrown-slow` 功能。`slow_launch` 包含起點與速度 vx/vy/vz，伺服器驗證 Sage／存活參戰／兩次額度及 20 單位速度，分配唯一 id 後廣播。
 `slow_step` 最多 12.5 Hz 驗證擁有者、位置／速度和時間相關位移上限，客戶端通常約 8 Hz 更新；`slow_land` 需同一個有效 id、合理距離及向上的單位法線。接受後只產生一次同 id 的 `slow` 冰面，expiresAt 固定為落地後 7 秒。
 房間 storage 保存未到期 flight／field，welcome 回播；快照 slowCharges 保留重連與復活後的次數。超時球以 slow_remove 移除，不推測地圖上的落地點。新回合刪除資料；舊版直接 slow 落點請求會提示更新網頁。落地碰撞回報依前端地圖，驗證並非完整伺服器地圖物理。
+
+## 暴風刃同時散射
+
+部署時包含 `blade-volley.mjs`；健康檢查／welcome 的 features 新增 `blade-volley`。帶 volley 的 shot 限目前武器為 bladestorm、合法 UUID、1–5 個依序 index；第一把沿用 112 ms 最低間隔，同一批其餘飛刀只在 500 ms 內接受，拒絕重送、跳號、過期與一般槍械濫用。每把仍各自驗證起點／落點，並至多配對一個傷害請求。shotWeapon 保留射出時的武器，kill 事件以該武器歸屬，讓前端即使已切槍仍正確補回 3 把飛刀。這是有界散射協定，並非完整伺服器彈量或地圖命中驗證。更新後需重新加入房間，讓前端取得新功能清單。

@@ -1,3 +1,4 @@
+import {acceptBladeVolley} from './blade-volley.mjs';
 import {slowEvent,liveSlowFields,liveSlowFlights,updateSlowObjects} from './slow-events.mjs';
 import {barrierEvent,liveBarriers,updateBarriers} from './barriers.mjs';
 import {FEATURES,skillEvent,expireSmokeFlights} from './skill-events.mjs';
@@ -97,10 +98,11 @@ export class GameRoom {
   if(await skillEvent(this,ws,p,m,now))return;
   if(m.type==='chat'&&now-p.lastChat>=500){p.lastChat=now;this.save(ws,p);this.broadcast({type:'event',event:{type:'chat',senderUid:p.uid,senderName:p.name,senderTeam:p.team,text:cleanText(m.text,240)}});return;}
   if(m.type==='shot'&&p.hp>0&&p.active){
-   const w=WEAPONS[p.weapon];if(!w||now-p.lastShot<w.interval*.8)return;
+   const w=WEAPONS[p.weapon];if(!w)return;
+   if(m.volley){if(!acceptBladeVolley(p,m,now))return;}else if(now-p.lastShot<w.interval*.8)return;
    if(!['sx','sy','sz','ex','ey','ez'].every(k=>finite(m[k])))return;
    if(Math.hypot(m.sx-p.x,m.sy-p.y,m.sz-p.z)>6)return;
-   p.lastShot=now;p.shotUsed=false;p.shotEnd={x:m.ex,y:m.ey,z:m.ez};this.save(ws,p);
+   p.lastShot=now;p.shotUsed=false;p.shotWeapon=p.weapon;p.shotEnd={x:m.ex,y:m.ey,z:m.ez};this.save(ws,p);
    this.broadcast({type:'event',event:{type:'shot',senderUid:p.uid,weapon:p.weapon,sx:m.sx,sy:m.sy,sz:m.sz,ex:m.ex,ey:m.ey,ez:m.ez,color:0xb9f5ff}});return;
   }
   if(m.type==='hit'&&p.hp>0&&p.active){
@@ -108,9 +110,9 @@ export class GameRoom {
    if(v.hp<=0||v.team===p.team||!v.active)return;
    const melee=p.weapon==='melee';if(melee){if(Math.hypot(p.x-v.x,p.y-v.y,p.z-v.z)>4.5||now-p.lastShot<420)return;p.lastShot=now;}
    else{if(p.shotUsed||now-p.lastShot>400||!p.shotEnd||Math.hypot(p.shotEnd.x-v.x,p.shotEnd.y-(v.y-1),p.shotEnd.z-v.z)>3.5)return;p.shotUsed=true;}
-   const w=WEAPONS[p.weapon],damage=m.isHead===true?w.head:w.body;Object.assign(v,applyDamage(v,damage));v.lastDamage=now;
+   const hitWeapon=melee?p.weapon:(p.shotWeapon||p.weapon),w=WEAPONS[hitWeapon],damage=m.isHead===true?w.head:w.body;Object.assign(v,applyDamage(v,damage));v.lastDamage=now;
    this.send(victim,{type:'damage',hp:v.hp,shield:v.shield,attacker:p.name});
-   if(v.hp===0){v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:p.weapon.toUpperCase(),isHead:!!m.isHead}});}
+   if(v.hp===0){v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:hitWeapon.toUpperCase(),isHead:!!m.isHead}});}
    this.save(ws,p);this.save(victim,v);if(v.hp===0){await this.rounds.elimination();await this.ctx.storage.setAlarm(now+250);}this.snapshot();return;
   }
 

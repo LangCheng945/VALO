@@ -688,6 +688,8 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=motion1';
+        import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
+        import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=avatars1';
         import {SpectatorView} from './spectator-view.js?v=spectate1';
         import {spectatorCandidates} from './spectator-rules.mjs';
@@ -1109,7 +1111,7 @@
             qCharges: 1, eCharges: 1, xCharges: 1, dashReadyUntil: 0, dashArmedAt: 0,
             qCooldown: 0,
             eCooldown: 0,
-            bladeStormActive: false,
+            bladeStormActive: false,bladeKnives:0,weaponAmmo:{},
             spikePlanted: false,
             spikeTimer: SPIKE_RULES.fuseSeconds,
             defuseCheckpoint: 0,
@@ -1494,19 +1496,8 @@
 
             // 1. BLADE STORM ULTIMATE (5 Floating Glowing Kunai Daggers around screen)
             if (wpnKey === 'bladestorm') {
-                bladeStormGroup = new THREE.Group();
-                for (let i = 0; i < state.mag; i++) {
-                    const angle = (i / Math.max(1, state.mag)) * Math.PI - Math.PI / 2;
-                    const dagger = new THREE.Group();
-                    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.28, 4), glowMat);
-                    blade.rotation.x = -Math.PI / 2;
-                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.025, 0.006, 6, 12), darkMetal);
-                    ring.position.z = 0.16;
-                    dagger.add(blade, ring);
-                    dagger.position.set(Math.sin(angle) * 0.38, -0.12 + Math.cos(angle) * 0.08, -0.55);
-                    bladeStormGroup.add(dagger);
-                }
-                gunGroup.add(bladeStormGroup);
+                bladeStormGroup=makeBladeStorm(state.bladeKnives);gunGroup.add(bladeStormGroup);
+                for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
                 return;
             }
 
@@ -1909,13 +1900,13 @@
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
             yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent!=='jett'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent!=='jett'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
-            equipWeaponSlot(state.primaryWeaponKey);updateHealthHUD();pushMyNetworkState(true);
+            equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0)ensureOwnCorpse();continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2114,7 +2105,7 @@
                     applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
-                damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();showCenterBanner('遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
+                damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner('遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
@@ -2125,7 +2116,7 @@
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
             roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0,shield:state.shield});
         }
-        function broadcastRoomEvent(payload){if(payload.type==='shot')pushMyNetworkState(true);roomSocket?.send(payload);}
+        function broadcastRoomEvent(payload){if(payload.type==='shot'){if(bladeVolleyContext&&payload.weapon==='bladestorm')payload.volley={id:bladeVolleyContext.id,count:bladeVolleyContext.count,index:bladeVolleyContext.index};pushMyNetworkState(true);}roomSocket?.send(payload);}
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
@@ -2153,6 +2144,7 @@
                 addKillfeedItem(ev.killerName, ev.victimName, ev.weaponName, ev.isHead);
                 if (ev.killerUid === currentUser.uid) {
                     state.roundKills++;
+                    if(ev.weaponName==='BLADESTORM')awardBladeKill();
             if(state.agent==='jett'&&state.roundKills%2===0)state.eCharges=1;
                     state.creds = Math.min(9000, state.creds + 300);
                     sfx.playHeadshotKill(state.roundKills);
@@ -2351,6 +2343,23 @@
         const raycaster = new THREE.Raycaster();
         let isMouseDown = false;
 
+        let bladeVolleyContext=null,bladeEmptyTimer=null;
+        function refreshBladeKnives(){
+            if(state.weaponKey==='bladestorm'){state.mag=state.bladeKnives;if(bladeStormGroup){gunGroup.remove(bladeStormGroup);disposeViewmodel(bladeStormGroup);}bladeStormGroup=makeBladeStorm(state.bladeKnives);gunGroup.add(bladeStormGroup);updateAmmoHUD();}
+            updateAbilityHUD();
+        }
+        function awardBladeKill(){if(state.agent!=='jett'||!state.bladeStormActive)return;state.bladeKnives=bladeRefill(state.bladeKnives);clearTimeout(bladeEmptyTimer);refreshBladeKnives();}
+        function returnFromEmptyBlades(){
+            if(state.weaponKey!=='bladestorm'||state.bladeKnives>0)return;clearTimeout(bladeEmptyTimer);
+            bladeEmptyTimer=setTimeout(()=>{bladeEmptyTimer=null;if(state.hp>0&&state.weaponKey==='bladestorm'&&state.bladeKnives<=0)equipWeaponSlot(state.primaryWeaponKey);},250);
+        }
+        function fireBladeVolley(){
+            if(state.weaponKey!=='bladestorm'||state.inBuyMenu||!state.isLocked||state.hp<=0||state.roundEnding||state.isReloading||state.bladeKnives<=0||performance.now()-state.lastShotTime<WEAPONS.bladestorm.fireRate)return;
+            if(currentRoomId&&!roomSocket?.serverFeatures?.includes('blade-volley')){abilityNotice('連線後端尚待更新飛刀散射，請稍候重新加入房間');return;}
+            if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
+            const count=state.bladeKnives,offsets=bladeFan(count),id=crypto.randomUUID();state.bladeKnives=0;state.mag=0;
+            try{for(let i=0;i<count;i++){bladeVolleyContext={id,count,index:i,offset:offsets[i]};fireWeapon();}}finally{bladeVolleyContext=null;refreshBladeKnives();returnFromEmptyBlades();}
+        }
         function fireWeapon() {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
             if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
@@ -2362,9 +2371,10 @@
                 ? (state.isScoped ? wpn.fullAutoFireRate : Math.max(wpn.fullAutoFireRate, wpn.fireRate - state.consecutiveShots * 2))
                 : wpn.fireRate;
             const shotInterval = baseInterval / (state.isScoped ? (wpn.adsRateMultiplier || 1) : 1);
-            if (now - state.lastShotTime < shotInterval) return;
+            const volley=state.weaponKey==='bladestorm'?bladeVolleyContext:null;
+            if (!volley && now - state.lastShotTime < shotInterval) return;
 
-            if (!wpn.isMelee && state.mag <= 0) {
+            if (!volley && !wpn.isMelee && state.mag <= 0) {
                 reloadWeapon();
                 return;
             }
@@ -2375,10 +2385,7 @@
             state.isInspecting = false;
             if (isTraining() && !wpn.isMelee && state.weaponKey !== 'bladestorm') state.training.shots++;
             if (!wpn.isMelee) {
-                state.mag--;
-                if (state.weaponKey === 'bladestorm') {
-                    buildFirstPersonViewmodel();
-                }
+                if(state.weaponKey==='bladestorm'){if(!volley){state.bladeKnives=Math.max(0,state.bladeKnives-1);state.mag=state.bladeKnives;refreshBladeKnives();}}else state.mag--;
             }
             updateAmmoHUD();
             sfx.playGunshot(state.weaponKey);
@@ -2401,8 +2408,8 @@
                 scoped: state.isScoped, recoil: state.recoilAccum
             });
 
-            const spreadX = (Math.random() - 0.5) * totalSpread;
-            const spreadY = (Math.random() - 0.5) * totalSpread + state.recoilAccum * 0.4;
+            const spreadX=volley?volley.offset[0]:(Math.random()-.5)*totalSpread;
+            const spreadY=volley?volley.offset[1]:(Math.random()-.5)*totalSpread+state.recoilAccum*.4;
 
             raycaster.setFromCamera(new THREE.Vector2(spreadX, spreadY), camera);
             raycaster.far = wpn.isMelee ? 4.2 : 200;
@@ -2506,13 +2513,11 @@
             }
 
             // Camera Recoil
-            pitchObject.rotation.x = Math.min(Math.PI / 2.2, pitchObject.rotation.x + wpn.recoilPitch * (moveState.crouch ? 0.85 : 1));
+            if(!volley)pitchObject.rotation.x = Math.min(Math.PI / 2.2, pitchObject.rotation.x + wpn.recoilPitch * (moveState.crouch ? 0.85 : 1));
             state.recoilAccum = Math.min(0.12, state.recoilAccum + wpn.recoilPitch * 0.85);
 
             // If Blade Storm runs out of knives, return to primary weapon
-            if (state.weaponKey === 'bladestorm' && state.mag <= 0) {
-                setTimeout(() => equipWeaponSlot(state.primaryWeaponKey), 250);
-            }
+            if(state.weaponKey==='bladestorm'&&!volley)returnFromEmptyBlades();
         }
 
         function triggerWeaponInspect() {
@@ -2577,12 +2582,7 @@
             if (isTraining()) state.training.kills++;
             state.creds = Math.min(9000, state.creds + 300);
 
-            // Blade Storm Ultimate refills all 5 knives on kill!
-            if (state.weaponKey === 'bladestorm') {
-                state.mag = 5;
-                buildFirstPersonViewmodel();
-                updateAmmoHUD();
-            }
+            if(state.weaponKey==='bladestorm')awardBladeKill();
 
             sfx.playHeadshotKill(state.roundKills);
             showKillEmblem(state.roundKills, isHead);
@@ -2893,12 +2893,12 @@
         function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent!=='jett';
-            const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃'};
+            const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
             if(abilityIconAgent!==state.agent){
                 abilityIconAgent=state.agent;
                 for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
             }
-            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(k==='e'&&sage?state.eCooldown<=0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
+            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
             const chargeSignature=state.agent+state.qCharges;if(abilityChargeSignature!==chargeSignature){abilityChargeSignature=chargeSignature;document.getElementById('skill-q-charges').innerHTML=Array.from({length:sage?2:1},(_,i)=>`<i class="ability-charge ${state.qCharges>i?'ready':''}"></i>`).join('');}
             for(const k of ['c','q','e']) {
                 const el=document.getElementById(`skill-${k}-cd`);
@@ -2907,11 +2907,12 @@
                 el.textContent=cd>0?Math.ceil(cd):'—';
             }
             for(let i=1;i<=2;i++)document.getElementById(`dot-c-${i}`).style.opacity=state.cCharges>=i?'1':'.2';
-            document.getElementById('skill-x-box').style.opacity=state.xCharges>0?'1':'.3';
+            document.getElementById('skill-x-box').style.opacity=state.xCharges>0||state.bladeStormActive&&state.bladeKnives>0?'1':'.3';
         }
         function resetAbilities() {
             cancelSlowEquip();cancelBarrierPlacement();state.slowPendingUntil=0;state.barrierPendingUntil=0;
             state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
+            clearTimeout(bladeEmptyTimer);state.bladeStormActive=false;state.bladeKnives=0;state.weaponAmmo={};
             state.eCharges=1;state.xCharges=1;state.cCooldown=state.qCooldown=state.eCooldown=0;
             state.dashReadyUntil=0;state.dashArmedAt=0;updateAbilityHUD();
         }
@@ -2954,15 +2955,20 @@
             updateAbilityHUD();
         }
         function triggerUltimateX() {
-            if(state.inBuyMenu||state.hp<=0||state.xCharges<=0)return;
+            if(state.inBuyMenu||state.hp<=0)return;
+            if(state.agent==='jett'&&state.bladeStormActive){if(state.bladeKnives>0){if(state.weaponKey!=='bladestorm')equipWeaponSlot('bladestorm');}else abilityNotice('飛刀已用盡');return;}
+            if(state.xCharges<=0)return;
             if(state.agent!=='jett'){const target=reviveTarget();if(!target){abilityNotice('瞄準附近倒地隊友，再按 X');return;}if(currentRoomId){roomSocket.send({type:'revive',targetUid:target.uid});}else{state.xCharges--;beginAbilityCast('orb',.8);startResurrection(target.uid,target.actor);}updateAbilityHUD();return;}
-            state.xCharges--;equipWeaponSlot('bladestorm');sfx.playAbilitySound('updraft');updateAbilityHUD();
+            state.xCharges--;state.bladeStormActive=true;state.bladeKnives=BLADE_CAPACITY;equipWeaponSlot('bladestorm');sfx.playAbilitySound('updraft');updateAbilityHUD();
         }
 
         /********************************************************************
          * 11. WEAPON SWITCHING, SHOP & UI HELPERS
          ********************************************************************/
-        function equipWeaponSlot(slotKey) {
+        function equipWeaponSlot(slotKey,{fresh=false}={}) {
+            if(slotKey==='bladestorm'&&(!state.bladeStormActive||state.bladeKnives<=0))return;
+            clearTimeout(bladeEmptyTimer);
+            if(state.weaponKey!=='bladestorm')state.weaponAmmo[state.weaponKey]={mag:state.mag,reserve:state.reserve};
             cancelSlowEquip();
             cancelBarrierPlacement();abilityCast.cancel();
             state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;
@@ -2974,8 +2980,10 @@
             state.isInspecting = false;
             state.weaponKey = slotKey;
             const wpn = WEAPONS[slotKey];
-            state.mag = wpn.magSize;
-            state.reserve = wpn.reserve;
+            if(fresh)state.weaponAmmo={};
+            const saved=state.inBuyMenu||fresh?null:state.weaponAmmo[slotKey];
+            state.mag=slotKey==='bladestorm'?state.bladeKnives:saved?.mag??wpn.magSize;
+            state.reserve=slotKey==='bladestorm'?0:saved?.reserve??wpn.reserve;
             buildFirstPersonViewmodel();
             weaponDrawElapsed=0;gunGroup.position.set(0,0,VIEWMODEL_REST_Z);gunGroup.rotation.set(0,0,0);
             updateViewmodelAnimations(0,false);
@@ -3260,7 +3268,7 @@
             document.getElementById('dot-c-1').className = 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]';
             document.getElementById('dot-c-2').className = 'w-1.5 h-1.5 rotate-45 bg-[#00F5D4]';
 
-            equipWeaponSlot(state.primaryWeaponKey);
+            equipWeaponSlot(state.primaryWeaponKey,{fresh:true});
 
             temporaryWalls.forEach(w => {
                 disposeEffect(w);
@@ -3401,11 +3409,7 @@
                 fireWeapon();
             } else if (e.button === 2) {
                 if (state.weaponKey === 'bladestorm') {
-                    // Right-click bursts remaining knives rapidly
-                    const burstCount = state.mag;
-                    for (let i = 0; i < burstCount; i++) {
-                        setTimeout(() => fireWeapon(), i * 55);
-                    }
+                    fireBladeVolley();
                 } else {
                     const levels = WEAPONS[state.weaponKey].zoomLevels || [];
                     const nextLevel = (state.scopeLevel + 1) % (levels.length + 1);
@@ -3723,11 +3727,7 @@
             }
 
             // Floating Blade Storm Daggers hover animation
-            if (bladeStormGroup) {
-                bladeStormGroup.children.forEach((d, idx) => {
-                    d.position.y += Math.sin(performance.now() * 0.005 + idx) * 0.0005;
-                });
-            }
+            updateBladeStorm(bladeStormGroup,performance.now()/1000);
         }
 
         function updateBotsAndVFX(dt) {
@@ -3864,7 +3864,7 @@
                 updateAliveHUD();
                 pushMyNetworkState(true);
 
-                ensureOwnCorpse();resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();
+                ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();
             }
         }
 

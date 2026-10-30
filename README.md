@@ -318,3 +318,13 @@ Sage 預設噴漆換為 All Good（冰牆前比讚），Jett 換為 Love > Hate�
 本版使用既有位置、pitch、武器和射擊事件，無需變更連線後端。觀戰是客戶端平滑重建，尚未同步精確彈量、換彈進度、開鏡倍率及完整技能手部動畫，也不是官方完整觀戰系統；不顯示虛構的隊友彈量或技能次數。
 
 驗證：`node tests/test_agent_assets.cjs`、`node --test tests/test_spectator_rules.mjs`、`node tests/test_avatars_spectator_browser.cjs`，涵蓋素材完整性、角色與骨架、動畫、shader、保留命中盒、敵我限制、切換、失效目標及還原。`tests/test_multiplayer_browser.cjs` 驗證兩個真實客戶端射擊、重生與重連；`tests/test_resurrection_multiplayer.cjs` 以三個真實客戶端確認陣亡後觀戰存活 Sage、Sage X 復活後退出觀戰，以及團滅換回合。
+
+## Jett 暴風刃：獨立飛刀池與右鍵散射
+
+X 首次啟動給 5 把飛刀，外型改成本專案製作的銀色稜面苦無、青色刀脊、深色握柄與開孔尾環。1／2／3 可切回主武器、手槍與近戰，再按 X 回到剩餘飛刀，不重複消耗大招或重補刀數；槍枝彈量也在切換時保存，重生／新回合補滿。單發消耗 1 把，右鍵在同一個操作中射出所有剩餘飛刀，以獨立扇形射線判斷掩體與命中，不用計時器連發。飛刀擊殺補 3 把，上限 5 把，包含右鍵擊殺；一般槍械擊殺不補刀。耗盡後短暫延遲切回主武器，確認的延遲擊殺仍可補回飛刀並以 X 切回，且不覆寫正在使用的槍枝彈量。死亡／回合重置清空啟動狀態與飛刀池。
+
+發射與補刀只重建小型飛刀網格，不再重建整套手指／前臂。懸浮以固定位置加上週期偏移計算，避免逐幀累加造成漂移。
+
+連線右鍵散射需後端 `blade-volley` 功能：shot 附同一 volley id、count 與依序 index；Worker 僅對 Blade Storm 接受 1–5 把、500 ms 內依序發出的同一批，重送／跳號／一般槍械套用均拒絕。每把仍需各自配對的有效 shot／hit，傷害與擊殺由伺服器計算；shot 記錄原武器，避免切槍後錯誤歸屬擊殺。此功能沿用現有客戶端命中回報架構，未新增完整伺服器飛刀彈量與地圖物理。舊後端不會消耗右鍵飛刀，而是在底部提示等待更新後重新入房；單發與切槍仍可使用。
+
+驗證：`node --test tests/test_blade_storm_rules.mjs`、`node tests/test_blade_storm_browser.cjs`、`npm test --prefix multiplayer`，另以 `tests/test_multiplayer_browser.cjs` 讓兩個真實瀏覽器右鍵散射、在持槍時收到擊殺確認並補回 3 把，再按 X 切回；包含一般射擊、重生、重連的回歸檢查。

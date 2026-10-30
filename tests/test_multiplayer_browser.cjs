@@ -10,7 +10,7 @@ const {promisify}=require('util'),run=promisify(require('child_process').execFil
    let source=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
    // Keep actual map geometry, collision, raycasts, and game callbacks; omit GPU drawing in CI.
    source=source.replace(/renderer\.render\(scene,\s*camera\);/g,'');
-   const hooks=`window.__net={state,map:realMap,client:()=>roomSocket,players:remotePlayers,position:yawObject.position,push:pushMyNetworkState,fire:()=>{scene.updateMatrixWorld(true);camera.updateWorldMatrix(true,false);fireWeapon()},pose:(x,y,z)=>{yawObject.position.set(x,y,z);yawObject.rotation.y=0;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);pushMyNetworkState(true)},activate:()=>{state.isLocked=true;state.inBuyMenu=false;document.getElementById('buy-menu-modal').classList.add('hidden');pushMyNetworkState(true)}};`;
+   const hooks=`window.__net={state,map:realMap,x:triggerUltimateX,fan:fireBladeVolley,equip:equipWeaponSlot,client:()=>roomSocket,players:remotePlayers,position:yawObject.position,push:pushMyNetworkState,fire:()=>{scene.updateMatrixWorld(true);camera.updateWorldMatrix(true,false);fireWeapon()},pose:(x,y,z)=>{yawObject.position.set(x,y,z);yawObject.rotation.y=0;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);pushMyNetworkState(true)},activate:()=>{state.isLocked=true;state.inBuyMenu=false;document.getElementById('buy-menu-modal').classList.add('hidden');pushMyNetworkState(true)}};`;
    source=source.replace('    </script>\n</body>',hooks+'\n    </script>\n</body>');return route.fulfill({body:source,contentType:'text/html'});
   });
   await page.goto('http://127.0.0.1:8000/index.html');await page.waitForFunction(()=>window.__net?.map.ready,null,{timeout:150000});
@@ -26,6 +26,11 @@ const {promisify}=require('util'),run=promisify(require('child_process').execFil
  await a.evaluate(()=>{__net.activate();__net.pose(.6667,4.8667,-.8)});await b.evaluate(()=>{__net.activate();__net.pose(.6667,4.8667,-2.8)});await a.waitForTimeout(350);
  for(let i=0;i<4;i++){await a.evaluate(()=>__net.fire());await a.waitForTimeout(180);if(await b.evaluate(()=>__net.state.hp===0))break;}
  await b.waitForFunction(()=>__net.state.hp<100,null,{timeout:7000});console.log('PASS actual fireWeapon raycast delivers damage to the second browser',await b.evaluate(()=>({hp:__net.state.hp,shield:__net.state.shield})));
+ await b.waitForFunction(()=>__net.state.hp===100,null,{timeout:8000});
+ await a.evaluate(()=>{__net.activate();__net.pose(.6667,4.8667,-.8);__net.x()});await b.evaluate(()=>{__net.activate();__net.pose(.6667,4.8667,-2.8)});
+ await b.waitForFunction(()=>[...__net.players.values()][0].data.weapon==='bladestorm');await a.waitForTimeout(200);
+ const savedMag=await a.evaluate(()=>{const saved=__net.state.weaponAmmo.vandal.mag;__net.fan();__net.equip('vandal');return saved});
+ await b.waitForFunction(()=>__net.state.hp===0,null,{timeout:5000});await a.waitForFunction(()=>__net.state.bladeKnives===3);assert.equal(await a.evaluate(()=>__net.state.mag),savedMag);await a.evaluate(()=>__net.x());assert.equal(await a.evaluate(()=>__net.state.mag),3);console.log('PASS right-click fan across two real browsers, delayed confirmed kill adds three while gun is selected, X restores knives');
  await b.waitForFunction(()=>__net.state.hp===100,null,{timeout:8000});
  await a.evaluate(()=>{__net.activate();__net.pose(.6667,4.8667,-2.8)});await b.evaluate(()=>{__net.activate();__net.pose(.6667,4.8667,-.8)});await b.waitForTimeout(350);
  for(let i=0;i<4;i++){await b.evaluate(()=>__net.fire());await b.waitForTimeout(180);if(await a.evaluate(()=>__net.state.hp===0))break;}
