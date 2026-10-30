@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import{savedGameDuration,GAME_DURATIONS,SPIKE_RULES}from '../game-rules.mjs';
+import{savedGameDuration,GAME_DURATIONS,SPIKE_RULES,withinSpikeBlast}from '../game-rules.mjs';
 assert.equal(savedGameDuration(),300);
 assert.equal(savedGameDuration({duration:60}),300);
 assert.equal(savedGameDuration({duration:0}),0);
@@ -9,3 +9,12 @@ assert.equal(savedGameDuration({durationVersion:2,duration:-1}),300);
 assert(GAME_DURATIONS.includes(600)&&GAME_DURATIONS.includes(0));
 assert.equal(SPIKE_RULES.checkpointSeconds,SPIKE_RULES.defuseSeconds/2);
 console.log('PASS five-minute default/migration, saved selections, unlimited mode and defuse checkpoint rules');
+
+const origin={x:0,y:0,z:0},r=SPIKE_RULES.blastRadius;
+assert.equal(withinSpikeBlast(origin,{x:0,y:1.1,z:0}),true);
+assert.equal(withinSpikeBlast(origin,{x:r-.01,y:0,z:0}),true);
+assert.equal(withinSpikeBlast(origin,{x:r,y:0,z:0}),false);
+assert.equal(withinSpikeBlast(origin,{x:0,y:r+.01,z:0}),false);
+assert.equal(withinSpikeBlast(origin,{x:NaN,y:0,z:0}),false);
+assert.equal(withinSpikeBlast(origin,null),false);
+console.log('PASS spherical blast radius, safe boundary, elevation and invalid coordinates');

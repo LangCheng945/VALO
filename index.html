@@ -706,8 +706,9 @@
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
+        import {SpikeExplosion} from './spike-explosion.js?v=blast1';
         import {SpikeModel} from './spike-model.js?v=spike1';
-        import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
+        import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration,withinSpikeBlast} from './game-rules.mjs?v=blast1';
         import {FootstepTracker} from './movement-audio.mjs';
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
         import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
@@ -846,6 +847,14 @@
                 gain.connect(this.ctx.destination);
                 osc.start(now);
                 osc.stop(now + 0.28);
+            }
+
+            playSpikeExplosion(volume=.5) {
+                this.init();if(!this.ctx)return;
+                const now=this.ctx.currentTime,ctx=this.ctx;
+                if(!this.spikeNoise){const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*1.5),ctx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);this.spikeNoise=buffer;}
+                const noise=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();noise.buffer=this.spikeNoise;filter.type='lowpass';filter.frequency.setValueAtTime(1100,now);filter.frequency.exponentialRampToValueAtTime(60,now+1.4);gain.gain.setValueAtTime(volume,now);gain.gain.exponentialRampToValueAtTime(.001,now+1.5);noise.connect(filter);filter.connect(gain);gain.connect(ctx.destination);noise.start(now);noise.stop(now+1.5);
+                const bass=ctx.createOscillator(),bassGain=ctx.createGain();bass.frequency.setValueAtTime(90,now);bass.frequency.exponentialRampToValueAtTime(22,now+1);bassGain.gain.setValueAtTime(volume*.6,now);bassGain.gain.exponentialRampToValueAtTime(.001,now+1.3);bass.connect(bassGain);bassGain.connect(ctx.destination);bass.start(now);bass.stop(now+1.3);
             }
 
             playSpikeBeep(highPitch = false) {
@@ -1115,7 +1124,7 @@
             qCooldown: 0,
             eCooldown: 0,
             bladeStormActive: false,bladeKnives:0,weaponAmmo:{},
-            spikePlanted: false,
+            spikePlanted: false,spikeDetonated:false,spikeTickAt:0,
             spikeTimer: SPIKE_RULES.fuseSeconds,
             defuseCheckpoint: 0,
             spikeAction: null,
@@ -1468,6 +1477,7 @@
 
         const plantedSpike=new SpikeModel();
         const spikeGroup=plantedSpike.root;spikeGroup.scale.setScalar(.7);spikeGroup.visible=false;scene.add(spikeGroup);
+        const spikeExplosion=new SpikeExplosion({radius:SPIKE_RULES.blastRadius,duration:SPIKE_RULES.blastVisualSeconds});scene.add(spikeExplosion.root);
         const carriedSpike=new SpikeModel();
         const spikeCarryRoot=new THREE.Group();spikeCarryRoot.name='carried-spike';
         spikeCarryRoot.position.set(.22,-.36,-.72);spikeCarryRoot.rotation.set(.12,-.45,.05);
@@ -1700,7 +1710,7 @@
             const c=reviveTarget();document.getElementById('revive-hint').textContent=c?'[X] 復活 '+(c.actor?.name||c.actor?.data?.name||'隊友'):'';
         }
         function checkSoloElimination(){
-            if(currentRoomId||state.gameMode!=='tactical'||state.roundEnding)return;
+            if(currentRoomId||state.gameMode!=='tactical'||state.roundEnding||state.spikeDetonated)return;
             const allies=state.hp>0||bots.some(b=>b.alive&&b.team===state.team)||resurrections.size>0;
             const enemies=bots.some(b=>b.alive&&b.team!==state.team);
             if(!enemies){if(state.spikePlanted&&state.team==='defend')return;endRound(true,state.roundKills>=5?'ACE':'敵方已全數倒地');}
@@ -2570,7 +2580,7 @@
             hm.timer = setTimeout(() => hm.classList.add('hidden'), 140);
         }
 
-        function handleBotKilled(bot, isHead,creditPlayer=true,killerName=state.playerName) {
+        function handleBotKilled(bot, isHead,creditPlayer=true,killerName=state.playerName,causeWeapon='VANDAL') {
             bot.alive = false;
             bot.dyingTimer = .65;bot.hp=0;bot.hpBg.visible=bot.hpFill.visible=false;markCorpse('bot:'+bot.index,bot.group.position,bot.team,bot);
             if(creditPlayer){
@@ -2585,7 +2595,7 @@
             sfx.playHeadshotKill(state.roundKills);
             showKillEmblem(state.roundKills, isHead);
             }
-            addKillfeedItem(killerName, bot.name,creditPlayer?WEAPONS[state.weaponKey].name:'VANDAL', isHead);
+            addKillfeedItem(killerName, bot.name,creditPlayer?WEAPONS[state.weaponKey].name:causeWeapon, isHead);
             updateAliveHUD();
             updateShopUI();
             pushMyNetworkState(true);
@@ -3258,7 +3268,7 @@
             document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight';
             state.roundKills = 0;
             resetAbilities();state.healRemaining=0;
-            state.spikePlanted = false;
+            state.spikePlanted = false;state.spikeDetonated=false;state.spikeTickAt=0;spikeExplosion.reset();
             state.spikeTimer = SPIKE_RULES.fuseSeconds;state.defuseCheckpoint=0;state.spikeAction=null;state.holdingSpike=false;state.beepAccumulator=0;
             state.plantingProgress = 0;
             spikeGroup.visible = false;
@@ -3886,11 +3896,15 @@
             });
 
             if(currentRoomId){renderRoomRound();document.getElementById('site-prompt').classList.add('hidden');return;}
-            if (!state.isLocked || state.roundEnding || isTraining()) return;
+            if(state.roundEnding||isTraining())return;
+            if(!state.isLocked||state.inBuyMenu){cancelSpikeAction();if(state.spikePlanted)advanceSpikeFuse(dt);return;}
 
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
             const canPlant = state.hp>0 && getPlantSite()!==null && !state.spikePlanted && state.team==='attack' && canJump && !moving;
             const canDefuse = state.hp>0 && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
+            // A defuse finishing after the charge expires cannot cancel the explosion.
+            const defuseLeft=SPIKE_RULES.defuseSeconds*(1-(state.spikeAction==='defuse'?state.plantingProgress:state.defuseCheckpoint));
+            if(state.spikePlanted&&spikeFuseElapsed(dt)>=state.spikeTimer&&!(canDefuse&&moveState.holdPlant&&defuseLeft<=dt&&defuseLeft<state.spikeTimer)){advanceSpikeFuse(dt);return;}
             document.getElementById('site-prompt').classList.toggle('hidden', !(canPlant || canDefuse));
             document.getElementById('site-prompt').textContent=canDefuse?'按住 [4] 或 [F] 拆除 Spike · 7 秒 · 半程保存':'按住 [4] 或 [F] 安裝 Spike · 4 秒';
 
@@ -3905,10 +3919,10 @@
                 if(state.plantingProgress>=1){
                     cancelSpikeAction();
                     if(canPlant){
-                        state.spikePlanted=true;state.holdingSpike=false;state.spikeSite=getPlantSite();state.spikeTimer=SPIKE_RULES.fuseSeconds;state.beepAccumulator=0;
+                        state.spikePlanted=true;state.holdingSpike=false;state.spikeSite=getPlantSite();state.spikeTimer=SPIKE_RULES.fuseSeconds;state.spikeTickAt=performance.now();state.spikeDetonated=false;state.beepAccumulator=0;
                         spikeGroup.position.set(yawObject.position.x,getGroundHeight(yawObject.position),yawObject.position.z);spikeGroup.rotation.y=yawObject.rotation.y;spikeGroup.visible=true;
                         document.getElementById('spike-hud-badge').classList.remove('hidden');sfx.playSpikeBeep(true);
-                        abilityNotice('Spike 已安裝 · '+state.spikeSite+' 據點');
+                        abilityNotice('Spike 已安裝 · '+state.spikeSite+' 據點');setHudText('round-timer','0:45');return;
                     }else{
                         state.spikePlanted=false;spikeGroup.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
                         endRound(state.team==='defend',`${state.playerName} 成功拆除 SPIKE`);return;
@@ -3917,12 +3931,7 @@
             }else cancelSpikeAction();
 
             if(state.spikePlanted){
-                state.spikeTimer=Math.max(0,state.spikeTimer-dt);state.beepAccumulator+=dt;
-                const beepInterval=state.spikeTimer<10?.22:state.spikeTimer<20?.48:.95;
-                if(state.beepAccumulator>=beepInterval){state.beepAccumulator=0;sfx.playSpikeBeep(state.spikeTimer<10);}
-                document.getElementById('round-timer').textContent='0:'+String(Math.ceil(state.spikeTimer)).padStart(2,'0');
-                document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-[#FF4655] tracking-wider leading-tight animate-pulse';
-                if(state.spikeTimer<=0)endRound(state.team==='attack','SPIKE DETONATED // 輻能核心引爆');
+                advanceSpikeFuse(dt);
             }else{
                 if(state.trainingDuration>0)state.roundTimeLeft=Math.max(0,state.roundTimeLeft-dt);
                 const sec=Math.ceil(state.roundTimeLeft);
@@ -3932,11 +3941,36 @@
             }
         }
 
+        function spikeFuseElapsed(dt,now=performance.now()){return Math.max(0,dt,state.spikeTickAt?(now-state.spikeTickAt)/1000:0);}
+        function advanceSpikeFuse(dt){
+            if(!state.spikePlanted||state.spikeDetonated||state.roundEnding)return;
+            const now=performance.now(),elapsed=spikeFuseElapsed(dt,now);state.spikeTickAt=now;
+            state.spikeTimer=Math.max(0,state.spikeTimer-elapsed);state.beepAccumulator+=elapsed;
+            const interval=state.spikeTimer<10?.22:state.spikeTimer<20?.48:.95;
+            if(state.spikeTimer>0&&state.beepAccumulator>=interval){state.beepAccumulator=0;sfx.playSpikeBeep(state.spikeTimer<10);}
+            setHudText('round-timer','0:'+String(Math.ceil(state.spikeTimer)).padStart(2,'0'));
+            document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-[#FF4655] tracking-wider leading-tight animate-pulse';
+            if(state.spikeTimer<=0)detonateSpike();
+        }
+        function detonateSpike(){
+            if(currentRoomId||!state.spikePlanted||state.spikeDetonated||state.roundEnding)return;
+            state.spikeDetonated=true;state.spikePlanted=false;state.spikeTimer=0;state.spikeTickAt=0;cancelSpikeAction();state.holdingSpike=false;
+            spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');document.getElementById('site-prompt').classList.add('hidden');
+            const origin=spikeGroup.position.clone();spikeExplosion.start(origin);
+            const distance=yawObject.position.distanceTo(origin);sfx.playSpikeExplosion(.18+.35*Math.max(0,1-distance/(SPIKE_RULES.blastRadius*2)));
+            for(const r of resurrections.values())disposeCombatEffect(r.effect);resurrections.clear();
+            for(const bot of bots){const center=bot.group.position.clone();center.y+=1.1;if(bot.alive&&withinSpikeBlast(origin,center))handleBotKilled(bot,false,false,'Spike','SPIKE');}
+            const playerCenter=yawObject.position.clone();playerCenter.y-=1.1;
+            if(state.hp>0&&withinSpikeBlast(origin,playerCenter)){applyDamageToPlayer(SPIKE_RULES.blastDamage,'Spike','SPIKE');addKillfeedItem('Spike',state.playerName,'SPIKE',false);}
+            endRound(state.team==='attack','SPIKE DETONATED // Spike 引爆');
+        }
+
         function cancelSpikeAction(){
             state.spikeAction=null;state.plantingProgress=state.spikePlanted?state.defuseCheckpoint:0;
             document.getElementById('spike-progress-box').classList.add('hidden');
         }
         function updateSpikeVisuals(dt){
+            spikeExplosion.update(dt);
             plantedSpike.update(dt,{deployed:state.spikePlanted,progress:state.spikeAction==='defuse'?state.plantingProgress:state.defuseCheckpoint,remaining:state.spikeTimer});
             carriedSpike.update(dt,{progress:state.spikeAction==='plant'?state.plantingProgress:0});
             spikeCarryRoot.visible=state.isLocked&&!state.inBuyMenu&&!state.roundEnding&&state.hp>0&&!state.spikePlanted&&(state.holdingSpike||state.spikeAction==='plant');
