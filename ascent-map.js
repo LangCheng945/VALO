@@ -1,3 +1,5 @@
+import {MAP_SITES,MAP_SCALE} from './multiplayer/map-sites.mjs';
+export {MAP_SCALE} from './multiplayer/map-sites.mjs';
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
@@ -6,26 +8,26 @@ export const MAPS=Object.freeze({
         spawns:{attack:[.5,-.6,2,.65],defend:[-97.45,-19.95,3,-1.7]},
         training:[[-12,-8,2],[-21,-27.5,2],[-30,-44.8,4],[-47,-53,4],[-58,19,1]],
         tactical:[[-47.1,-53.22,4],[-66,-60,5],[-58.4,19.8,1],[-72,25,1],[-45.8,-12.2,2]],
-        sites:[{name:'A',minX:-79,maxX:-54,minZ:-73,maxZ:-48},{name:'B',minX:-87,maxX:-64,minZ:15,maxZ:39}]},
+        sites:MAP_SITES.ascent},
     haven:{id:'haven',name:'Haven',title:'遺落境地',bytes:11627132,
         spawns:{attack:[-26.43,-17.42,3,1.57],defend:[-127.15,-29.46,3,-1.57]},
         training:[[-45,-24,3],[-57,-33,3],[-69,-62,1],[-80,-1.8,1],[-87,28,2]],
         tactical:[[-92,-64,3],[-90,-16,3],[-90,26,2],[-80,-1.8,1],[-67,-18,1]],
-        sites:[{name:'A',minX:-105,maxX:-79,minZ:-75,maxZ:-52},{name:'B',minX:-105,maxX:-81,minZ:-31,maxZ:-7},{name:'C',minX:-106,maxX:-77,minZ:14,maxZ:38}]},
+        sites:MAP_SITES.haven},
     summit:{id:'summit',name:'Summit',title:'天樞雲闕',bytes:18167644,separateProjectileCollision:true,ropes:true,ropeGuide:{approach:[.8,.8],exit:[0,.8]},
         spawns:{attack:[59,-7.5,2,0],defend:[61.75,-120.75,4,Math.PI]},
         training:[[61.75,-56.75,2],[86.25,-31.75,2],[86.25,-55,1],[32.25,-51.25,2],[18.5,-65,1]],
         tactical:[[116,-76.75,1],[13.75,-85.5,1],[99.25,-76.75,1],[36.75,-90.75,1],[58.25,-75,1]],
-        sites:[{name:'A',minX:104,maxX:128,minZ:-88,maxZ:-67},{name:'B',minX:3,maxX:28,minZ:-98,maxZ:-75}]},
+        sites:MAP_SITES.summit},
     abyss:{id:'abyss',name:'Abyss',title:'深窟幽境',bytes:12382948,ropes:true,ropeGuides:{BP_RopeAscender2_3:{approach:[-.8,0],endLift:.4},BP_RopeAscender4:{approach:[0,-.8],endLift:.4},BP_RopeAscender6:{approach:[0,.8],endLift:.4},BP_RopeAscender5_0:{approach:[0,.8],yLift:.4,endLift:.06}},
         spawns:{attack:[49.5,-9.5,8,Math.PI/2],defend:[-52.75,-9.5,10,-Math.PI/2]},
         training:[[34,-32.5,8],[16.5,-38,8],[10.75,17,9],[40.25,36.5,4],[15.25,44.5,4]],
         tactical:[[-2,-43,8],[-24.5,-28,10],[-11.75,44.25,6],[-25,39.25,10],[-6,3.25,8]],
-        sites:[{name:'A',minX:-16,maxX:9,minZ:-58,maxZ:-33},{name:'B',minX:-24,maxX:0,minZ:34,maxZ:55}]}
+        sites:MAP_SITES.abyss}
 
 
 });
-export const MAP_SCALE=4/3; // Preserve the existing game's 2.2-unit eye height.
+// MAP_SCALE preserves the existing 2.2-unit eye height.
 
 function worldPositions(mesh,target,offset) {
     const geometry=mesh.geometry,position=geometry.attributes.position,index=geometry.index;

@@ -5,7 +5,7 @@ import {MAP_IDS,spawn} from './protocol.mjs';
 export class RoundRules {
  constructor(room){this.room=room;}
  get enabled(){return this.room.meta?.mode==='rounds';}
- state(){const m=this.room.meta;if(!this.enabled)return null;return {...m.round,overtime:isOvertime(m.round.scoreAttack,m.round.scoreDefend),winTarget:13,winBy:2,serverNow:Date.now()};}
+ state(){const m=this.room.meta;if(!this.enabled)return null;return {...m.round,overtime:isOvertime(m.round.scoreAttack,m.round.scoreDefend),winTarget:13,winBy:2,spike:this.room.spike?.state()||null,serverNow:Date.now()};}
  async publish(){await this.room.ctx.storage.put('meta',this.room.meta);this.room.broadcast({type:'round',round:this.state()});}
  async activated(){
   if(!this.enabled||this.room.meta.round.phase!=='waiting')return;
@@ -26,7 +26,7 @@ export class RoundRules {
   if(!this.enabled||this.room.meta.round.phase!=='playing')return;
   const now=Date.now(),players=this.room.players().filter(p=>p.inRound);
   const attack=players.filter(p=>p.team==='attack'),defend=players.filter(p=>p.team==='defend');
-  if(!attack.some(p=>p.hp>0||p.reviveAt>now))await this.finish('defend','敵方已全數倒地');
+  if(!attack.some(p=>p.hp>0||p.reviveAt>now)&&this.room.spike?.state()?.phase!=='planted')await this.finish('defend','敵方已全數倒地');
   else if(!defend.some(p=>p.hp>0||p.reviveAt>now))await this.finish('attack','敵方已全數倒地');
  }
  async revive(ws,caster,targetUid){
@@ -57,18 +57,18 @@ export class RoundRules {
    if(room.meta.public&&r.nextAt){if(now>=r.nextAt){await room.resetMatchMap(choosePublicMap(MAP_IDS,room.meta.map),now);return true;}return true;}return false;
   }
   if(r.phase==='playing'){
-   pending=true;if(r.endsAt&&now>=r.endsAt)await this.finish('defend','回合時間結束');
+   pending=true;if(r.endsAt&&now>=r.endsAt&&room.spike?.state()?.phase!=='planted')await this.finish('defend','回合時間結束');
   }else if(r.phase==='ending'){
    pending=true;
    if(now>=r.nextAt){
     r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
-     Object.assign(p,{hp:100,shield:50,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));room.save(ws,p);
+     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));room.save(ws,p);
      room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
     }
     room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
-    await this.publish();
+    room.meta.spike=null;await room.spike?.ensureCarrier();await this.publish();
    }
   }
   return pending;

@@ -1,3 +1,4 @@
+import {RoomSpike} from './spike.mjs';
 import {choosePublicMap} from './match-rules.mjs';
 import {acceptBladeVolley} from './blade-volley.mjs';
 import {slowEvent,liveSlowFields,liveSlowFlights,updateSlowObjects} from './slow-events.mjs';
@@ -38,7 +39,7 @@ export default {
  }
 };
 export class GameRoom {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.rate=new Map();this.meta=null;this.rounds=new RoundRules(this);this.ready=ctx.blockConcurrencyWhile(async()=>{this.meta=await ctx.storage.get('meta')||null;this.sprays=await ctx.storage.get('sprays')||[];this.barriers=await ctx.storage.get('barriers')||[];const slow=await ctx.storage.get('slow');this.slowFields=slow?.fields||[];this.slowFlights=slow?.flights||[];});}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.rate=new Map();this.meta=null;this.rounds=new RoundRules(this);this.spike=new RoomSpike(this);this.ready=ctx.blockConcurrencyWhile(async()=>{this.meta=await ctx.storage.get('meta')||null;this.sprays=await ctx.storage.get('sprays')||[];this.barriers=await ctx.storage.get('barriers')||[];const slow=await ctx.storage.get('slow');this.slowFields=slow?.fields||[];this.slowFlights=slow?.flights||[];});}
  sockets(){return this.ctx.getWebSockets().filter(ws=>ws.readyState===1);}
  data(ws){return ws.deserializeAttachment();}
  save(ws,p){ws.serializeAttachment(p);}
@@ -72,7 +73,7 @@ export class GameRoom {
  async webSocketMessage(ws,raw){
   if(typeof raw!=='string'||raw.length>4096){ws.close(1009,'Packet too large');return;}
   let m;try{m=JSON.parse(raw);}catch{ws.close(1003,'Invalid JSON');return;}
-  const p=this.data(ws),now=Date.now();if(!p)return;
+  const now=Date.now();if(this.meta&&this.rounds.enabled)await this.spike.tick(now);const p=this.data(ws);if(!p)return;
   if(now-p.windowAt>=1000){p.windowAt=now;p.messages=0;}if(++p.messages>90){ws.close(1008,'Rate limit');return;}
   p.lastSeen=now;this.save(ws,p);
   if(!m||typeof m.type!=='string')return;
@@ -86,30 +87,32 @@ export class GameRoom {
     for(const old of this.sockets()){if(old!==ws&&this.data(old)?.uid===p.uid){const previous=this.data(old);previous.mapPending=true;this.save(old,previous);old.close(1000,'Replaced');}}
     if(this.rounds.enabled&&p.roundNumber!==this.meta.round.number)Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round.number},spawn(p.team,this.meta.map));
     if(!this.rounds.enabled&&p.hp===0&&now>=p.respawnAt)Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team,this.meta?.map));
-    if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
+    if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
    }
    const members=this.players(),attack=members.filter(x=>x.team==='attack').length,defend=members.length-attack;
    Object.assign(p,{joined:true,name:cleanText(m.name)||'特務',team:attack<=defend?'attack':'defend',agent:m.agent==='phoenix'?'phoenix':'jett',weapon:isWeapon(m.weapon)&&m.weapon!=='bladestorm'?m.weapon:'vandal',hp:100,shield:50,kills:0,deaths:0,active:false,resumeToken:[...crypto.getRandomValues(new Uint8Array(32))].map(x=>x.toString(16).padStart(2,'0')).join(''),lastShot:0,lastChat:0,lastAbility:0,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round?.number||1,mapEpoch:this.meta.mapEpoch||0},spawn(attack<=defend?'attack':'defend',this.meta?.map));
-   if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});this.snapshot();await this.ctx.storage.setAlarm(now+15000);return;
+   if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
   }
   if(!p.joined||p.leaving)return;
   if(m.type==='match_restart'&&!p.mapPending){if(this.meta.public||this.hostUid()!==p.uid||this.meta.round.phase!=='finished'){this.send(ws,{type:'map_error',reason:'比賽結束後由房主重新開局；公開房會自動換圖'});return;}await this.resetMatchMap(this.meta.map,now);return;}
   if(m.type==='map_change'&&!p.mapPending){await this.changeMap(ws,p,m.map,now);return;}
-  if(m.type==='leave'){if(this.meta.hostUid===p.uid){this.meta.hostUid=null;this.meta.hostUntil=0;}p.leaving=true;this.save(ws,p);ws.close(1000,'Leave');return;}
+  if(m.type==='leave'){if(this.meta.hostUid===p.uid){this.meta.hostUid=null;this.meta.hostUntil=0;}await this.spike.drop(p,now);p.leaving=true;this.save(ws,p);ws.close(1000,'Leave');return;}
   if(p.mapPending)return;
   if(m.type==='ping'){this.send(ws,{type:'pong',at:m.at});return;}
   if(m.type==='state'&&validPose(m)){
-   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&[0,25,50].includes(m.shield))p.shield=m.shield;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
-   this.save(ws,p);await this.rounds.activated();this.queueSnapshot();return;
+   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&[0,25,50].includes(m.shield))p.shield=m.shield;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.spikeEquipped=!!m.holdingSpike&&this.meta.spike?.carrierUid===p.uid;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
+   this.save(ws,p);await this.spike.onState(p,now);await this.rounds.activated();this.queueSnapshot();return;
   }
   if(this.rounds.enabled&&this.meta.round.phase==='finished'&&!['chat','ping'].includes(m.type))return;
-  if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){p.team=m.team;Object.assign(p,spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});this.snapshot();return;}
+  if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){await this.spike.drop(p,now);p.team=m.team;Object.assign(p,spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();return;}
+  if(await this.spike.handle(ws,p,m,now))return;
   if(m.type==='revive'){await this.rounds.revive(ws,p,m.targetUid);return;}
   if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase)&&['shot','hit','heal','smoke_launch'].includes(m.type))return;
   if(await slowEvent(this,ws,p,m,now))return;
   if(await barrierEvent(this,ws,p,m,now))return;
   if(await skillEvent(this,ws,p,m,now))return;
   if(m.type==='chat'&&now-p.lastChat>=500){p.lastChat=now;this.save(ws,p);this.broadcast({type:'event',event:{type:'chat',senderUid:p.uid,senderName:p.name,senderTeam:p.team,text:cleanText(m.text,240)}});return;}
+  if(['shot','hit'].includes(m.type)&&(p.spikeEquipped||this.meta.spike?.action?.uid===p.uid))return;
   if(m.type==='shot'&&p.hp>0&&p.active){
    const w=WEAPONS[p.weapon];if(!w)return;
    if(m.volley){if(!acceptBladeVolley(p,m,now))return;}else if(now-p.lastShot<w.interval*.8)return;
@@ -126,14 +129,14 @@ export class GameRoom {
    const hitWeapon=melee?p.weapon:(p.shotWeapon||p.weapon),w=WEAPONS[hitWeapon],damage=m.isHead===true?w.head:w.body;Object.assign(v,applyDamage(v,damage));v.lastDamage=now;
    this.send(victim,{type:'damage',hp:v.hp,shield:v.shield,attacker:p.name});
    if(v.hp===0){v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:hitWeapon.toUpperCase(),isHead:!!m.isHead}});}
-   this.save(ws,p);this.save(victim,v);if(v.hp===0){await this.rounds.elimination();await this.ctx.storage.setAlarm(now+250);}this.snapshot();return;
+   this.save(ws,p);this.save(victim,v);if(v.hp===0){await this.spike.drop(v,now);await this.rounds.elimination();await this.ctx.storage.setAlarm(now+250);}this.snapshot();return;
   }
 
   this.save(ws,p);
  }
  resetForMap(p){
   if(p.weapon==='bladestorm')p.weapon='vandal';
-  Object.assign(p,{hp:100,shield:50,kills:0,deaths:0,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:this.meta.round.number,mapEpoch:this.meta.mapEpoch||0,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0,lastShot:0,shotUsed:true,shotEnd:null,volley:null},spawn(p.team,this.meta.map));
+  Object.assign(p,{hp:100,shield:50,kills:0,deaths:0,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:this.meta.round.number,mapEpoch:this.meta.mapEpoch||0,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0,lastShot:0,shotUsed:true,shotEnd:null,volley:null},spawn(p.team,this.meta.map));
  }
  async changeMap(ws,p,map,now){
   const fail=reason=>this.send(ws,{type:'map_error',reason});
@@ -148,7 +151,7 @@ export class GameRoom {
  async resetMatchMap(map,now=Date.now()){
   await this.ctx.blockConcurrencyWhile(async()=>{
    this.meta.map=map;this.meta.mapEpoch=(this.meta.mapEpoch||0)+1;this.meta.lastMapChange=now;this.meta.hostUntil=now+180000;this.meta.transferUntil=now+180000;
-   this.meta.round={number:1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0};
+   this.meta.spike=null;this.meta.round={number:1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0};
    this.slowFlights=[];this.slowFields=[];this.sprays=[];this.barriers=[];
    await this.ctx.storage.delete(['slow','sprays','barriers']);
    await this.ctx.storage.put('meta',this.meta);
@@ -162,11 +165,11 @@ export class GameRoom {
   });
   await this.ctx.storage.setAlarm(now+1000);
  }
- async webSocketClose(ws){const p=this.data(ws);if(p?.smokeFlights){for(const[id,f]of Object.entries(p.smokeFlights))this.broadcast({type:'event',event:{type:'smoke',flightId:id,senderUid:p.uid,expiresAt:Date.now()+2500,...f.last}});p.smokeFlights={};}if(p?.joined&&!p.leaving&&p.resumeToken&&!p.mapPending)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:Date.now()+60000});if(p?.uid===this.meta?.hostUid&&!p.leaving&&!this.meta.hostUntil){this.meta.hostUntil=Date.now()+60000;await this.ctx.storage.put('meta',this.meta);}try{ws.close(1000,'Closed');}catch{}if(!p?.mapPending)await this.rounds.elimination();this.snapshot();if(this.sockets().length===0)await this.ctx.storage.setAlarm(Math.max(Date.now()+120000,this.meta?.transferUntil||0));}
+ async webSocketClose(ws){const p=this.data(ws);if(p&&!p.mapPending)await this.spike.drop(p);if(p?.smokeFlights){for(const[id,f]of Object.entries(p.smokeFlights))this.broadcast({type:'event',event:{type:'smoke',flightId:id,senderUid:p.uid,expiresAt:Date.now()+2500,...f.last}});p.smokeFlights={};}if(p?.joined&&!p.leaving&&p.resumeToken&&!p.mapPending)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:Date.now()+60000});if(p?.uid===this.meta?.hostUid&&!p.leaving&&!this.meta.hostUntil){this.meta.hostUntil=Date.now()+60000;await this.ctx.storage.put('meta',this.meta);}try{ws.close(1000,'Closed');}catch{}if(!p?.mapPending)await this.rounds.elimination();this.snapshot();if(this.sockets().length===0)await this.ctx.storage.setAlarm(Math.max(Date.now()+120000,this.meta?.transferUntil||0));}
  async webSocketError(ws){await this.webSocketClose(ws);}
  async alarm(){
   await this.ready;const sockets=this.sockets(),now=Date.now();if(sockets.length===0){if(this.meta?.transferUntil>now){await this.ctx.storage.setAlarm(this.meta.transferUntil);return;}await this.ctx.storage.deleteAll();this.meta=null;return;}
-  let pending=await this.rounds.alarm(now);pending=expireSmokeFlights(this,now)||pending;pending=await updateBarriers(this,now)||pending;pending=await updateSlowObjects(this,now)||pending;
+  let pending=await this.spike.tick(now);pending=await this.rounds.alarm(now)||pending;pending=expireSmokeFlights(this,now)||pending;pending=await updateBarriers(this,now)||pending;pending=await updateSlowObjects(this,now)||pending;
   const stale=await this.ctx.storage.list({prefix:'resume:',limit:1000});for(const [key,value]of stale)if(value.expires<now)await this.ctx.storage.delete(key);
   for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.mapPending)continue;if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal&&now-(p.lastDamage||0)>=2000){const amount=Math.min(p.healRate||3,p.healRemaining,100-p.hp);p.hp+=amount;p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0&&!this.rounds.enabled&&!p.reviveAt){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,lastHeal:0,smokeFlights:{},active:false},spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
   this.snapshot();await this.ctx.storage.setAlarm(now+(pending?250:15000));
