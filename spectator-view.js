@@ -1,5 +1,5 @@
-import {makeKarambit,updateKarambit} from './karambit.js?v=karambit1';
-import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=karambit1';
+import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
+import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=prime2shape1';
 import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;

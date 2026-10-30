@@ -19,5 +19,5 @@ for (const key of ['vandal', 'phantom', 'odin', 'operator', 'classic']) {
     assert.equal(context.weapons[key].skin, 'smite', key);
     assert.equal(context.weapons[key].glowColor, 0xb9f5ff, key);
 }
-assert.equal(context.weapons.melee.skin,'gold-karambit');
-console.log('PASS ODIN capacity, cost, ADS, accelerated fire and reload; firearms share Smite and melee uses gold karambit');
+assert.equal(context.weapons.melee.skin,'prime2-karambit');
+console.log('PASS ODIN capacity, cost, ADS, accelerated fire and reload; firearms share Smite and melee uses Prime//2.0 reference shape');

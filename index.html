@@ -250,7 +250,7 @@
                 </div>
                 <div id="keybind-hints" class="hidden md:flex flex-col bg-[#0F1923]/85 border-l-2 border-[#00F5D4] px-3 py-2 text-[11px] space-y-0.5 shadow-lg">
                     <div class="font-black text-[#00F5D4] tracking-wider" id="hud-mode-label">1v5 擬真戰術攻防</div>
-                    <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 金環爪刀 [Y] 檢視武器</div>
+                    <div class="text-white/80">[1] 主武器 [2] 手槍 [3] 紫金爪刀 [Y] 檢視武器</div>
                     <div class="text-white/80">[Ctrl] 蹲下 [Shift] 靜走 [右鍵] 瞄準／倍率</div>
                     <div class="text-white/80">[C / Q / E / X] 特務技能　[T] 噴漆</div>
                     <div class="text-[#FF4655] font-bold">[4/F] 裝包/拆包 | [B] 商店與連線大廳 | [TAB] 計分板</div>
@@ -664,7 +664,7 @@
                     <button data-category="隨身武器" id="wpn-card-classic" onclick="buyWeapon('classic')" class="val-card  p-4 text-left space-y-3">
                         <div class="flex justify-between gap-2"><strong>神罰手槍 CLASSIC</strong><span class="text-[#00F5D4]">¤ 0</span></div>
                         <svg aria-hidden="true" class="w-36 h-10 text-[#00F5D4] fill-current" viewBox="0 0 130 32"><path d="M4 15h115v3H70l-4 8h-8l2-8H28l-6 8H14l4-8H4v-3zm30-7h38l4 4H30l4-4z"/></svg>
-                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換金環爪刀</div>
+                        <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換紫金爪刀</div>
                     </button>
 </div>
                     <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
@@ -687,13 +687,13 @@
     <script type="module">
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=karambit1';
-        import {makeKarambit,updateKarambit} from './karambit.js?v=karambit1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=prime2shape1';
+        import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=avatars1';
-        import {SpectatorView} from './spectator-view.js?v=karambit1';
+        import {SpectatorView} from './spectator-view.js?v=prime2shape1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -702,7 +702,7 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=karambit1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=prime2shape1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -1010,7 +1010,7 @@
             },
             melee: {
                 id: 'melee',
-                name: '金環爪刀 GOLD KARAMBIT',
+                name: '紫金爪刀 PRIME//2.0 KARAMBIT',
                 cost: 0,
                 headDmg: 150,
                 bodyDmg: 75,
@@ -1046,7 +1046,7 @@
         };
 
         Object.values(WEAPONS).forEach(weapon => {
-            weapon.skin = weapon.id==='melee'?'gold-karambit':SMITE_SKIN.id;
+            weapon.skin = weapon.id==='melee'?'prime2-karambit':SMITE_SKIN.id;
             weapon.color = SMITE_SKIN.accent;
             weapon.glowColor = weapon.id==='melee'?0xe5b448:SMITE_SKIN.energy;
         });
