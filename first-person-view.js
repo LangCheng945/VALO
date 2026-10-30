@@ -1,3 +1,4 @@
+import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
 const T=globalThis.THREE;
@@ -50,18 +51,19 @@ const profiles={
  orb:{right:[.29,-.26,-.68],left:[-.10,-.26,-.68],mag:[0,0,0]},
  bladestorm:{right:[.30,-.30,-.55],left:[-.30,-.30,-.55],mag:[0,0,0]}
 };
+for(const key of Object.keys(FIREARMS))profiles[key] ||= profiles[isSidearm(key)?'classic':FIREARMS[key].category==='sniper'?'operator':FIREARMS[key].category==='heavy'?'odin':'vandal'];
 // Normalized keyframes use eased segments: pauses make removal, insertion and settling legible.
 function track(t,frames){
  for(let i=1;i<frames.length;i++){const a=frames[i-1],b=frames[i];if(t<=b[0]){const f=smooth((t-a[0])/(b[0]-a[0]));return a.slice(1).map((v,j)=>v+(b[j+1]-v)*f);}}
  return frames[frames.length-1].slice(1);
 }
 export function weaponMotion(key,{reload=0,draw=1}={}){
- const heavy=key==='odin',pistol=key==='classic',melee=key==='melee'||key==='bladestorm';
+ const heavy=key==='odin',pistol=isSidearm(key),melee=key==='melee'||key==='bladestorm';
  const [lift,tilt,pitch]=reload>0?track(reload,[[0,0,0,0],[.16,.025,pistol?-.24:.22,-.06],[.30,.035,heavy?.16:.30,-.09],[.65,.035,heavy?.16:.30,-.09],[.78,.018,.16,-.035],[.84,.008,-.035,.025],[.95,0,0,0],[1,0,0,0]]):[0,0,0];
  const [lower,roll,forward]=track(draw,[[0,1,1,1],[.22,.76,.85,.7],[.70,-.035,-.08,0],[1,0,0,0]]);
  return {position:[lower*.065,-lower*(heavy?.40:melee?.34:.30)+lift,forward*.12],rotation:[pitch+lower*.26,lower*-.12,tilt+roll*(melee?-.42:.26)]};
 }
-export function weaponDrawDuration(key){return key==='odin'?.72:key==='operator'?.64:key==='classic'?.40:key==='melee'?KARAMBIT_DRAW_SECONDS:key==='bladestorm'?.44:.52;}
+export function weaponDrawDuration(key){return key==='odin'?.72:key==='operator'?.64:isSidearm(key)?.40:key==='melee'?KARAMBIT_DRAW_SECONDS:key==='bladestorm'?.44:.52;}
 export class FirstPersonHands{
  constructor(agent,key,environment){
   this.key=key;this.profile=profiles[key]||profiles.vandal;this.root=new T.Group();this.root.name='first-person-hands';this.elapsed=0;
@@ -105,6 +107,7 @@ export class FirstPersonHands{
 }
 export function createMagazine(key,material,steel){
  const root=new T.Group();root.name=key+'-detachable-magazine';root.userData.basePosition=new T.Vector3(...(profiles[key]||profiles.vandal).mag);root.position.copy(root.userData.basePosition);
+ if(!['vandal','phantom','classic','operator','odin'].includes(key))return root;
  if(key==='odin')return root; // This weapon's original ammunition box is split from its source mesh.
  let geometry;
  if(key==='vandal'){

@@ -55,3 +55,5 @@
 .shop-abilities svg[data-agent="sage"]{color:#35f4c4}.shop-abilities svg[data-agent="jett"]{color:#7aa7ae}
 
 #spike-progress-box{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);width:280px;padding:10px 15px;background:#0b1a1ccc;z-index:24}#spike-action-label{font-size:10px;letter-spacing:1px}
+
+#shield-card-regen:before{display:none}.shield-selector .regen-shield-icon{width:48px;height:48px;object-fit:contain;display:block;margin:0 auto 5px}.pending-reference{opacity:.55;cursor:not-allowed}

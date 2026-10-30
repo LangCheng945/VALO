@@ -11,4 +11,4 @@ These are Riot Games game assets; the source repository's MIT license does not
 cover Riot assets. This is an unofficial fan project, not endorsed by Riot Games.
 No claim of ownership or a redistribution license is made.
 
-Additional aim-weapons meshes are used only for unavailable shop previews; these do not create playable weapons. The manifest marks them previewOnly.
+All 18 available firearm meshes are now playable. Remaining aim-weapons geometry is unchanged; previewOnly flags were removed. Gunfire samples for these weapons are copied from site/media at the same pinned commit. The default authored Smite presentation remains; these are original static gun shapes, not the original full first-person rigs, textures or animations. Reference ammunition, rate, reload and damage bands are extracted from BiMsX6Xn.js by tools/export-weapon-catalog.py without executing upstream code. Prices and local controls are configuration. BANDIT/WARDEN are not present in this asset source and remain disabled pending verified models and statistics.

@@ -111,8 +111,7 @@
         12.3
       ]
     ],
-    "sha256": "21aa4644dc903de056a96997c60aa02e9302773519307cc716569a7300bd5b55",
-    "previewOnly": true
+    "sha256": "21aa4644dc903de056a96997c60aa02e9302773519307cc716569a7300bd5b55"
   },
   "frenzy": {
     "vertices": 4625,
@@ -131,8 +130,7 @@
         10.5
       ]
     ],
-    "sha256": "d48f9536c23a3e9085adf35e55bde0b2bf543e2dfd8df402d7fb8c28f6f6b563",
-    "previewOnly": true
+    "sha256": "d48f9536c23a3e9085adf35e55bde0b2bf543e2dfd8df402d7fb8c28f6f6b563"
   },
   "ghost": {
     "vertices": 4617,
@@ -151,8 +149,7 @@
         9.9
       ]
     ],
-    "sha256": "00748aa34c3628f93ad11d14b43b9b607305e00cbe2563a4a5a7cdacaec1d52b",
-    "previewOnly": true
+    "sha256": "00748aa34c3628f93ad11d14b43b9b607305e00cbe2563a4a5a7cdacaec1d52b"
   },
   "sheriff": {
     "vertices": 4789,
@@ -171,8 +168,7 @@
         12.3
       ]
     ],
-    "sha256": "fd3fcecfe2ec124dfadcac673e5b7fbdca7e0fcacabc25428461bedd09e3c5b4",
-    "previewOnly": true
+    "sha256": "fd3fcecfe2ec124dfadcac673e5b7fbdca7e0fcacabc25428461bedd09e3c5b4"
   },
   "stinger": {
     "vertices": 5443,
@@ -191,8 +187,7 @@
         15.3
       ]
     ],
-    "sha256": "7138730b2fa34e3abe885d49f396c8d1dfd6a5e67ae5a8b7cdf34134ab66468b",
-    "previewOnly": true
+    "sha256": "7138730b2fa34e3abe885d49f396c8d1dfd6a5e67ae5a8b7cdf34134ab66468b"
   },
   "spectre": {
     "vertices": 6913,
@@ -211,8 +206,7 @@
         17.2
       ]
     ],
-    "sha256": "33a60ee4e04ff8eeaf004fb1e5ca2f52807f0f802a6103a7e90d0600f0af5760",
-    "previewOnly": true
+    "sha256": "33a60ee4e04ff8eeaf004fb1e5ca2f52807f0f802a6103a7e90d0600f0af5760"
   },
   "bucky": {
     "vertices": 6301,
@@ -231,8 +225,7 @@
         13.4
       ]
     ],
-    "sha256": "0843a85fa1fb33515ecad90d794dd419a946fcb399b01ba27ff2cdc94c2441ea",
-    "previewOnly": true
+    "sha256": "0843a85fa1fb33515ecad90d794dd419a946fcb399b01ba27ff2cdc94c2441ea"
   },
   "judge": {
     "vertices": 7518,
@@ -251,8 +244,7 @@
         17.4
       ]
     ],
-    "sha256": "055dcef377459a8b70f8f27c7c2bd1e572831425c47ad9449e402cd95080f939",
-    "previewOnly": true
+    "sha256": "055dcef377459a8b70f8f27c7c2bd1e572831425c47ad9449e402cd95080f939"
   },
   "bulldog": {
     "vertices": 4696,
@@ -271,8 +263,7 @@
         14.9
       ]
     ],
-    "sha256": "98fdd31dce3045b7b64f601b6678aa1c22e225500f8cbcc7275145cb50c01398",
-    "previewOnly": true
+    "sha256": "98fdd31dce3045b7b64f601b6678aa1c22e225500f8cbcc7275145cb50c01398"
   },
   "guardian": {
     "vertices": 5424,
@@ -291,8 +282,7 @@
         17.6
       ]
     ],
-    "sha256": "7a6cd896d85af24df721f807c5f236a32297e612e2c96b611d23573e171f5fb3",
-    "previewOnly": true
+    "sha256": "7a6cd896d85af24df721f807c5f236a32297e612e2c96b611d23573e171f5fb3"
   },
   "marshal": {
     "vertices": 7903,
@@ -311,8 +301,7 @@
         18.7
       ]
     ],
-    "sha256": "ee464b8c5e3154e335b4a168c10d21d0b9881d56e3900ab9cdeaa3e1c7f504c5",
-    "previewOnly": true
+    "sha256": "ee464b8c5e3154e335b4a168c10d21d0b9881d56e3900ab9cdeaa3e1c7f504c5"
   },
   "outlaw": {
     "vertices": 23338,
@@ -331,8 +320,7 @@
         18.1
       ]
     ],
-    "sha256": "3b4b0bde5f6064d4f5027a9b2436b4340ce7d532f9455a1093216de758487f00",
-    "previewOnly": true
+    "sha256": "3b4b0bde5f6064d4f5027a9b2436b4340ce7d532f9455a1093216de758487f00"
   },
   "ares": {
     "vertices": 7174,
@@ -351,7 +339,6 @@
         17.4
       ]
     ],
-    "sha256": "68cb14472693d4fb8a64a6c8932921c3f297f742fbaff3b2f77f291f31f03f18",
-    "previewOnly": true
+    "sha256": "68cb14472693d4fb8a64a6c8932921c3f297f742fbaff3b2f77f291f31f03f18"
   }
 }

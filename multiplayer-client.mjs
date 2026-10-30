@@ -28,6 +28,8 @@ export class RoomClient {
      welcomed=true;this.hadConnection=true;clearTimeout(timeout);this.connected=true;this.attempts=0;this.serverFeatures=Array.isArray(message.features)?message.features:[];this.uid=message.uid;this.resumeToken=message.resumeToken;this.callbacks.welcome?.(message);this.callbacks.status?.('connected');resolve(message);
     }else if(message.type==='players'){this.callbacks.host?.(message.hostUid);this.callbacks.players?.(message.players,message.round);}
     else if(message.type==='map_changed')this.callbacks.mapChanged?.(message);
+    else if(message.type==='armor_result')this.callbacks.armorResult?.(message.player);
+    else if(message.type==='armor_error')this.callbacks.armorError?.(message.reason);
     else if(message.type==='spike_error')this.callbacks.spikeError?.(message.reason);
     else if(message.type==='map_error')this.callbacks.mapError?.(message.reason);
     else if(message.type==='round')this.callbacks.round?.(message.round);

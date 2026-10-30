@@ -1,3 +1,4 @@
+import {equipArmor} from './armor.mjs';
 import {matchWinner,isOvertime,choosePublicMap} from './match-rules.mjs';
 import {MAP_IDS,spawn} from './protocol.mjs';
 
@@ -47,7 +48,7 @@ export class RoundRules {
    const p=room.data(ws);if(!p?.joined||!p.reviveAt)continue;
    if(this.enabled&&room.meta.round.phase!=='playing'){p.reviveAt=0;room.save(ws,p);continue;}
    if(now<p.reviveAt){pending=true;continue;}
-   Object.assign(p,{hp:100,shield:0,active:false,reviveAt:0,respawnAt:0,healRemaining:0});room.save(ws,p);
+   Object.assign(p,{hp:100,shield:0,shieldReserve:0,regenReadyAt:0,regenTickAt:0,active:false,reviveAt:0,respawnAt:0,healRemaining:0});room.save(ws,p);
    room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
    room.broadcast({type:'event',event:{type:'revive',phase:'complete',targetUid:p.uid}});
   }
@@ -64,7 +65,7 @@ export class RoundRules {
     r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
-     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));room.save(ws,p);
+     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
      room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
     }
     room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');

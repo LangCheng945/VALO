@@ -1,0 +1,98 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "files": {
+    "spectre.ogg": {
+      "sourceFile": "site/media/spectre.CC369F-w.ogg",
+      "bytes": 8659,
+      "sha256": "5c117822ad27572b2f173259be4bc237d57998d5f60d730ba14f5c3b98ef5159"
+    },
+    "bucky.ogg": {
+      "sourceFile": "site/media/bucky.BwpOH9ii.ogg",
+      "bytes": 11809,
+      "sha256": "c42c36b3fd3fa1a46b28b05b85f99e5d0d89af243f1ee8967846fbe9a3caf629"
+    },
+    "classic.ogg": {
+      "sourceFile": "site/media/classic.C0xdLy3g.ogg",
+      "bytes": 8296,
+      "sha256": "c5590092fc06432a26c0a0e4d3726bbc216c1a4226995032909b2e11775eee98"
+    },
+    "frenzy.ogg": {
+      "sourceFile": "site/media/frenzy.CPCCotj4.ogg",
+      "bytes": 8701,
+      "sha256": "9b0a87dda48c1452698af3b022d8c19b655d6d0e319adda0533a6d82d52e9fde"
+    },
+    "stinger.ogg": {
+      "sourceFile": "site/media/stinger.9Uplg-EB.ogg",
+      "bytes": 8220,
+      "sha256": "c5b0b674f984afdd82e390c66e015312cb08f20ddfbc7f54ef49b790ea50229b"
+    },
+    "phantom.ogg": {
+      "sourceFile": "site/media/phantom.DuBbxa-f.ogg",
+      "bytes": 9148,
+      "sha256": "77c834622bd7bdf0fdb77bfdeb72a4424920304f4babd0b51f78ab6400ebdd34"
+    },
+    "sheriff.ogg": {
+      "sourceFile": "site/media/sheriff.d3cDEaxR.ogg",
+      "bytes": 10473,
+      "sha256": "d25d1fc13a1c17b6d4fd84ad4c33c8dc6c085830242132620367eb9f3eeb42e4"
+    },
+    "vandal.ogg": {
+      "sourceFile": "site/media/vandal.rgT5EY0P.ogg",
+      "bytes": 8647,
+      "sha256": "735f5c3cf427abd40fb1ec584e4c0ae1f7668c31fa407f7f84ee2b8bbc942802"
+    },
+    "shorty.ogg": {
+      "sourceFile": "site/media/shorty.CN_gaLGI.ogg",
+      "bytes": 7968,
+      "sha256": "47dad6d8a17b8bee7cf1a31afd1394407a83e9e600c702f2732d734b98ad4b9c"
+    },
+    "marshal.ogg": {
+      "sourceFile": "site/media/marshal.B5UVoP4O.ogg",
+      "bytes": 12573,
+      "sha256": "41fc929e9c69f894c1f0115d51aed272c036ec16989a45a30ae4c1b8536fc828"
+    },
+    "ares.ogg": {
+      "sourceFile": "site/media/ares.BTWE41Th.ogg",
+      "bytes": 8891,
+      "sha256": "32a15aa99c25ac7e06158f08244c93b72fe193fff35a2fd6178dd01c41b912ac"
+    },
+    "operator.ogg": {
+      "sourceFile": "site/media/operator.BQcYlBwz.ogg",
+      "bytes": 14283,
+      "sha256": "8d1d1d948a0ec6dd1e5489f29b316d25a91a1101737e78f6b4c944ea4ce15db4"
+    },
+    "outlaw.ogg": {
+      "sourceFile": "site/media/outlaw.CVtJL3l5.ogg",
+      "bytes": 8103,
+      "sha256": "e682f4050070c1fe07ccbb0890ba2d929281cbb935097b088db8ed793160ca33"
+    },
+    "bulldog.ogg": {
+      "sourceFile": "site/media/bulldog.DYyeePj8.ogg",
+      "bytes": 8431,
+      "sha256": "55b116276f73b40cb1ae1a3f92baa9e674594c213205c02b4642a9b57782685d"
+    },
+    "judge.ogg": {
+      "sourceFile": "site/media/judge.mTlsZNvz.ogg",
+      "bytes": 9722,
+      "sha256": "5f6ccfd71541093d1fb85dbe5d4f9addd8d08e5d08ce86d3567bd78b55c833e2"
+    },
+    "ghost.ogg": {
+      "sourceFile": "site/media/ghost.bDsVUSsi.ogg",
+      "bytes": 8635,
+      "sha256": "25def4712fad73f28225ff7d4357c7f95ea2505259e995c14cea78b41d153b97"
+    },
+    "odin.ogg": {
+      "sourceFile": "site/media/odin.DWFsc191.ogg",
+      "bytes": 9205,
+      "sha256": "7182d4c6e1398ec1b2316ca1ecdcb999650b36d7b1b24129264b806f30d40fe0"
+    },
+    "guardian.ogg": {
+      "sourceFile": "site/media/guardian.B4hqXqQM.ogg",
+      "bytes": 9441,
+      "sha256": "ad76e6314a4349b24e257488dfe742a7667efd8a4c1c06f156cbeeedfe2314fe"
+    }
+  },
+  "regenIcon": "site/local/equipment-icons/regen.png",
+  "credit": "Riot Games assets; repository MIT license does not cover these assets."
+}

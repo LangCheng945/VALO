@@ -1,5 +1,6 @@
+import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 // Local, pinned character data. Gameplay continues to use the original separate hitboxes.
-import {loadWeaponModel} from './weapon-models.js?v=hands1';
+import {loadWeaponModel} from './weapon-models.js?v=armory1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE,base=new URL('./assets/agents/',import.meta.url),cache=new Map();let dataPromise;
 const json=async url=>{const r=await fetch(url);if(!r.ok)throw Error('Character data '+r.status);return r.json()};
@@ -48,7 +49,7 @@ export class AgentAvatar {
  setColor(color){this.color=color;this.skin?.outline.material.color.setHex(color);}
  setWeapon(key){
   if(this.weaponKey===key)return;this.weaponKey=key;const id=key;const material=new T.MeshStandardMaterial({color:0x92b8c6,map:this.skinTexture,metalness:.35,roughness:.5});
-  if(!['vandal','phantom','classic','operator','odin'].includes(key)){material.dispose();if(this.gun){disposeActor(this.gun);this.gun=null;}return;}
+  if(!FIREARMS[key]){material.dispose();if(this.gun){disposeActor(this.gun);this.gun=null;}return;}
   loadWeaponModel(key,material).then(mesh=>{
    if(this.parent.userData.disposed||this.weaponKey!==id){material.dispose();return;}
    if(this.gun)disposeActor(this.gun);mesh.geometry=mesh.geometry.clone();mesh.geometry.userData.sharedWeaponGeometry=false;mesh.position.set(.16,1.38,-.38);mesh.scale.setScalar(.009);this.gun=mesh;this.weaponCarrier.add(mesh);this.alignGun();

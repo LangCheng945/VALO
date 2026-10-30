@@ -1,6 +1,7 @@
+import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
-import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=prime2shape1';
-import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
+import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=armory1';
+import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;
 export class SpectatorView {
@@ -17,7 +18,7 @@ export class SpectatorView {
  buildWeapon(agent,key){
   const modelKey=agent+':'+key;if(this.modelKey===modelKey)return;this.modelKey=modelKey;this.melee=null;const generation=++this.generation;disposeViewmodel(this.weaponRoot);this.hands=new FirstPersonHands(agent,key,this.environment);this.weaponRoot.add(this.hands.root);
   if(key==='melee'){this.melee=makeKarambit(this.environment);this.weaponRoot.add(this.melee);return;}
-  if(!['vandal','phantom','classic','operator','odin'].includes(key))return;
+  if(!FIREARMS[key])return;
   const paint=new T.MeshStandardMaterial({color:0xffffff,map:this.skinTexture,emissive:0x60bfff,emissiveMap:this.skinTexture,emissiveIntensity:.055,metalness:.48,roughness:.39,envMap:this.environment,envMapIntensity:.65});
   loadWeaponModel(key,paint).then(mesh=>{
    if(generation!==this.generation){paint.dispose();return;}

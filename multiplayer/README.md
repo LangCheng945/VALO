@@ -177,3 +177,13 @@ PUBLIC 初次建立只抽一次地圖，同場後續加入／重連都使用房�
 限制：目前仍使用客戶端回報的位置，伺服器驗證共用據點的 XZ 邊界、操作期間位移及操作距離，沒有載入完整地圖的地板／牆壁網格，不能視為完整防作弊。安裝時的接地與碰撞由前端檢查；爆炸本身按設計穿牆。這次不包含攻守交換或購買階段。
 
 驗證：`npm test` 包含規則測試與真實 Worker 的持有者被擊殺、敵方拒絕撿取、隊友接手與斷線掉落。`node ../tests/test_multiplayer_spike_browser.cjs` 使用兩個真實瀏覽器與本機 Worker，實際操作 G／F／4、安裝、半程拆除後接續，並等滿 45 秒觀察近處死亡、遠處存活與 1:1 比分。公開 Worker 是否部署成功仍需另行確認。
+
+## Armory：18 把槍與再生護盾
+
+`firearms.mjs` 是前後端共用的 18 把槍與距離傷害參考，`shotgun.mjs` 驗證多彈丸批次，`armor.mjs` 管理護盾與回充。部署需包含三個新模組，health.features 包含 `armory`。新客戶端 join 帶 armoryVersion:1，state 不能直接補盾；必須以 armor_buy 指定種類，在非戰鬥操作時購買，結果以 armor_result 同步。refunding 只恢復伺服器保存的購買前快照；進入戰鬥後清除可退快照。
+
+本次再生盾是使用者設定 25+25，受傷後等 3 秒，每秒 10 點消耗儲備回補，且不回生命。其吸收比例為 1；一般盾沿用 .66。儲備／回充時間持久化於玩家 attachment，斷線重連保留，Sage 復活不補盾或儲備，新回合補滿選定護盾。用戶端自報 shieldReserve 或 shield 不會讓新版客戶端回滿。購買信用點仍由既有前端處理，沒有宣稱完整防作弊經濟。
+
+霰彈槍每次扣一顆彈藥，shot 帶 pellet {id,count,index}，伺服器驗證槍種、固定顆數、首發射速、序號、300 ms 批次期限，每個 hit 仍綁定最近已接受的 shot。重複、跳號、過期或換槍的彈丸遭拒。合法霰彈封包以 .4 訊息權重計量，同時每秒最多 180 個原始封包；其他訊息沿用 90 權重，避免正常 Judge 射擊觸發斷線。
+
+驗證：armory.test.mjs、armory-live.test.mjs、test_armory_browser.cjs、test_multiplayer_armory_browser.cjs；涵蓋 18 個實際模型、主副武器換購、護盾退款、受傷與回充、多人實際 Ghost 射擊、遠端模型、新版拒絕客戶端造假補盾，以及合法霰彈封包速率。

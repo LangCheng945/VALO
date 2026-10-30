@@ -1,3 +1,6 @@
+import {ARMORS,equipArmor,markArmorDamage,tickArmor} from './armor.mjs';
+import {FIREARMS,isSidearm,firearmDamage} from './firearms.mjs';
+import {acceptPellet} from './shotgun.mjs';
 import {RoomSpike} from './spike.mjs';
 import {choosePublicMap} from './match-rules.mjs';
 import {acceptBladeVolley} from './blade-volley.mjs';
@@ -45,7 +48,7 @@ export class GameRoom {
  save(ws,p){ws.serializeAttachment(p);}
  send(ws,p){try{ws.send(JSON.stringify(p));}catch{}}
  broadcast(p){for(const ws of this.sockets())this.send(ws,p);}
- players(){return this.sockets().map(ws=>{const p=this.data(ws);if(!p?.joined||p.leaving)return null;const {uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt}=p;return {uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt,barrierUsed:p.agent==='phoenix'&&p.cUsed>=1,slowCharges:p.agent==='phoenix'?Math.max(0,2-(p.qUsed||0)):null,healCooldown:Math.max(0,45-(Date.now()-(p.lastHeal||0))/1000)};}).filter(Boolean);}
+ players(){return this.sockets().map(ws=>{const p=this.data(ws);if(!p?.joined||p.leaving)return null;const {uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt}=p;return {armorType:p.armorType||(shield===25?'light':shield>0?'heavy':'none'),shieldReserve:p.shieldReserve||0,primaryWeapon:p.primaryWeapon||'vandal',secondaryWeapon:p.secondaryWeapon||'classic',uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt,barrierUsed:p.agent==='phoenix'&&p.cUsed>=1,slowCharges:p.agent==='phoenix'?Math.max(0,2-(p.qUsed||0)):null,healCooldown:Math.max(0,45-(Date.now()-(p.lastHeal||0))/1000)};}).filter(Boolean);}
  hostUid(){
   const now=Date.now(),members=this.players();
   if(this.meta.hostUid&&(members.some(p=>p.uid===this.meta.hostUid)||this.meta.hostUntil>now))return this.meta.hostUid;
@@ -74,19 +77,19 @@ export class GameRoom {
   if(typeof raw!=='string'||raw.length>4096){ws.close(1009,'Packet too large');return;}
   let m;try{m=JSON.parse(raw);}catch{ws.close(1003,'Invalid JSON');return;}
   const now=Date.now();if(this.meta&&this.rounds.enabled)await this.spike.tick(now);const p=this.data(ws);if(!p)return;
-  if(now-p.windowAt>=1000){p.windowAt=now;p.messages=0;}if(++p.messages>90){ws.close(1008,'Rate limit');return;}
+  if(now-p.windowAt>=1000){p.windowAt=now;p.messages=0;p.rawMessages=0;}p.messages+=(['shot','hit'].includes(m?.type)&&WEAPONS[p.weapon]?.pellets>1?.4:1);p.rawMessages=(p.rawMessages||0)+1;if(p.messages>90||p.rawMessages>180){ws.close(1008,'Rate limit');return;}
   p.lastSeen=now;this.save(ws,p);
   if(!m||typeof m.type!=='string')return;
   if(m.type==='join'){
-   if(p.joined)return;if(this.meta.public&&m.publicRules!==1){ws.close(1008,'Update client for public matches');return;}p.mapChange=m.mapChange===1;if(this.rounds.enabled&&m.roundRules!==1){ws.close(1008,'Update client for rounds');return;}if(this.meta?.map&&this.meta.map!=='ascent'&&m.mapVersion!==1){ws.close(1008,'Update client for this map');return;}
+   if(p.joined)return;if(this.meta.public&&m.publicRules!==1){ws.close(1008,'Update client for public matches');return;}p.armoryClient=m.armoryVersion===1;p.mapChange=m.mapChange===1;if(this.rounds.enabled&&m.roundRules!==1){ws.close(1008,'Update client for rounds');return;}if(this.meta?.map&&this.meta.map!=='ascent'&&m.mapVersion!==1){ws.close(1008,'Update client for this map');return;}
    if(typeof m.resumeToken==='string'&&/^[a-f0-9]{64}$/.test(m.resumeToken)){
     let saved;await this.ctx.blockConcurrencyWhile(async()=>{saved=await this.ctx.storage.get('resume:'+m.resumeToken);if(saved)await this.ctx.storage.delete('resume:'+m.resumeToken);});
     if(!saved||saved.expires<now){ws.close(1008,'Resume expired');return;}
-    Object.assign(p,saved,{active:false,lastSeen:now,windowAt:now,messages:0,mapChange:m.mapChange===1,mapPending:false});delete p.expires;
+    Object.assign(p,saved,{active:false,lastSeen:now,windowAt:now,messages:0,armoryClient:m.armoryVersion===1,mapChange:m.mapChange===1,mapPending:false});delete p.expires;
     if(p.mapEpoch!==(this.meta.mapEpoch||0)){this.resetForMap(p);}
     for(const old of this.sockets()){if(old!==ws&&this.data(old)?.uid===p.uid){const previous=this.data(old);previous.mapPending=true;this.save(old,previous);old.close(1000,'Replaced');}}
-    if(this.rounds.enabled&&p.roundNumber!==this.meta.round.number)Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round.number},spawn(p.team,this.meta.map));
-    if(!this.rounds.enabled&&p.hp===0&&now>=p.respawnAt)Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team,this.meta?.map));
+    if(this.rounds.enabled&&p.roundNumber!==this.meta.round.number){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round.number},spawn(p.team,this.meta.map));equipArmor(p,p.armorType||'heavy');p.armorBase=null;}
+    if(!this.rounds.enabled&&p.hp===0&&now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team,this.meta?.map));equipArmor(p,p.armorType||'heavy');}
     if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
    }
    const members=this.players(),attack=members.filter(x=>x.team==='attack').length,defend=members.length-attack;
@@ -100,8 +103,15 @@ export class GameRoom {
   if(p.mapPending)return;
   if(m.type==='ping'){this.send(ws,{type:'pong',at:m.at});return;}
   if(m.type==='state'&&validPose(m)){
-   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&[0,25,50].includes(m.shield))p.shield=m.shield;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.spikeEquipped=!!m.holdingSpike&&this.meta.spike?.carrierUid===p.uid;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
+   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&!p.armoryClient&&p.armorType!=='regen'&&[0,25,50].includes(m.shield)){p.shield=m.shield;p.armorType=m.shield===25?'light':m.shield===50?'heavy':'none';}if(m.active)p.armorBase=null;if(FIREARMS[m.primaryWeapon]?.slot==='primary')p.primaryWeapon=m.primaryWeapon;if(isSidearm(m.secondaryWeapon))p.secondaryWeapon=m.secondaryWeapon;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.spikeEquipped=!!m.holdingSpike&&this.meta.spike?.carrierUid===p.uid;p.agent=m.agent==='phoenix'?'phoenix':'jett';if(isWeapon(m.weapon))p.weapon=m.weapon;}
    this.save(ws,p);await this.spike.onState(p,now);await this.rounds.activated();this.queueSnapshot();return;
+  }
+  if(m.type==='armor_buy'){
+   const phase=this.meta.round?.phase;if(phase==='finished'||(p.active&&p.hp>0&&!['waiting','ending'].includes(phase))){this.send(ws,{type:'armor_error',reason:'請開啟商店後購買護盾'});return;}
+   if(m.refund){if(p.armorBase){Object.assign(p,p.armorBase);if(p.hp<=0){p.shield=0;p.shieldReserve=0;}p.regenTickAt=now;p.armorBase=null;}}
+   else if(Object.hasOwn(ARMORS,m.armor)){p.armorBase ||= {armorType:p.armorType||(p.shield===25?'light':'heavy'),shield:p.shield,shieldReserve:p.shieldReserve||0,regenReadyAt:p.regenReadyAt||0};equipArmor(p,m.armor);if(p.hp<=0){p.shield=0;p.shieldReserve=0;}}
+   else return;
+   this.save(ws,p);this.send(ws,{type:'armor_result',player:this.players().find(x=>x.uid===p.uid)});this.queueSnapshot();return;
   }
   if(this.rounds.enabled&&this.meta.round.phase==='finished'&&!['chat','ping'].includes(m.type))return;
   if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){await this.spike.drop(p,now);p.team=m.team;Object.assign(p,spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();return;}
@@ -115,20 +125,20 @@ export class GameRoom {
   if(['shot','hit'].includes(m.type)&&(p.spikeEquipped||this.meta.spike?.action?.uid===p.uid))return;
   if(m.type==='shot'&&p.hp>0&&p.active){
    const w=WEAPONS[p.weapon];if(!w)return;
-   if(m.volley){if(!acceptBladeVolley(p,m,now))return;}else if(now-p.lastShot<w.interval*.8)return;
+   if(m.pellet){if(!acceptPellet(p,m,now,w))return;}else if(w.pellets>1)return;else if(m.volley){if(!acceptBladeVolley(p,m,now))return;}else if(now-p.lastShot<w.interval*.8)return;
    if(!['sx','sy','sz','ex','ey','ez'].every(k=>finite(m[k])))return;
    if(Math.hypot(m.sx-p.x,m.sy-p.y,m.sz-p.z)>6)return;
    p.lastShot=now;p.shotUsed=false;p.shotWeapon=p.weapon;p.shotEnd={x:m.ex,y:m.ey,z:m.ez};this.save(ws,p);
-   this.broadcast({type:'event',event:{type:'shot',senderUid:p.uid,weapon:p.weapon,sx:m.sx,sy:m.sy,sz:m.sz,ex:m.ex,ey:m.ey,ez:m.ez,color:0xb9f5ff}});return;
+   this.broadcast({type:'event',event:{type:'shot',senderUid:p.uid,weapon:p.weapon,pelletIndex:m.pellet?.index||0,sx:m.sx,sy:m.sy,sz:m.sz,ex:m.ex,ey:m.ey,ez:m.ez,color:0xb9f5ff}});return;
   }
   if(m.type==='hit'&&p.hp>0&&p.active){
    const victim=this.sockets().find(s=>this.data(s)?.uid===m.targetUid);if(!victim)return;const v=this.data(victim);
    if(v.hp<=0||v.team===p.team||!v.active)return;
    const melee=p.weapon==='melee';if(melee){if(Math.hypot(p.x-v.x,p.y-v.y,p.z-v.z)>4.5||now-p.lastShot<420)return;p.lastShot=now;}
    else{if(p.shotUsed||now-p.lastShot>400||!p.shotEnd||Math.hypot(p.shotEnd.x-v.x,p.shotEnd.y-(v.y-1),p.shotEnd.z-v.z)>3.5)return;p.shotUsed=true;}
-   const hitWeapon=melee?p.weapon:(p.shotWeapon||p.weapon),w=WEAPONS[hitWeapon],damage=m.isHead===true?w.head:w.body;Object.assign(v,applyDamage(v,damage));v.lastDamage=now;
+   const hitWeapon=melee?p.weapon:(p.shotWeapon||p.weapon),w=WEAPONS[hitWeapon],part=m.isHead===true?'head':m.part==='legs'?'legs':'body',damage=firearmDamage(hitWeapon,part,Math.hypot(p.x-v.x,p.y-v.y,p.z-v.z))??(m.isHead===true?w.head:w.body);Object.assign(v,applyDamage(v,damage));v.lastDamage=now;markArmorDamage(v,now);if(v.armorType==='regen'&&v.hp>0)await this.ctx.storage.setAlarm(now+250);
    this.send(victim,{type:'damage',hp:v.hp,shield:v.shield,attacker:p.name});
-   if(v.hp===0){v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:hitWeapon.toUpperCase(),isHead:!!m.isHead}});}
+   if(v.hp===0){v.shieldReserve=0;v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:hitWeapon.toUpperCase(),isHead:!!m.isHead}});}
    this.save(ws,p);this.save(victim,v);if(v.hp===0){await this.spike.drop(v,now);await this.rounds.elimination();await this.ctx.storage.setAlarm(now+250);}this.snapshot();return;
   }
 
@@ -136,7 +146,7 @@ export class GameRoom {
  }
  resetForMap(p){
   if(p.weapon==='bladestorm')p.weapon='vandal';
-  Object.assign(p,{hp:100,shield:50,kills:0,deaths:0,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:this.meta.round.number,mapEpoch:this.meta.mapEpoch||0,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0,lastShot:0,shotUsed:true,shotEnd:null,volley:null},spawn(p.team,this.meta.map));
+  Object.assign(p,{hp:100,shield:50,kills:0,deaths:0,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:this.meta.round.number,mapEpoch:this.meta.mapEpoch||0,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0,lastShot:0,shotUsed:true,shotEnd:null,volley:null,pelletBatch:null,armorType:'heavy',shieldReserve:0,regenReadyAt:0,regenTickAt:0,armorBase:null},spawn(p.team,this.meta.map));
  }
  async changeMap(ws,p,map,now){
   const fail=reason=>this.send(ws,{type:'map_error',reason});
@@ -171,7 +181,7 @@ export class GameRoom {
   await this.ready;const sockets=this.sockets(),now=Date.now();if(sockets.length===0){if(this.meta?.transferUntil>now){await this.ctx.storage.setAlarm(this.meta.transferUntil);return;}await this.ctx.storage.deleteAll();this.meta=null;return;}
   let pending=await this.spike.tick(now);pending=await this.rounds.alarm(now)||pending;pending=expireSmokeFlights(this,now)||pending;pending=await updateBarriers(this,now)||pending;pending=await updateSlowObjects(this,now)||pending;
   const stale=await this.ctx.storage.list({prefix:'resume:',limit:1000});for(const [key,value]of stale)if(value.expires<now)await this.ctx.storage.delete(key);
-  for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.mapPending)continue;if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal&&now-(p.lastDamage||0)>=2000){const amount=Math.min(p.healRate||3,p.healRemaining,100-p.hp);p.hp+=amount;p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0&&!this.rounds.enabled&&!p.reviveAt){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,lastHeal:0,smokeFlights:{},active:false},spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
+  for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.mapPending)continue;if(p.armorType==='regen'){pending=tickArmor(p,now)||pending;this.save(ws,p);}if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal&&now-(p.lastDamage||0)>=2000){const amount=Math.min(p.healRate||3,p.healRemaining,100-p.hp);p.hp+=amount;p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0&&!this.rounds.enabled&&!p.reviveAt){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,lastHeal:0,smokeFlights:{},active:false},spawn(p.team,this.meta?.map));equipArmor(p,p.armorType||'heavy');this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
   this.snapshot();await this.ctx.storage.setAlarm(now+(pending?250:15000));
  }
 }

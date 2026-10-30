@@ -1,0 +1,17 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourceFile": "site/_assets/r20261021-1/next/js/BiMsX6Xn.js",
+  "extraction": "Closed literal parser; no upstream JavaScript executed. Catalog prices and controls are local game configuration.",
+  "armorReference": {
+    "points": 25,
+    "pool": 50,
+    "absorb": 1,
+    "delaySeconds": 3,
+    "perSecond": 10
+  },
+  "requestedArmor": {
+    "points": 25,
+    "pool": 25
+  }
+}

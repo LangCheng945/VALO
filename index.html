@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=rounds2">
+    <link rel="stylesheet" href="./shop.css?v=armory1">
 </head>
 <body class="relative select-none">
 
@@ -377,7 +377,7 @@
                         <div class="flex flex-col items-center">
                             <span class="text-[9px] text-[#00F5D4] font-bold tracking-widest">SHIELD</span>
                             <div class="flex items-baseline space-x-1">
-                                <span id="hud-shield" class="font-val text-2xl sm:text-3xl font-bold text-[#00F5D4]">50</span>
+                                <small id="hud-shield-reserve" class="text-[9px] text-[#00F5D4]"></small><span id="hud-shield" class="font-val text-2xl sm:text-3xl font-bold text-[#00F5D4]">50</span>
                             </div>
                         </div>
                         <div class="h-8 w-[1px] bg-white/20 self-center"></div>
@@ -668,7 +668,7 @@
                     </button>
 </div>
                     <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
-                    <div class="shield-selector"><h3>護盾</h3><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card">輕型護盾 <span>25 / ¤400</span></button></div>
+                    <div class="shield-selector"><h3>護盾</h3><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card">輕型護盾 <span>25 / ¤400</span></button><button id="shield-card-regen" onclick="buyShield('regen')" class="val-card"><img src="./assets/ui/regen-shield.png" alt="" class="regen-shield-icon">再生護盾 <span>25＋25 儲備 / ¤650</span><small>3 秒未受傷後，每秒回充 10 點</small></button></div>
                     <div class="loadout-note"><b id="shop-detail-title">VANDAL</b><p id="shop-detail-body">爆頭 160 · 身體 40 · 25 發</p><p id="shop-detail-economy"></p></div>
                     <section class="shop-abilities" aria-label="技能配置"><h3>ABILITIES <small>技能 · 訓練配給</small></h3><div id="shop-ability-passive"></div><div id="shop-ability-c"></div><div id="shop-ability-q"></div><div id="shop-ability-e"></div></section>
                     <div id="shop-feedback" role="status" aria-live="polite"></div>
@@ -686,14 +686,14 @@
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=spikenet1';
-        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=prime2shape1';
+        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=armory1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
-        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=avatars1';
-        import {SpectatorView} from './spectator-view.js?v=prime2shape1';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=armory1';
+        import {SpectatorView} from './spectator-view.js?v=armory1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -702,7 +702,7 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=prime2shape1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=armory1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -712,7 +712,9 @@
         import {FootstepTracker} from './movement-audio.mjs';
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
         import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=spikenet1';
+        import {FIREARMS,FIREARM_KEYS,isSidearm,firearmDamage} from './multiplayer/firearms.mjs?v=armory1';
+        import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=armory1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=armory1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -753,6 +755,10 @@
             playFootstep(landing=false,volume=.4,pan=0) {
                 let index=Math.floor(Math.random()*7);if(index===this.lastStep)index=(index+1)%7;this.lastStep=index;
                 return this.playSample(landing?'land-01':`step-${String(index+1).padStart(2,'0')}`,volume,pan);
+            }
+            async preloadGun(key){
+                if(!FIREARMS[key]||this.samples.has(key)||this.loadingSamples.has(key))return;this.init();if(!this.ctx)return;this.loadingSamples.add(key);
+                try{const r=await fetch('./assets/weapons/'+key+'.ogg');if(r.ok)this.samples.set(key,await this.ctx.decodeAudioData(await r.arrayBuffer()));}finally{this.loadingSamples.delete(key);}
             }
             playGunshot(type) {
                 this.init();
@@ -1055,6 +1061,10 @@
             }
         };
 
+        for(const [key,data] of Object.entries(FIREARMS)){
+            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:'神罰'+data.name};
+            if(key==='odin')Object.assign(WEAPONS[key],{fireRate:83,fullAutoFireRate:64});
+        }
         Object.values(WEAPONS).forEach(weapon => {
             weapon.skin = weapon.id==='melee'?'prime2-karambit':SMITE_SKIN.id;
             weapon.color = SMITE_SKIN.accent;
@@ -1091,12 +1101,12 @@
             team: 'attack', // 'attack' or 'defend'
             playerName: '特務_' + Math.floor(100 + Math.random() * 899),
             enableBots: true,
-            primaryWeaponKey: 'vandal',
+            primaryWeaponKey: 'vandal',secondaryWeaponKey:'classic',
             weaponKey: 'vandal',
             hp: 100,
-            shield: 50,
+            shield: 50,armorType:'heavy',shieldReserve:0,regenReadyAt:0,regenTickAt:0,
             creds: 9000,
-            pendingWeapon: null, pendingShield: null,
+            pendingWeapon: null, pendingSidearm:null,pendingShield: null,
             mag: 25,
             reserve: 75,
             kills: 0,
@@ -1514,6 +1524,7 @@
         let bladeStormGroup = null;
 
         const WEAPON_LENGTHS={vandal:.79,phantom:.75,classic:.225,operator:1.195,odin:1.21};
+        for(const key of FIREARM_KEYS)WEAPON_LENGTHS[key]=FIREARMS[key].modelLength;
         function buildFirstPersonViewmodel() {
             disposeViewmodel(gunGroup);firstPersonHands=null;
             gunMagazineMesh = null;
@@ -1522,7 +1533,7 @@
             bladeStormGroup = null;
 
             const wpnKey = state.weaponKey;
-            const wpn = WEAPONS[wpnKey];
+            const wpn = WEAPONS[wpnKey];if(FIREARMS[wpnKey])sfx.preloadGun(wpnKey).catch(()=>{});
 
             // Materials
             const darkMetal = new THREE.MeshStandardMaterial({ color: 0xffffff, map: smiteTexture, emissive: 0x60bfff, emissiveMap: smiteTexture, emissiveIntensity: 0.055, metalness: 0.48, roughness: 0.39, envMap:viewEnvironmentTarget.texture, envMapIntensity:.65 });
@@ -1548,8 +1559,8 @@
 
             // 3. DETAILED FIREARMS (Vandal, Phantom, Operator, Classic)
             const rig = new THREE.Group();
-            const isSniper = wpnKey === 'operator';
-            const isPistol = wpnKey === 'classic';
+            const isSniper = FIREARMS[wpnKey]?.category==='sniper';
+            const isPistol = isSidearm(wpnKey);
             const isPhantom = wpnKey === 'phantom';
             const isOdin = wpnKey === 'odin';
             const bodyLen = isOdin ? 0.9 : isSniper ? 0.95 : (isPistol ? 0.28 : 0.68);
@@ -1904,7 +1915,7 @@
             if(changed)for(const rp of remotePlayers.values()){const color=rp.data.team===team?0x00f5d4:0xff4655;rp.torsoOutline.material.color.setHex(color);rp.headOutline.material.color.setHex(color);rp.hpFill.material.color.setHex(color);rp.group.remove(rp.nameSprite);rp.nameSprite=createNameplateSprite(rp.data.name,rp.data.team,rp.data.agent);rp.group.add(rp.nameSprite);}
         }
         function applyServerSpawn(player){
-            if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.kills=player.kills;state.deaths=player.deaths;
+            if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.armorType=player.armorType||(player.shield===25?'light':player.shield>0?'heavy':'none');state.shieldReserve=player.shieldReserve||0;if(FIREARMS[player.primaryWeapon]?.slot==='primary')state.primaryWeaponKey=player.primaryWeapon;if(isSidearm(player.secondaryWeapon))state.secondaryWeaponKey=player.secondaryWeapon;state.kills=player.kills;state.deaths=player.deaths;
             yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent!=='jett'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent!=='jett'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
             equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
         }
@@ -1912,7 +1923,7 @@
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2109,24 +2120,25 @@
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
-                    if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(['jett','phoenix'].includes(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(WEAPONS[message.player.weapon]&&!['classic','melee','bladestorm'].includes(message.player.weapon))state.primaryWeaponKey=message.player.weapon;}
+                    if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(['jett','phoenix'].includes(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(isSidearm(message.player.weapon))state.secondaryWeaponKey=message.player.weapon;else if(FIREARMS[message.player.weapon]?.slot==='primary')state.primaryWeaponKey=message.player.weapon;}
                     applyServerSpawn(message.player);receiveRoomRound(message.round);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
                 players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
                 spikeError:reason=>{networkSpikeRetryAt=performance.now()+1000;cancelSpikeAction();abilityNotice(reason);},
+                armorResult:player=>{state.armorType=player.armorType;state.shield=player.shield;state.shieldReserve=player.shieldReserve||0;updateHealthHUD();updateShopUI();},armorError:reason=>shopFeedback(reason),
                 damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
         async function connectToMultiplayerRoom(code){
-            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1,mapChange:1,publicRules:1,map:selectedMap});}catch(error){networkFeedback(error.message);}
+            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1,mapChange:1,publicRules:1,armoryVersion:1,map:selectedMap});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;
-            roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.roundEnding,holdingSpike:state.holdingSpike,shield:state.shield});
+            roomSocket.send({type:'state',name:state.playerName,agent:state.agent,weapon:state.weaponKey,x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z,yaw:yawObject.rotation.y,pitch:pitchObject.rotation.x,crouching:state.crouchAmount>.5,walking:moveState.walk,active:state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.roundEnding,holdingSpike:state.holdingSpike,primaryWeapon:state.primaryWeaponKey,secondaryWeapon:state.secondaryWeaponKey,shield:state.shield});
         }
-        function broadcastRoomEvent(payload){if(payload.type==='shot'){if(bladeVolleyContext&&payload.weapon==='bladestorm')payload.volley={id:bladeVolleyContext.id,count:bladeVolleyContext.count,index:bladeVolleyContext.index};pushMyNetworkState(true);}roomSocket?.send(payload);}
+        function broadcastRoomEvent(payload){if(payload.type==='shot'){if(shotgunContext)payload.pellet=shotgunContext;if(bladeVolleyContext&&payload.weapon==='bladestorm')payload.volley={id:bladeVolleyContext.id,count:bladeVolleyContext.count,index:bladeVolleyContext.index};if(!shotgunContext||shotgunContext.index===0)pushMyNetworkState(true);}roomSocket?.send(payload);}
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
@@ -2146,7 +2158,7 @@
                 const s = new THREE.Vector3(ev.sx, ev.sy, ev.sz);
                 const e = new THREE.Vector3(ev.ex, ev.ey, ev.ez);
                 createBulletTracer(s, e, ev.color || 0x00F5D4);
-                sfx.playGunshot(ev.weapon || 'vandal');spectatorView.shot(ev.senderUid);
+                if(!ev.pelletIndex)sfx.playGunshot(ev.weapon || 'vandal');spectatorView.shot(ev.senderUid);
                 return;
             }
 
@@ -2370,6 +2382,7 @@
             const count=state.bladeKnives,offsets=bladeFan(count),id=crypto.randomUUID();state.bladeKnives=0;state.mag=0;
             try{for(let i=0;i<count;i++){bladeVolleyContext={id,count,index:i,offset:offsets[i]};fireWeapon();}}finally{bladeVolleyContext=null;refreshBladeKnives();returnFromEmptyBlades();}
         }
+        let shotgunContext=null;
         function fireWeapon() {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
             if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
@@ -2418,6 +2431,8 @@
                 scoped: state.isScoped, recoil: state.recoilAccum
             });
 
+            const pelletCount=wpn.pellets||1,pelletId=pelletCount>1?crypto.randomUUID():null;
+            for(let pelletIndex=0;pelletIndex<pelletCount;pelletIndex++){const showPelletFX=pelletIndex<3;shotgunContext=pelletId?{id:pelletId,count:pelletCount,index:pelletIndex}:null;
             const spreadX=volley?volley.offset[0]:(Math.random()-.5)*totalSpread;
             const spreadY=volley?volley.offset[1]:(Math.random()-.5)*totalSpread+state.recoilAccum*.4;
 
@@ -2448,7 +2463,7 @@
                 const isRemotePlayer = hit.object.userData && hit.object.userData.isRemotePlayer;
 
                 if (!wpn.isMelee) {
-                    createBulletTracer(muzzleWorld, hit.point, isHead ? 0xFF4655 : wpn.glowColor);
+                    if(showPelletFX)createBulletTracer(muzzleWorld, hit.point, isHead ? 0xFF4655 : wpn.glowColor);
                     broadcastRoomEvent({
                         type: 'shot',
                         weapon: state.weaponKey,
@@ -2470,9 +2485,9 @@
                     const targetUid = hit.object.userData.uid;
                     const rp = remotePlayers.get(targetUid);
                     if (rp) {
-                        const dmg = isHead ? wpn.headDmg : wpn.bodyDmg;
+                        const part=isHead?'head':hit.object.userData.part==='legs'?'legs':'body',dmg=firearmDamage(state.weaponKey,part,hit.distance)??(isHead?wpn.headDmg:wpn.bodyDmg);
                         showHitmarker(isHead);
-                        createImpactBurst(hit.point, isHead, true);
+                        if(showPelletFX)createImpactBurst(hit.point, isHead, true);
                         broadcastRoomEvent({
                             type: 'hit',
                             targetUid,
@@ -2480,16 +2495,16 @@
                             attackerName: state.playerName,
                             weaponName: wpn.name,
                             dmg,
-                            isHead
+                            isHead,part
                         });
                     }
                 } else if (isBot) {
                     const bot = bots[hit.object.userData.botIndex];
                     if (bot && bot.alive && bot.team!==state.team) {
-                        const dmg = isHead ? wpn.headDmg : wpn.bodyDmg;
+                        const part=isHead?'head':hit.object.userData.part==='legs'?'legs':'body',dmg=firearmDamage(state.weaponKey,part,hit.distance)??(isHead?wpn.headDmg:wpn.bodyDmg);
                         bot.hp -= dmg;bot.lastDamage=performance.now();
                         showHitmarker(isHead);
-                        createImpactBurst(hit.point, isHead, true);
+                        if(showPelletFX)createImpactBurst(hit.point, isHead, true);
 
                         bot.hpFill.scale.x = Math.max(0.01, bot.hp / 100);
                         if (bot.hp <= 0) {
@@ -2501,14 +2516,14 @@
                     // Hit wall/floor: spawn bullet hole decal + yellow sparks
                     if (hit.face && !hit.object.userData.barrierId) {
                         const worldNormal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
-                        spawnBulletDecal(hit.point, worldNormal);
+                        if(showPelletFX)spawnBulletDecal(hit.point, worldNormal);
                     }
-                    createImpactBurst(hit.point, false, false);
+                    if(showPelletFX)createImpactBurst(hit.point, false, false);
                 }
             } else if (!wpn.isMelee) {
                 const farPoint = new THREE.Vector3();
                 raycaster.ray.at(90, farPoint);
-                createBulletTracer(muzzleWorld, farPoint, wpn.glowColor);
+                if(showPelletFX)createBulletTracer(muzzleWorld, farPoint, wpn.glowColor);
                 broadcastRoomEvent({
                     type: 'shot',
                     weapon: state.weaponKey,
@@ -2521,6 +2536,8 @@
                     color: wpn.glowColor
                 });
             }
+
+            }shotgunContext=null;
 
             // Camera Recoil
             if(!volley)pitchObject.rotation.x = Math.min(Math.PI / 2.2, pitchObject.rotation.x + wpn.recoilPitch * (moveState.crouch ? 0.85 : 1));
@@ -2668,7 +2685,7 @@
         function getShotSpread(wpn, posture) {
             if (wpn.id === 'bladestorm') return wpn.spreadBase;
             const movement = posture.moving ? wpn.spreadMove * (posture.walking ? 0.55 : 1) : wpn.spreadBase;
-            const hip = wpn.id === 'operator' && !posture.scoped ? 0.09 : movement;
+            const hip = wpn.category==='sniper' && !posture.scoped ? 0.09 : movement;
             return hip * (posture.scoped ? 0.7 : 1) * (posture.crouched ? 0.75 : 1)
                 + (posture.airborne ? 0.09 : 0) + posture.recoil * 0.35;
         }
@@ -2682,9 +2699,9 @@
             const zoom = levels[state.scopeLevel - 1] || 1;
             camera.fov = getAimFov(75, zoom);
             camera.updateProjectionMatrix();
-            const sniper = state.isScoped && state.weaponKey === 'operator';
+            const sniper = state.isScoped && FIREARMS[state.weaponKey]?.category==='sniper';
             document.getElementById('scope-overlay').classList.toggle('hidden', !sniper);
-            document.getElementById('scope-zoom-label').textContent = `OPERATOR // ${zoom}X`;
+            document.getElementById('scope-zoom-label').textContent = `${state.weaponKey.toUpperCase()} // ${zoom}X`;
             document.getElementById('aim-status').textContent = state.isScoped ? `ADS ${zoom}×` : 'HIP FIRE';
             gunGroup.visible = !sniper;
             ['ch-center', 'ch-top', 'ch-bottom', 'ch-left', 'ch-right'].forEach(id => {
@@ -3012,33 +3029,33 @@
             abilityCast.cancel();updateAbilityHUD();
         };
 
-        window.buyWeapon = function(wpnKey) {
-            const wpn=WEAPONS[wpnKey];
-            if(!state.inBuyMenu||!wpn||wpn.isMelee||wpnKey==='bladestorm')return;
-            if(wpnKey!=='classic') {
-                const quote=quoteExchange(state.creds,state.pendingWeapon,state.primaryWeaponKey,wpnKey,wpn.cost);
-                if(!quote.ok){shopFeedback('信用點不足（已計入可退金額）');return;}
-                state.creds=quote.credits;state.pendingWeapon=quote.pending;state.primaryWeaponKey=wpnKey;
-                shopFeedback(quote.refund?`已退還 ${quote.refund}，新武器扣款 ${quote.charge}`:'已裝備 '+wpn.name);
-            }
-            if(state.weaponKey!==wpnKey)equipWeaponSlot(wpnKey);
-            updateShopUI();
+        window.buyWeapon = function(key){
+            const w=WEAPONS[key];if(!state.inBuyMenu||!FIREARMS[key])return;
+            if(roomRound?.phase==='finished'){shopFeedback('請先重新開局');return;}
+            if(currentRoomId&&!roomSocket?.serverFeatures?.includes('armory')&&!['vandal','phantom','classic','operator','odin'].includes(key)){shopFeedback('後端尚未支援新武器，請更新後重新加入');return;}
+            const side=isSidearm(key),prop=side?'pendingSidearm':'pendingWeapon',slot=side?'secondaryWeaponKey':'primaryWeaponKey';
+            const q=quoteExchange(state.creds,state[prop],state[slot],key,w.cost);if(!q.ok){shopFeedback('信用點不足（已計入可退金額）');return;}
+            state.creds=q.credits;state[prop]=q.pending;state[slot]=key;if(state.weaponKey!==key)equipWeaponSlot(key);updateShopUI();shopFeedback(q.refund?`已退還 ${q.refund}，新武器扣款 ${q.charge}`:'已裝備 '+w.name);
         };
-        window.buyShield = function(amount) {
-            if(!state.inBuyMenu||![25,50].includes(amount))return;
-            const quote=quoteExchange(state.creds,state.pendingShield,state.shield,amount,amount===50?1000:400);
-            if(!quote.ok){shopFeedback('信用點不足（已計入可退金額）');return;}
-            state.creds=quote.credits;state.pendingShield=quote.pending;state.shield=amount;
-            updateHealthHUD();updateShopUI();
-            shopFeedback(quote.refund?`已退還 ${quote.refund}，護盾扣款 ${quote.charge}`:'護盾已裝備');
+        function armorSnapshot(){return {armorType:state.armorType,shield:state.shield,shieldReserve:state.shieldReserve,regenReadyAt:state.regenReadyAt,regenTickAt:state.regenTickAt};}
+        function sendArmorPurchase(type,refund=false){if(!currentRoomId)return;pushMyNetworkState(true);roomSocket?.send({type:'armor_buy',armor:type,refund});}
+        window.buyShield=function(value){
+            const type=value===25?'light':value===50?'heavy':value,a=ARMORS[type];if(!state.inBuyMenu||!Object.hasOwn(ARMORS,type))return;
+            if(roomRound?.phase==='finished'){shopFeedback('請先重新開局');return;}
+            if(currentRoomId&&!roomSocket?.serverFeatures?.includes('armory')&&type==='regen'){shopFeedback('後端尚未支援再生護盾，請更新後重新加入');return;}
+            if(state.armorType===type&&state.shield===a.points&&state.shieldReserve===a.pool)return;
+            const base=state.pendingShield?.baseArmor||armorSnapshot(),baseRule=ARMORS[base.armorType]||ARMORS.none;
+            const current=state.pendingShield?state.armorType:state.shield===baseRule.points&&state.shieldReserve===baseRule.pool?state.armorType:'worn:'+state.armorType;
+            const q=quoteExchange(state.creds,state.pendingShield,current,type,a.cost);if(!q.ok){shopFeedback('信用點不足（已計入可退金額）');return;}
+            state.creds=q.credits;state.pendingShield=q.pending?{...q.pending,baseArmor:base}:null;
+            if(q.pending)equipArmor(state,type);else Object.assign(state,base);
+            sendArmorPurchase(type,!q.pending);updateHealthHUD();updateShopUI();shopFeedback(q.refund?`已退還 ${q.refund}，護盾扣款 ${q.charge}`:'護盾已裝備');
         };
-        window.sellShopItem = function(slot) {
-            if(!state.inBuyMenu)return;
-            const prop=slot==='weapon'?'pendingWeapon':'pendingShield';const receipt=state[prop];
-            if(!receipt)return;
+        window.sellShopItem=function(slot){
+            if(!state.inBuyMenu)return;const prop=slot==='weapon'?'pendingWeapon':slot==='sidearm'?'pendingSidearm':'pendingShield',receipt=state[prop];if(!receipt)return;
             state.creds+=receipt.cost;state[prop]=null;
-            if(slot==='weapon'){state.primaryWeaponKey=receipt.baseKey;equipWeaponSlot(receipt.baseKey);}
-            else{state.shield=receipt.baseKey;updateHealthHUD();}
+            if(slot==='weapon'||slot==='sidearm'){state[slot==='weapon'?'primaryWeaponKey':'secondaryWeaponKey']=receipt.baseKey;equipWeaponSlot(receipt.baseKey);}
+            else{Object.assign(state,receipt.baseArmor);sendArmorPurchase(state.armorType,true);updateHealthHUD();}
             updateShopUI();shopFeedback(`已退還 ${receipt.cost} 信用點`);
         };
 
@@ -3075,28 +3092,14 @@
             document.getElementById('tab-training').classList.toggle('selected',view!=='buy');
         };
         setMenuView('training');
-        const shopGroups={classic:'shop-sidearms',vandal:'shop-rifles',phantom:'shop-rifles',operator:'shop-snipers-list',odin:'shop-heavy-list'};
-        for(const [key,group] of Object.entries(shopGroups))document.getElementById(group).appendChild(document.getElementById('wpn-card-'+key));
-        // Unimplemented weapons remain explicitly unavailable, never fake purchases.
-        const unavailable={
-            'shop-sidearms':[['SHORTY','短管'],['FRENZY','狂弒'],['GHOST','鬼魅'],['SHERIFF','神射']],
-            'shop-smgs-list':[['STINGER','刺針'],['SPECTRE','惡靈']],
-            'shop-shotguns-list':[['BUCKY','重砲'],['JUDGE','判官']],
-            'shop-rifles':[['BULLDOG','鬥牛犬'],['GUARDIAN','捍衛者']],
-            'shop-snipers-list':[['MARSHAL','警長'],['OUTLAW','逃犯']],
-            'shop-heavy-list':[['ARES','戰神']]
-        };
-        for(const [group,items] of Object.entries(unavailable))for(const [name,label] of items){
-            const el=document.createElement('button');el.disabled=true;el.className='unavailable-weapon';el.innerHTML=`<span>${name}</span><small>${label} · 尚未開放</small>`;
-            const parent=document.getElementById(group);if(group==='shop-rifles')parent.insertBefore(el,document.getElementById('wpn-card-vandal'));else if(group==='shop-snipers-list'||group==='shop-heavy-list')parent.insertBefore(el,parent.querySelector('.val-card'));else parent.appendChild(el);
+        const groupIds={sidearm:'shop-sidearms',smg:'shop-smgs-list',shotgun:'shop-shotguns-list',rifle:'shop-rifles',sniper:'shop-snipers-list',heavy:'shop-heavy-list'};
+        for(const key of FIREARM_KEYS){
+            let card=document.getElementById('wpn-card-'+key);if(!card){card=document.createElement('button');card.id='wpn-card-'+key;card.className='val-card p-4 text-left space-y-3';card.innerHTML=`<div><strong>${WEAPONS[key].name}</strong><span>¤ ${WEAPONS[key].cost}</span></div><svg></svg><div>${WEAPONS[key].magSize} 發</div>`;card.addEventListener('click',()=>buyWeapon(key));}
+            document.getElementById(groupIds[FIREARMS[key].category]).appendChild(card);const status=document.createElement('span');status.className='weapon-owned';card.appendChild(status);card.addEventListener('contextmenu',e=>{e.preventDefault();const side=isSidearm(key),receipt=state[side?'pendingSidearm':'pendingWeapon'];if(receipt?.key===key)sellShopItem(side?'sidearm':'weapon');});
         }
-        document.getElementById('shop-rifles').appendChild(document.getElementById('wpn-card-vandal'));
+        for(const [key,group]of [['BANDIT','shop-sidearms'],['WARDEN','shop-rifles']]){const el=document.createElement('button');el.disabled=true;el.className='unavailable-weapon pending-reference';el.innerHTML=`<span>${key}</span><small>模型與數值待核對</small>`;document.getElementById(group).appendChild(el);}
         document.getElementById('shield-card-light').parentNode.insertBefore(document.getElementById('shield-card-light'),document.getElementById('shield-card-heavy'));
-        for(const key of ['vandal','phantom','classic','operator','odin']) {
-            const card=document.getElementById('wpn-card-'+key);const status=document.createElement('span');status.className='weapon-owned';card.appendChild(status);
-            card.addEventListener('contextmenu',e=>{e.preventDefault();if(state.pendingWeapon?.key===key)sellShopItem('weapon');});
-        }
-        for(const [id,amount] of [['shield-card-light',25],['shield-card-heavy',50]])document.getElementById(id).addEventListener('contextmenu',e=>{e.preventDefault();if(state.pendingShield?.key===amount)sellShopItem('shield');});
+        for(const [id,type]of [['shield-card-light','light'],['shield-card-heavy','heavy'],['shield-card-regen','regen']])document.getElementById(id).addEventListener('contextmenu',e=>{e.preventDefault();if(state.pendingShield?.key===type)sellShopItem('shield');});
 
         function paintWeaponPreview(canvas,g) {
             g.computeBoundingBox();const box=g.boundingBox,p=g.attributes.position.array,n=g.attributes.normal.array,ix=g.index.array;
@@ -3107,15 +3110,10 @@
             const ctx=canvas.getContext('2d');
             for(const i of triangles){const light=Math.max(0,Math.min(1,.47-(n[ix[i]*3+1]+n[ix[i+1]*3+1]+n[ix[i+2]*3+1])*.13+(n[ix[i]*3+2]+n[ix[i+1]*3+2]+n[ix[i+2]*3+2])*.07));const shade=Math.round(70+160*light);ctx.fillStyle=`rgb(${shade},${shade+5},${shade+3})`;ctx.beginPath();for(let k=0;k<3;k++){const j=ix[i+k]*3,x=ox+(p[j]-box.min.x)*scale,y=oy-(p[j+2]-box.min.z)*scale;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();}
         }
-        for(const card of document.querySelectorAll('.unavailable-weapon')) {
-            const key=card.querySelector('span').textContent.toLowerCase();
-            const canvas=document.createElement('canvas');canvas.width=420;canvas.height=130;card.prepend(canvas);
-            loadWeaponModel(key,new THREE.MeshBasicMaterial()).then(mesh=>{paintWeaponPreview(canvas,mesh.geometry);mesh.material.dispose()}).catch(()=>{});
-        }
-        for(const key of ['vandal','phantom','classic','operator','odin']) {
+        for(const key of FIREARM_KEYS) {
             const card=document.getElementById('wpn-card-'+key);
             const old=card.querySelector('svg');const canvas=document.createElement('canvas');canvas.width=420;canvas.height=130;canvas.className='weapon-silhouette';old.replaceWith(canvas);
-            const info=()=>{const w=WEAPONS[key];document.getElementById('shop-detail-title').textContent=w.name;document.getElementById('shop-detail-body').textContent=`爆頭 ${w.headDmg} · 身體 ${w.bodyDmg} · ${w.magSize} 發\n射速 ${(1000/w.fireRate).toFixed(1)} 發/秒`;const q=quoteExchange(state.creds,state.pendingWeapon,state.primaryWeaponKey,key,w.cost);document.getElementById('shop-detail-economy').textContent=key==='classic'?'預設隨身武器':`本次可退 ¤${state.pendingWeapon?.cost||0} · 換購需付 ¤${q.charge}`;};
+            const info=()=>{const w=WEAPONS[key];document.getElementById('shop-detail-title').textContent=w.name;document.getElementById('shop-detail-body').textContent=`爆頭 ${w.headDmg} · 身體 ${w.bodyDmg} · ${w.magSize} 發\n射速 ${(1000/w.fireRate).toFixed(1)} 發/秒`;const q=quoteExchange(state.creds,state[isSidearm(key)?'pendingSidearm':'pendingWeapon'],state[isSidearm(key)?'secondaryWeaponKey':'primaryWeaponKey'],key,w.cost);document.getElementById('shop-detail-economy').textContent=key==='classic'?'預設隨身武器':`本次可退 ¤${state.pendingWeapon?.cost||0} · 換購需付 ¤${q.charge}`;};
             card.addEventListener('mouseenter',info);card.addEventListener('focus',info);
             loadWeaponModel(key,new THREE.MeshBasicMaterial()).then(mesh=>{
                 const g=mesh.geometry,p=g.attributes.position.array,ix=g.index.array;
@@ -3128,19 +3126,12 @@
         function updateShopUI() {
             document.getElementById('shop-creds').textContent=state.creds;
             document.getElementById('hud-creds').textContent=state.creds;
-            for(const key of ['vandal','phantom','odin','operator','classic']){
-                const el=document.getElementById('wpn-card-'+key),owned=key==='classic'||state.primaryWeaponKey===key;
-                el.classList.toggle('active',owned);el.classList.toggle('equipped',state.weaponKey===key);
-                el.querySelector('.weapon-owned').textContent=owned?(state.pendingWeapon?.key===key?'已購買 · 可退還':'已擁有'):'';
-                const q=quoteExchange(state.creds,state.pendingWeapon,state.primaryWeaponKey,key,WEAPONS[key].cost);
-                el.classList.toggle('unaffordable',key!=='classic'&&!q.ok);el.setAttribute('aria-label',`${WEAPONS[key].name}，${owned?'已擁有':WEAPONS[key].cost+' 信用點'}`);
-            }
-            document.getElementById('shield-card-heavy').classList.toggle('active',state.shield===50);
-            document.getElementById('shield-card-light').classList.toggle('active',state.shield===25);
+            for(const key of FIREARM_KEYS){const side=isSidearm(key),pending=state[side?'pendingSidearm':'pendingWeapon'],current=state[side?'secondaryWeaponKey':'primaryWeaponKey'],el=document.getElementById('wpn-card-'+key),owned=current===key,q=quoteExchange(state.creds,pending,current,key,WEAPONS[key].cost);el.classList.toggle('active',owned);el.classList.toggle('equipped',state.weaponKey===key);el.querySelector('.weapon-owned').textContent=owned?(pending?.key===key?'已購買 · 可退還':'已擁有'):'';el.classList.toggle('unaffordable',!q.ok);el.setAttribute('aria-label',`${WEAPONS[key].name}，${owned?'已擁有':WEAPONS[key].cost+' 信用點'}`);}
+            for(const type of ['heavy','light','regen'])document.getElementById('shield-card-'+type).classList.toggle('active',state.armorType===type);
             document.getElementById('shop-agent-name').textContent=AGENTS[state.agent].short;
             document.querySelector('.shop-agent-emblem').innerHTML=`<img alt="" src="./assets/ui/${state.agent==='jett'?'jett':'sage'}.webp">`;
-            document.getElementById('shop-owned-label').textContent='主武器 · '+state.primaryWeaponKey.toUpperCase();
-            document.getElementById('shop-refund-label').textContent=`本次可退還 ¤${(state.pendingWeapon?.cost||0)+(state.pendingShield?.cost||0)}`;
+            document.getElementById('shop-owned-label').textContent=state.primaryWeaponKey.toUpperCase()+' / '+state.secondaryWeaponKey.toUpperCase();
+            document.getElementById('shop-refund-label').textContent=`本次可退還 ¤${(state.pendingWeapon?.cost||0)+(state.pendingSidearm?.cost||0)+(state.pendingShield?.cost||0)}`;
             document.getElementById('shop-sell-weapon').disabled=!state.pendingWeapon;
             document.getElementById('shop-sell-shield').disabled=!state.pendingShield;
             const sage=state.agent!=='jett';
@@ -3155,7 +3146,7 @@
         function setHudText(id,value){const el=document.getElementById(id),text=String(value);if(el.textContent!==text)el.textContent=text;}
         function updateHealthHUD() {
             setHudText('hud-hp',Math.max(0,Math.ceil(state.hp)));
-            setHudText('hud-shield',Math.max(0,Math.ceil(state.shield)));
+            setHudText('hud-shield',Math.max(0,Math.ceil(state.shield)));setHudText('hud-shield-reserve',state.armorType==='regen'?'儲備 '+Math.floor(state.shieldReserve):'');
         }
 
         function updateAmmoHUD() {
@@ -3254,7 +3245,7 @@
 
         function resetRound(syncRoomDoc = true) {
             clearTimeout(roundResetTimer);clearFieldObjects();
-            for(const prop of ['pendingWeapon','pendingShield']){const receipt=state[prop];if(receipt){state.creds+=receipt.cost;if(prop==='pendingWeapon')state.primaryWeaponKey=receipt.baseKey;state[prop]=null;}}
+            for(const prop of ['pendingWeapon','pendingSidearm','pendingShield']){const receipt=state[prop];if(receipt){state.creds+=receipt.cost;if(prop==='pendingWeapon')state.primaryWeaponKey=receipt.baseKey;else if(prop==='pendingSidearm')state.secondaryWeaponKey=receipt.baseKey;else if(receipt.baseArmor)Object.assign(state,receipt.baseArmor);state[prop]=null;}}
             state.roundEnding = false;
             state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
             document.getElementById('trainer-result').classList.add('hidden');
@@ -3264,7 +3255,7 @@
             camera.position.y = 0;
             setScope(false);
             state.hp = 100;
-            state.shield = 50;
+            equipArmor(state,state.armorType||'heavy');
             state.roundTimeLeft = state.trainingDuration;
             document.getElementById('round-timer').textContent=state.trainingDuration?Math.floor(state.trainingDuration/60)+':'+String(state.trainingDuration%60).padStart(2,'0'):'∞';
             document.getElementById('round-timer').className='font-val text-2xl sm:text-3xl font-black text-white tracking-wider leading-tight';
@@ -3338,7 +3329,7 @@
             const hasLock=document.pointerLockElement===renderer.domElement;
             if(hasLock){
                 if(immersiveEntryPending&&immersiveEntryCancelled){safeExitPointerLock();return;}
-                state.pendingWeapon=null;state.pendingShield=null;updateShopUI();
+                state.pendingWeapon=null;state.pendingSidearm=null;state.pendingShield=null;updateShopUI();
                 state.isLocked=true;state.inBuyMenu=false;document.getElementById('buy-menu-modal').classList.add('hidden');
             }else if(!state.inBuyMenu&&!immersiveEntryPending)showBuyMenu();
         }
@@ -3513,7 +3504,7 @@
             if (code === 'KeyE') triggerAbilityE();
             if (code === 'KeyX') triggerUltimateX();
             if (code === 'Digit1') equipWeaponSlot(state.primaryWeaponKey);
-            if (code === 'Digit2') equipWeaponSlot('classic');
+            if (code === 'Digit2') equipWeaponSlot(state.secondaryWeaponKey);
             if (code === 'Digit3') equipWeaponSlot('melee');
             if(code==='KeyG'&&currentRoomId&&networkSpike?.carrierUid===currentUser?.uid){roomSocket?.send({type:'spike_drop',id:networkSpike.id});state.holdingSpike=false;cancelSpikeAction();return;}
             if(code==='KeyF'&&currentRoomId&&networkSpike?.phase==='dropped'&&state.team==='attack'&&networkSpikeDistance()<3.3){roomSocket?.send({type:'spike_pickup',id:networkSpike.id});return;}
@@ -3742,7 +3733,7 @@
 
         function updateBotsAndVFX(dt) {
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active&&!(state.isScoped&&state.weaponKey==='operator');
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
@@ -3848,8 +3839,9 @@
         function applyDamageToPlayer(dmg, attackerName = '敵方特務', weaponName = 'VANDAL', isHead = false) {
             if(currentRoomId)return;
             if (state.hp <= 0) return;state.lastDamage=performance.now();
+            markArmorDamage(state,performance.now());
             if (state.shield > 0) {
-                const absorb = Math.min(state.shield, Math.ceil(dmg * 0.66));
+                const absorb = armorAbsorb(state,dmg);
                 state.shield -= absorb;
                 state.hp -= (dmg - absorb);
             } else {
@@ -3879,6 +3871,7 @@
         }
 
         function updateTimersAndSpike(dt) {
+            if(!currentRoomId&&state.armorType==='regen'){tickArmor(state,performance.now());updateHealthHUD();}
             if(state.isLocked&&!state.inBuyMenu) {
                 if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
                 for(const b of bots)if(b.alive&&b.healRemaining>0&&performance.now()-(b.lastDamage||0)>=2000){const amount=Math.min(b.healRemaining,(b.healRate||20)*dt,100-b.hp);b.hp+=amount;b.healRemaining-=amount;b.hpFill.scale.x=b.hp/100;if(b.hp>=100)b.healRemaining=0;}
