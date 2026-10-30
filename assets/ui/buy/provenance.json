@@ -1,0 +1,114 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "processing": "Original PNG bytes copied unchanged. Third-party asset archive, not an official Riot download.",
+  "credit": "VALORANT artwork belongs to Riot Games. The source repository MIT license does not cover Riot assets.",
+  "scope": "18 firearm images and 3 shield icons; no full original buy UI or Bandit/Warden assets found.",
+  "files": {
+    "vandal": {
+      "sourceFile": "site/local/equipment-icons/vandal.png",
+      "bytes": 31186,
+      "sha256": "07c9a2d4dc6b7926d023163237dd508104be3fec2b5712cdc1a5301bb294457d"
+    },
+    "phantom": {
+      "sourceFile": "site/local/equipment-icons/phantom.png",
+      "bytes": 34091,
+      "sha256": "3eebd86204dc44dd5bd31cc54b7a2dcbac87ca9d40de0f608c183c896ec6c553"
+    },
+    "classic": {
+      "sourceFile": "site/local/equipment-icons/classic.png",
+      "bytes": 20437,
+      "sha256": "2c0d3b18c53e1b11ed2aebd40b2473d68625a8e7af9e8557b7cee4581af275f5"
+    },
+    "operator": {
+      "sourceFile": "site/local/equipment-icons/operator.png",
+      "bytes": 26801,
+      "sha256": "a58b84d5b9d553b405e5f2868c2fb79591e7bf8b504927afb813919d89ef832e"
+    },
+    "odin": {
+      "sourceFile": "site/local/equipment-icons/odin.png",
+      "bytes": 33636,
+      "sha256": "05522897852930084b5f73253f7e462081d90b1cd036c3e21ca8ec6dedfcff69"
+    },
+    "shorty": {
+      "sourceFile": "site/local/equipment-icons/shorty.png",
+      "bytes": 16404,
+      "sha256": "7b606f8d09a0d1358550f11ac9ceb1606576918bd4352c6bfc3c9dedf4f3fc56"
+    },
+    "frenzy": {
+      "sourceFile": "site/local/equipment-icons/frenzy.png",
+      "bytes": 19983,
+      "sha256": "4bfff928e83fe079c724d5131f220f1bf6dd19f6a0506446c871fe46c4a75f0a"
+    },
+    "ghost": {
+      "sourceFile": "site/local/equipment-icons/ghost.png",
+      "bytes": 18278,
+      "sha256": "9b4d2a41cd740f5e7dd746e70c38b930d8d6b34a9373b4224373f8be1c1db516"
+    },
+    "sheriff": {
+      "sourceFile": "site/local/equipment-icons/sheriff.png",
+      "bytes": 19103,
+      "sha256": "8d6bce7a8af55e9bc1330c0c2b8883383564932e651f32fbc2e85b6a5d9decf2"
+    },
+    "stinger": {
+      "sourceFile": "site/local/equipment-icons/stinger.png",
+      "bytes": 22441,
+      "sha256": "19f73f1cd913a2773ad25827037395572aaf6474402cefb82462c905624c2c60"
+    },
+    "spectre": {
+      "sourceFile": "site/local/equipment-icons/spectre.png",
+      "bytes": 24946,
+      "sha256": "43d456f579a9e90e1fcb35838d53c9218209491bb7afd3fb17c851c975b5529f"
+    },
+    "bucky": {
+      "sourceFile": "site/local/equipment-icons/bucky.png",
+      "bytes": 28701,
+      "sha256": "f703316144468f99be3015001d6752696436b5e6877ca08c00d9ae7ebd86e0cd"
+    },
+    "judge": {
+      "sourceFile": "site/local/equipment-icons/judge.png",
+      "bytes": 32390,
+      "sha256": "2f870edaa9af995e908c4d42e56298e4a1dbdc2ab31a48d94b9ba64f313f8f16"
+    },
+    "bulldog": {
+      "sourceFile": "site/local/equipment-icons/bulldog.png",
+      "bytes": 31511,
+      "sha256": "91b75b4f7805b7ae4e59a7d01d98945e24412afb635b3ed5df1603fd6eb6bdfe"
+    },
+    "guardian": {
+      "sourceFile": "site/local/equipment-icons/guardian.png",
+      "bytes": 34256,
+      "sha256": "8a355d0130ebebc3c5ac69e0d654886b25ab22c512aade74478e76fb69f86576"
+    },
+    "marshal": {
+      "sourceFile": "site/local/equipment-icons/marshal.png",
+      "bytes": 26104,
+      "sha256": "4116126f1e58f83ad9c00fb1b5f98530a312f94cf3d49c29f1f19a2543837478"
+    },
+    "outlaw": {
+      "sourceFile": "site/local/equipment-icons/outlaw.png",
+      "bytes": 24942,
+      "sha256": "2d4d10d993ec8b4a62862d988c2febdd1107dad588f258292a08d773afb630bf"
+    },
+    "ares": {
+      "sourceFile": "site/local/equipment-icons/ares.png",
+      "bytes": 30924,
+      "sha256": "eab2c23c6b9b8c4d6fe7118f5033661e95be37e86db072c13f3fadea4e49d8e4"
+    },
+    "light": {
+      "sourceFile": "site/local/equipment-icons/light.png",
+      "bytes": 8383,
+      "sha256": "d5fbf9832f2de23358ddb9631004cfd66cf9d5baec8262f8e2fd5a00e55fa898"
+    },
+    "heavy": {
+      "sourceFile": "site/local/equipment-icons/heavy.png",
+      "bytes": 7964,
+      "sha256": "53cf07c3a6137296c9a3a9f4add8f3db84bb51908485ba50e174fd6285d3fcad"
+    },
+    "regen": {
+      "sourceFile": "site/local/equipment-icons/regen.png",
+      "bytes": 12011,
+      "sha256": "7f60e5f5b64b84f69e762b496ef1881199d0c122bcb2be97e4cfd15c7d69b2b5"
+    }
+  }
+}

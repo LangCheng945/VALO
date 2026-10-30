@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=armory1">
+    <link rel="stylesheet" href="./shop.css?v=buyicons1">
 </head>
 <body class="relative select-none">
 
@@ -668,7 +668,7 @@
                     </button>
 </div>
                     <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
-                    <div class="shield-selector"><h3>護盾</h3><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card">輕型護盾 <span>25 / ¤400</span></button><button id="shield-card-regen" onclick="buyShield('regen')" class="val-card"><img src="./assets/ui/regen-shield.png" alt="" class="regen-shield-icon">再生護盾 <span>25＋25 儲備 / ¤650</span><small>3 秒未受傷後，每秒回充 10 點</small></button></div>
+                    <div class="shield-selector"><h3>護盾</h3><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active"><img src="./assets/ui/buy/heavy.png" alt="" class="shield-icon">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card"><img src="./assets/ui/buy/light.png" alt="" class="shield-icon">輕型護盾 <span>25 / ¤400</span></button><button id="shield-card-regen" onclick="buyShield('regen')" class="val-card"><img src="./assets/ui/buy/regen.png" alt="" class="shield-icon">再生護盾 <span>25＋25 儲備 / ¤650</span><small>3 秒未受傷後，每秒回充 10 點</small></button></div>
                     <div class="loadout-note"><b id="shop-detail-title">VANDAL</b><p id="shop-detail-body">爆頭 160 · 身體 40 · 25 發</p><p id="shop-detail-economy"></p></div>
                     <section class="shop-abilities" aria-label="技能配置"><h3>ABILITIES <small>技能 · 訓練配給</small></h3><div id="shop-ability-passive"></div><div id="shop-ability-c"></div><div id="shop-ability-q"></div><div id="shop-ability-e"></div></section>
                     <div id="shop-feedback" role="status" aria-live="polite"></div>
@@ -3101,26 +3101,12 @@
         document.getElementById('shield-card-light').parentNode.insertBefore(document.getElementById('shield-card-light'),document.getElementById('shield-card-heavy'));
         for(const [id,type]of [['shield-card-light','light'],['shield-card-heavy','heavy'],['shield-card-regen','regen']])document.getElementById(id).addEventListener('contextmenu',e=>{e.preventDefault();if(state.pendingShield?.key===type)sellShopItem('shield');});
 
-        function paintWeaponPreview(canvas,g) {
-            g.computeBoundingBox();const box=g.boundingBox,p=g.attributes.position.array,n=g.attributes.normal.array,ix=g.index.array;
-            const scale=Math.min(380/(box.max.x-box.min.x),110/(box.max.z-box.min.z));
-            const ox=(canvas.width-(box.max.x-box.min.x)*scale)/2,oy=(canvas.height+(box.max.z-box.min.z)*scale)/2;
-            const triangles=[];for(let i=0;i<ix.length;i+=3)triangles.push(i);
-            triangles.sort((a,b)=>(p[ix[b]*3+1]+p[ix[b+1]*3+1]+p[ix[b+2]*3+1])-(p[ix[a]*3+1]+p[ix[a+1]*3+1]+p[ix[a+2]*3+1]));
-            const ctx=canvas.getContext('2d');
-            for(const i of triangles){const light=Math.max(0,Math.min(1,.47-(n[ix[i]*3+1]+n[ix[i+1]*3+1]+n[ix[i+2]*3+1])*.13+(n[ix[i]*3+2]+n[ix[i+1]*3+2]+n[ix[i+2]*3+2])*.07));const shade=Math.round(70+160*light);ctx.fillStyle=`rgb(${shade},${shade+5},${shade+3})`;ctx.beginPath();for(let k=0;k<3;k++){const j=ix[i+k]*3,x=ox+(p[j]-box.min.x)*scale,y=oy-(p[j+2]-box.min.z)*scale;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();}
-        }
         for(const key of FIREARM_KEYS) {
             const card=document.getElementById('wpn-card-'+key);
-            const old=card.querySelector('svg');const canvas=document.createElement('canvas');canvas.width=420;canvas.height=130;canvas.className='weapon-silhouette';old.replaceWith(canvas);
-            const info=()=>{const w=WEAPONS[key];document.getElementById('shop-detail-title').textContent=w.name;document.getElementById('shop-detail-body').textContent=`爆頭 ${w.headDmg} · 身體 ${w.bodyDmg} · ${w.magSize} 發\n射速 ${(1000/w.fireRate).toFixed(1)} 發/秒`;const q=quoteExchange(state.creds,state[isSidearm(key)?'pendingSidearm':'pendingWeapon'],state[isSidearm(key)?'secondaryWeaponKey':'primaryWeaponKey'],key,w.cost);document.getElementById('shop-detail-economy').textContent=key==='classic'?'預設隨身武器':`本次可退 ¤${state.pendingWeapon?.cost||0} · 換購需付 ¤${q.charge}`;};
+            const old=card.querySelector('svg'),image=document.createElement('img');image.className='weapon-silhouette';image.src='./assets/ui/buy/'+key+'.png';image.alt='';image.decoding='async';old.replaceWith(image);
+            const info=()=>{const w=WEAPONS[key];document.getElementById('shop-detail-title').textContent=w.name;document.getElementById('shop-detail-body').textContent=`爆頭 ${w.headDmg} · 身體 ${w.bodyDmg} · ${w.magSize} 發\n射速 ${(1000/w.fireRate).toFixed(1)} 發/秒`;const q=quoteExchange(state.creds,state[isSidearm(key)?'pendingSidearm':'pendingWeapon'],state[isSidearm(key)?'secondaryWeaponKey':'primaryWeaponKey'],key,w.cost);document.getElementById('shop-detail-economy').textContent=key==='classic'?'預設隨身武器':`本次可退 ¤${state[isSidearm(key)?'pendingSidearm':'pendingWeapon']?.cost||0} · 換購需付 ¤${q.charge}`;};
             card.addEventListener('mouseenter',info);card.addEventListener('focus',info);
-            loadWeaponModel(key,new THREE.MeshBasicMaterial()).then(mesh=>{
-                const g=mesh.geometry,p=g.attributes.position.array,ix=g.index.array;
-                g.computeBoundingBox();const box=g.boundingBox,scale=Math.min(380/(box.max.x-box.min.x),104/(box.max.z-box.min.z));
-                paintWeaponPreview(canvas,g);
-                mesh.material.dispose();
-            }).catch(()=>{});
+
         }
 
         function updateShopUI() {

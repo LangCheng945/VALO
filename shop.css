@@ -57,3 +57,6 @@
 #spike-progress-box{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);width:280px;padding:10px 15px;background:#0b1a1ccc;z-index:24}#spike-action-label{font-size:10px;letter-spacing:1px}
 
 #shield-card-regen:before{display:none}.shield-selector .regen-shield-icon{width:48px;height:48px;object-fit:contain;display:block;margin:0 auto 5px}.pending-reference{opacity:.55;cursor:not-allowed}
+
+/* Native equipment images replace projected mesh previews and placeholder shields. */
+.shield-selector .val-card:before{display:none}.shield-selector .shield-icon{display:block;width:clamp(40px,4.5vw,72px);height:clamp(40px,4.5vw,72px);object-fit:contain;margin:0 auto 6px}.weapon-silhouette{filter:none}
