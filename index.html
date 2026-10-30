@@ -554,6 +554,7 @@
                         <div class="section-heading"><h2><span>02</span> 調整手感</h2><small>MAKE IT YOURS</small></div>
                         <div class="trainer-settings-grid">
                             <label>滑鼠靈敏度 <output id="sensitivity-value">0.35</output><input id="sensitivity-input" type="range" min="0.1" max="1" step="0.01" value="0.35" oninput="setTrainerSensitivity(this.value)"><small>固定 DPI，找到適合自己的手感。</small></label>
+                            <label>畫面品質<select id="render-quality" onchange="setRenderQuality(this.value)"><option value="auto">自動 · 依效能調整</option><option value="performance">流暢 · 較低解析度</option><option value="quality">高畫質 · 較高解析度</option></select><small>卡頓時選流暢；不影響準星、介面清晰度與碰撞。</small></label>
                             <label>噴漆 · [T]<select id="spray-design" onchange="setSprayDesign(this.value)"><option value="agent">隨角色</option><option value="jett">JETT · 比心</option><option value="sage">SAGE · 讚</option><option value="gg">GG · 好局</option></select><small>近距離貼牆／地面；冷卻 3 秒，保留 30 秒。</small></label>
                             <label>遊戲時間<select id="trainer-duration" onchange="setTrainerDuration(this.value)"><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">2 分鐘</option><option value="180">3 分鐘</option><option value="300">5 分鐘 · 預設</option><option value="600">10 分鐘</option><option value="0">自由練習 · 不限時</option></select><small>單人訓練與戰術回合共用；開啟購買頁時暫停。</small></label>
                             <div>準星顏色<div class="crosshair-swatches"><button style="--swatch:#00f5d4" onclick="setCrosshairColor('#00f5d4')" aria-label="青色準星"></button><button style="--swatch:#ffffff" onclick="setCrosshairColor('#ffffff')" aria-label="白色準星"></button><button style="--swatch:#ff4655" onclick="setCrosshairColor('#ff4655')" aria-label="紅色準星"></button><button style="--swatch:#b5ff62" onclick="setCrosshairColor('#b5ff62')" aria-label="綠色準星"></button></div><small>選擇與場景對比清楚的顏色。</small></div>
@@ -682,6 +683,7 @@
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=combat2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=hands1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=motion1';
+        import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
@@ -1214,7 +1216,11 @@
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        let savedQuality='auto';try{savedQuality=localStorage.getItem('valo-render-quality')||'auto';}catch{}
+        const renderBudget=new RenderBudget(savedQuality),soundGroundCache=new SoundGroundCache();
+        function applyRenderBudget(){renderer.setPixelRatio(renderBudget.ratio(window.innerWidth,window.innerHeight,window.devicePixelRatio));}
+        window.setRenderQuality=value=>{renderBudget.setMode(value);document.getElementById('render-quality').value=renderBudget.mode;try{localStorage.setItem('valo-render-quality',renderBudget.mode);}catch{}applyRenderBudget();};
+        document.getElementById('render-quality').value=renderBudget.mode;applyRenderBudget();
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2183,6 +2189,8 @@
                 });
             });
 
+            const signature=JSON.stringify(allPlayers.map(({uid,name,team,agent})=>[uid,name,team,agent]));
+            if(bar._renderSignature===signature)return;bar._renderSignature=signature;
             countEl.textContent = `線上玩家: ${allPlayers.length} 人`;
             bar.innerHTML = `<span class="text-[10px] text-white/50 font-bold">房間成員 (${allPlayers.length})：</span>`;
             allPlayers.forEach(p => {
@@ -2198,8 +2206,7 @@
             const atkList = document.getElementById('sb-list-attack');
             const defList = document.getElementById('sb-list-defend');
             if (!atkList || !defList) return;
-            atkList.innerHTML = '';
-            defList.innerHTML = '';
+
 
             const all = [
                 {
@@ -2224,6 +2231,8 @@
                 });
             });
 
+            const signature=JSON.stringify(all);if(atkList._renderSignature===signature)return;atkList._renderSignature=signature;
+            atkList.innerHTML='';defList.innerHTML='';
             all.forEach(p => {
                 const row = document.createElement('div');
                 row.className = 'flex justify-between items-center bg-black/45 px-2.5 py-1.5 border-l-2 ' + (p.team === 'attack' ? 'border-[#FF4655]' : 'border-[#00F5D4]');
@@ -3098,9 +3107,10 @@
             ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${name}</b><small>${state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
         }
 
+        function setHudText(id,value){const el=document.getElementById(id),text=String(value);if(el.textContent!==text)el.textContent=text;}
         function updateHealthHUD() {
-            document.getElementById('hud-hp').textContent = Math.max(0, Math.ceil(state.hp));
-            document.getElementById('hud-shield').textContent = Math.max(0, Math.ceil(state.shield));
+            setHudText('hud-hp',Math.max(0,Math.ceil(state.hp)));
+            setHudText('hud-shield',Math.max(0,Math.ceil(state.shield)));
         }
 
         function updateAmmoHUD() {
@@ -3114,6 +3124,8 @@
             const strip = document.getElementById('enemy-roster-strip');
             const allyStrip = document.getElementById('ally-roster-strip');
             if (!strip) return;
+            const signature=JSON.stringify([state.agent,state.team,[...remotePlayers.values()].map(r=>[r.uid,r.data.team,r.data.name,(r.data.hp??100)>0]),bots.map(b=>[b.team,b.alive])]);
+            if(strip._renderSignature===signature)return;strip._renderSignature=signature;
             strip.innerHTML = '';
 
             // Populate Ally Strip (Self + Same Team Remote Players)
@@ -3593,6 +3605,7 @@
         /********************************************************************
          * 15. MAIN ANIMATION & PHYSICS LOOP
          ********************************************************************/
+        let lastRadarDraw=-Infinity;
         let prevTime = performance.now();
         const playerFootsteps=new FootstepTracker();
 
@@ -3768,7 +3781,11 @@
                 if ((rp.data.hp ?? 100) <= 0) return;
                 const distMove = rp.group.position.distanceTo(rp.targetPos);
                 rp.group.position.lerp(rp.targetPos, Math.min(1, dt * 12));
-                rp.footsteps ||= new FootstepTracker();const footfall=rp.footsteps.update(rp.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:realMap.ready?Math.abs(realMap.getGroundHeight(rp.targetPos.clone().add(new THREE.Vector3(0,2.2,0)))-rp.group.position.y)<.4:true,quiet:rp.data.walking||rp.data.crouching});if(footfall){const delta=rp.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const pan=delta.normalize().dot(new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y)),volume=.35*(1-distance/36)**2;sfx.playFootstep(footfall==='land',volume,pan);if(slowMultiplier(rp.group.position,0)<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
+                rp.footsteps ||= new FootstepTracker();
+                const audible=state.isLocked&&!state.inBuyMenu&&rp.group.position.distanceToSquared(playerPos)<36*36;
+                const quiet=rp.data.walking||rp.data.crouching;
+                const soundGround=realMap.ready&&audible&&!quiet?soundGroundCache.get(rp,rp.targetPos,dt,()=>realMap.getGroundHeight(rp.targetPos.clone().add(new THREE.Vector3(0,2.2,0)))):rp.group.position.y;
+                const footfall=rp.footsteps.update(rp.group.position,{active:audible,grounded:Math.abs(soundGround-rp.group.position.y)<.4,quiet});if(footfall){const delta=rp.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const pan=delta.normalize().dot(new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y)),volume=.35*(1-distance/36)**2;sfx.playFootstep(footfall==='land',volume,pan);if(slowMultiplier(rp.group.position,0)<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
                 rp.group.rotation.y = rp.targetYaw;
                 rp.group.scale.y += ((rp.data.crouching ? 0.68 : 1) - rp.group.scale.y) * Math.min(1, dt * 18);
                 rp.hpBg.lookAt(playerPos);
@@ -3904,6 +3921,7 @@
             const realDt = (now - prevTime) / 1000;
             const dt = Math.min(realDt, 0.1);
             prevTime = now;
+            if(renderBudget.sample(realDt,!document.hidden&&realMap.ready&&state.isLocked&&!state.inBuyMenu))applyRenderBudget();
 
             if (isMouseDown && WEAPONS[state.weaponKey].auto) {
                 fireWeapon();
@@ -4003,7 +4021,7 @@
             updateSpikeVisuals(dt);
             tickTraining(realDt);
             pushMyNetworkState(false);
-            drawRadar();
+            if(now-lastRadarDraw>=50){drawRadar();lastRadarDraw=now;}
 
             if(!state.inBuyMenu){realMap.updateCulling(camera);renderer.render(scene, camera);}
         }
@@ -4012,6 +4030,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            applyRenderBudget();
         });
 
         window.onload = async function () {

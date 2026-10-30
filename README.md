@@ -300,3 +300,11 @@ Sites 的 iframe 已允許 fullscreen 且沒有 pointer-lock sandbox 限制。�
 Sage 預設噴漆換為 All Good（冰牆前比讚），Jett 換為 Love > Hate（手指比心與風之心形），對應使用者提供的兩張參考。Sage 使用固定版本公開圖庫的原始透明 WebP；Jett 為依使用者圖片以影像生成工具去背的 PNG，屬參考圖處理版本，並非官方像素完全一致的擷取。兩張都隨網站放在 `assets/sprays/`，不需外部圖片服務；來源與雜湊見 `assets/sprays/provenance.json`。
 
 噴漆預載後才允許施放，依原圖寬高比顯示並保留透明邊角；尚未載好或載入失敗不會噴出白色方片。好友事件仍傳既有 sage／jett 圖案 ID，不需後端遷移；兩端重新整理後即可看到相同圖案。冷卻 3 秒、30 秒到期與每人一張的規則維持。`node tests/test_spray_art_browser.cjs` 檢查角色自動選圖、透明像素、比例、牆／地板方向、冷卻與清理；`tests/test_skill_multiplayer.cjs` 檢查好友端的相同 Sage 圖片與落點。
+
+## 畫面流暢度與連線介面
+
+操作設定提供自動／流暢／高畫質，選擇儲存在本機。自動將渲染畫面限制在約 180 萬像素，持續低於約 43 FPS 才逐步降低解析度；穩定約 60 FPS 後緩慢回復。流暢限制約 92 萬像素，高畫質維持原本最高 1.5 倍像素比。選單、背景分頁及長時間停頓不參與調節，視窗與全螢幕尺寸改變會重算；準星及介面維持 CSS 清晰度。此設定不更動碰撞、瞄準、物理或網路傳送頻率。
+
+位置快照不再重建沒有變動的房間成員、隊伍名單和戰績表，血量文字只在數值改變時更新；小地圖限制為每秒 20 次。遠端玩家腳步聲的地板高度最多快取 0.12 秒，移動超過 1 單位或高度變化超過 0.4 立即重查；遠處、靜走及未遊玩時跳過聲音專用查詢。玩家及機器人的實際地板碰撞查詢保持原樣。
+
+驗證：`node --test tests/test_runtime_performance.mjs`、`node tests/test_runtime_performance_browser.cjs`。以同一個 1920×1080、DPR 2 的 Chromium 視窗比較 `cd58c79`，初始渲染像素由 4,665,600 降至 1,798,728；100 次僅改位置的快照，觀察名單／戰績／血量 DOM 變動由 1,200 次降至 0；120 幀的遠端聲音地板查詢由 120 次降至 15 次。這是相同情境的工作量比較，並非玩家裝置的 FPS 保證。可用 `PERF_BASELINE=1 node tests/test_runtime_performance_browser.cjs` 重現基準，另可用 `PERF_BASELINE_REF` 指定版本。
