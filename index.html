@@ -513,7 +513,7 @@
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
-                    <div class="map-picker"><label for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option></select><small>切換會重置訓練；加入好友房間會自動切到房主選擇的地圖。</small></div>
+                    <div class="map-picker"><label id="map-picker-label" for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option></select><small id="map-picker-help">切換會重置訓練；好友房間由房主帶領全員一起換圖。</small></div>
                     <section class="range-hero">
                         <div class="range-hero-copy">
                             <p class="range-eyebrow" data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</p>
@@ -710,7 +710,7 @@
         import {GAME_DURATIONS,DEFAULT_GAME_DURATION,SPIKE_RULES,savedGameDuration} from './game-rules.mjs';
         import {FootstepTracker} from './movement-audio.mjs';
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=slow1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=mapchange1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1396,7 +1396,32 @@
         const mapDefinition=MAPS[selectedMap];
         const realMap = new AscentMapRuntime(renderer,selectedMap);
         const mapSelect=document.getElementById('map-select');mapSelect.value=selectedMap;
-        window.changeTrainingMap=function(id){if(!Object.hasOwn(MAPS,id)||id===selectedMap)return;if(currentRoomId){mapSelect.value=selectedMap;networkFeedback('請先離開房間，再切換地圖');return;}const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('room');location.assign(url.href);};
+        window.changeTrainingMap=function(id){
+            if(!Object.hasOwn(MAPS,id)||id===selectedMap)return;
+            if(currentRoomId){
+                mapSelect.value=selectedMap;
+                if(roomHostUid!==currentUser?.uid){networkFeedback('只有房主可以更換地圖');return;}
+                if(!roomSocket?.serverFeatures?.includes('map-change')){networkFeedback('連線後端尚未支援整隊換圖，請等待 Cloudflare 最新部署完成後重新加入');return;}
+                pushMyNetworkState(true);
+                if(roomSocket.send({type:'map_change',map:id})){mapSelect.disabled=true;networkFeedback('正在通知全員換圖…');clearTimeout(mapChangeTimer);mapChangeTimer=setTimeout(()=>{updateMapPermissions();networkFeedback('換圖尚未完成，請檢查連線後再試');},8000);}
+                return;
+            }
+            const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('room');location.assign(url.href);
+        };
+        function updateMapPermissions(){
+            const host=!!currentRoomId&&roomHostUid===currentUser?.uid;
+            mapSelect.disabled=!!currentRoomId&&(!host||currentRoomId==='PUBLIC'||!roomSocket?.serverFeatures?.includes('map-change'));
+            document.getElementById('map-picker-label').textContent=currentRoomId?'房間地圖':'訓練地圖';
+            document.getElementById('map-picker-help').textContent=!currentRoomId?'切換會重置訓練；好友房間由房主帶領全員一起換圖。':currentRoomId==='PUBLIC'?'公開房固定使用 Ascent。':!roomSocket?.serverFeatures?.includes('map-change')?'後端尚未支援整隊換圖，請等待最新部署後重新加入。':host?'你是房主：換圖會帶全員重新載入，保留房號與陣營，重置比分與回合。':'由房主切換地圖；全員會自動跟隨，保留房號與陣營。';
+        }
+        function followRoomMap(message){
+            clearTimeout(mapChangeTimer);
+            if(!Object.hasOwn(MAPS,message.map)){networkFeedback('房間地圖版本不相容，請重新整理');updateMapPermissions();return;}
+            const code=roomSocket.desiredRoom;
+            if(!roomSocket.prepareMapTransfer(message.resumeToken)){networkFeedback('瀏覽器無法儲存換圖資料，請允許此網站的儲存空間後再加入房間');return;}
+            resetMovementInput();safeExitPointerLock();networkFeedback('全員換圖中，正在載入 '+MAPS[message.map].name+'…');
+            roomSocket.leave();const url=new URL(location.href);url.searchParams.set('map',message.map);url.searchParams.set('room',code);location.replace(url.href);
+        }
         document.title=`VALO ${mapDefinition.name.toUpperCase()} | ${mapDefinition.title}地圖訓練`;
         document.getElementById('map-hero-title').innerHTML=mapDefinition.title+'。<br><em>從轉角開始。</em>';
         document.getElementById('map-description').textContent=selectedMap==='abyss'?'探索深窟雙據點、天橋與高低差；小心邊緣落差，繩索附近按 F 使用。':selectedMap==='summit'?'探索山城雙據點、中路與高低差；繩索附近按 F 使用，W／S 攀爬，F／空白鍵離開。':selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
@@ -1836,7 +1861,7 @@
         /********************************************************************
          * 7B. WEBSOCKET MULTIPLAYER ROOMS, PLAYERS & EVENTS
          ********************************************************************/
-        let currentUser=null,currentRoomId=null,roomSocket=null,lastNetSyncTime=0;
+        let currentUser=null,currentRoomId=null,roomSocket=null,lastNetSyncTime=0,roomHostUid=null,mapChangeTimer=null;
         let previousSolo=null,roomPingTimer=null;let roomMode='practice',roomRound=null;
         const remotePlayers=new Map();
         let serverAddress='',serverSettingGeneration=0;
@@ -2036,7 +2061,7 @@
         window.joinRoomByInput=()=>connectToMultiplayerRoom(document.getElementById('input-room-code').value.trim().toUpperCase());
         window.copyRoomCode=async function(){if(!currentRoomId)return;try{await navigator.clipboard.writeText(currentRoomId);networkFeedback('已複製房號 '+currentRoomId);}catch{networkFeedback('房號：'+currentRoomId+'（請選取複製）');}};
         window.leaveMultiplayerRoom=function(){
-            roomSocket?.leave();mapSelect.disabled=false;const cleanURL=new URL(location.href);if(cleanURL.searchParams.has('room')){cleanURL.searchParams.delete('room');history.replaceState(null,'',cleanURL.href);}clearInterval(roomPingTimer);currentRoomId=null;currentUser=null;clearAllRemotePlayers();
+            roomSocket?.send({type:'leave'});roomSocket?.leave();clearTimeout(mapChangeTimer);roomHostUid=null;mapSelect.disabled=false;const cleanURL=new URL(location.href);if(cleanURL.searchParams.has('room')){cleanURL.searchParams.delete('room');history.replaceState(null,'',cleanURL.href);}clearInterval(roomPingTimer);currentRoomId=null;currentUser=null;clearAllRemotePlayers();updateMapPermissions();
             document.getElementById('lobby-room-status').textContent='單人模式';document.getElementById('lobby-uid-display').textContent='尚未加入房間';
             for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.add('hidden');
             document.getElementById('round-phase-label').textContent='SOLO // LOCAL';document.getElementById('chk-enable-bots').disabled=false;
@@ -2055,11 +2080,11 @@
                 },
                 welcome(message){
                     const roomMap=message.map||'ascent';
-                    if(roomMap!==selectedMap){const code=roomSocket.desiredRoom;roomSocket.leave();if(!MAPS[roomMap]){networkFeedback('房間地圖版本不相容，請重新整理');return;}const url=new URL(location.href);url.searchParams.set('map',roomMap);url.searchParams.set('room',code);location.replace(url.href);return;}
+                    if(roomMap!==selectedMap){followRoomMap({...message,map:roomMap});return;}
                     slowClockOffset=Number.isFinite(message.serverNow)?message.serverNow-Date.now():0;
-                    roomMode=message.mode||'practice';receiveRoomRound(message.round);mapSelect.disabled=true;
+                    roomMode=message.mode||'practice';receiveRoomRound(message.round);roomHostUid=message.hostUid;
 
-                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
+                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;updateMapPermissions();state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
                     if(!previousSolo)previousSolo={enableBots:state.enableBots,gameMode:state.gameMode};
                     state.enableBots=false;state.gameMode='tactical';for(const mode of ['stationary','strafing','tactical'])document.getElementById('mode-'+mode).disabled=true;spawnBots();document.body.classList.remove('is-training');
                     document.getElementById('chk-enable-bots').checked=false;document.getElementById('chk-enable-bots').disabled=true;
@@ -2068,15 +2093,17 @@
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
+                    if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(['jett','phoenix'].includes(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(WEAPONS[message.player.weapon]&&!['classic','melee','bladestorm'].includes(message.player.weapon))state.primaryWeaponKey=message.player.weapon;}
                     applyServerSpawn(message.player);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
+                host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
                 players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
                 damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner('遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
         async function connectToMultiplayerRoom(code){
-            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1});}catch(error){networkFeedback(error.message);}
+            try{if(!serverSettingGeneration)await serverDiscovery;const client=getRoomClient();await client.join(code,{name:state.playerName,agent:state.agent,weapon:state.primaryWeaponKey,mapVersion:1,roundRules:1,mapChange:1,map:selectedMap});}catch(error){networkFeedback(error.message);}
         }
         async function pushMyNetworkState(force=false){
             if(!roomSocket?.connected||!currentUser||!currentRoomId)return;const now=performance.now();if(!force&&now-lastNetSyncTime<50)return;lastNetSyncTime=now;

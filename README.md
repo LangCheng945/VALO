@@ -338,3 +338,7 @@ X 首次啟動給 5 把飛刀，外型改成本專案製作的銀色稜面苦無
 驗證：`node --test tests/test_karambit_rules.mjs` 檢查展開曲線、30／60／144 FPS 終點與旋轉回位；`node tests/test_karambit_browser.cjs` 實測按 3／Y、鉤刃與開孔尾環、展刃幾何、展示期間物件保留、攻擊取消、快速換槍與 Sage 手部，編譯 shader 並輸出畫面。另以第一人稱槍枝測試及武器設定檢查保留既有行為。
 
 紫金爪刀的最新對照與未完成項目見 [參考紀錄](docs/prime-karambit-reference.md)。刀型依使用者圖片描點修正；原版影片受環境外連限制，現有展刃與旋轉仍屬未經影片核對的自製動作。
+
+### 好友房整隊換地圖
+
+房主在選單「房間地圖」選擇 Ascent、Haven、Summit 或 Abyss，即可帶領全房自動載入新地圖，保留房號與陣營，重置比分及戰鬥狀態。隊員跟隨切換；房主主動離房會交接權限。公開房維持 Ascent。需要 Cloudflare 後端更新至支援 `map-change`，全員重新整理網站並重新加入；詳細規則與驗證見 [多人後端說明](multiplayer/README.md#整隊換地圖)。
