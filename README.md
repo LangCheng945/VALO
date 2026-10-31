@@ -421,8 +421,8 @@ existing hitboxes, team outlines, locomotion, corpse and spectator behavior.
 Network snapshots and reconnects preserve all four identities; old backends cannot
 select the two new appearances until their `agent-models-4` feature is deployed.
 
-Iso and Clove are appearance options with firearms, melee, movement and Spike;
-their dedicated ability kits are not implemented. Their skill UI explicitly marks
+Iso remains an appearance option with firearms, melee, movement and Spike.
+Clove now has the trainer ability kit documented below. Their skill UI explicitly marks
 this and cannot cast Sage/Jett abilities. First-person hands use the existing
 authored mesh with per-agent sleeve/glove colours, not native full viewmodel rigs.
 Agent-art source details: assets/ui/README.md; mesh hashes: assets/agents/provenance.json.
@@ -442,7 +442,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Clove remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -479,3 +479,17 @@ Four filters (Initiator / Controller, including the smoke-role label / Duelist /
 Sentinel) combine with text search. All 28 verified models have a role identifier;
 Miks is Controller and Veto is Sentinel. Each available role group contains seven
 models. The existing ability-kit availability remains unchanged.
+
+
+### Clove trainer ability kit
+
+- **C / Pick-me-up**: a recent kill or damage assist unlocks one temporary-health/haste use per round. Temporary health absorbs health damage separately and expires without permanently healing the player.
+- **Q / Meddle**: equip, then left click to throw. The purple projectile bursts on collision or at its fuse; targets in range receive temporary, nonlethal decay. Actual damage remains after the decay restores.
+- **E / Ruse**: pointer-locked map planner; move the cursor, left click to mark/unmark up to two smoke locations, then right click or E to deploy. Smoke charges recharge. Dead casts use the player's recorded corpse position and a smaller range, regardless of the spectator camera.
+- **X / Not Dead Yet**: press after death within the revival window. A short rise and harmless escape phase precede a timed kill/damage-assist requirement. Failure kills the revived player. The team's elimination check reserves the revival opportunity; Sage revival and Clove self-revival cannot overlap.
+
+The Worker advertises `clove-kit-1`, owns charges, credit, decay, temporary health, revival deadlines, smoke lifetime and burst targets, and replays live smoke/projectiles to reconnects and late joins. Old backends retain the appearance but cannot consume these new abilities. Round/map resets clear effects and status, and Spike ends the round without creating another self-revive opportunity. The solo version uses the same status rules; bots can receive decay and credit the player's recent damage assist.
+
+These are **trainer approximations**, not a verified current official patch: timings/ranges/charges live in `multiplayer/clove-rules.mjs`; abilities and ultimates still use the existing per-round training allocation rather than the full credit/ultimate-point economy. Meddle currently bursts on first contact instead of reproducing all bounce/fuse behavior. The Worker validates trajectories/ranges but does not load map triangles or authoritative movement, so terrain and line-of-sight validation are incomplete. The revive escape phase ends automatically. Icons, butterfly effects and purple smoke are authored approximations, not original game animations or sounds. Iso's kit remains unavailable.
+
+Validation: `node tests/test_clove_browser.cjs`, `cd multiplayer && npm test`. The browser test exercises native fullscreen/pointer lock, planner placement, C damage/expiry, Q equip/throw, dead E/X, escape fire lockout and reset cleanup. Worker tests include real WebSocket peers for assist credit, remote smoke, late joins, revival and survival confirmation.

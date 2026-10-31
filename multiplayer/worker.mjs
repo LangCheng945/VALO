@@ -1,3 +1,5 @@
+import {cloveEvent,liveCloveEffects,tickClove,recordCloveDeath,awardCloveContributors} from './clove-events.mjs';
+import {clovePublic,cloveInvulnerable,resetClove} from './clove-rules.mjs';
 import {normalizeAgent} from './agents.mjs';
 import {ARMORS,equipArmor,markArmorDamage,tickArmor} from './armor.mjs';
 import {FIREARMS,isSidearm,firearmDamage} from './firearms.mjs';
@@ -43,13 +45,13 @@ export default {
  }
 };
 export class GameRoom {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.rate=new Map();this.meta=null;this.rounds=new RoundRules(this);this.spike=new RoomSpike(this);this.ready=ctx.blockConcurrencyWhile(async()=>{this.meta=await ctx.storage.get('meta')||null;this.sprays=await ctx.storage.get('sprays')||[];this.barriers=await ctx.storage.get('barriers')||[];const slow=await ctx.storage.get('slow');this.slowFields=slow?.fields||[];this.slowFlights=slow?.flights||[];});}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.rate=new Map();this.meta=null;this.rounds=new RoundRules(this);this.spike=new RoomSpike(this);this.ready=ctx.blockConcurrencyWhile(async()=>{this.meta=await ctx.storage.get('meta')||null;this.sprays=await ctx.storage.get('sprays')||[];this.barriers=await ctx.storage.get('barriers')||[];const slow=await ctx.storage.get('slow');this.slowFields=slow?.fields||[];this.slowFlights=slow?.flights||[];this.cloveEffects=await ctx.storage.get('cloveEffects')||{smokes:[],flights:[]};});}
  sockets(){return this.ctx.getWebSockets().filter(ws=>ws.readyState===1);}
  data(ws){return ws.deserializeAttachment();}
  save(ws,p){ws.serializeAttachment(p);}
  send(ws,p){try{ws.send(JSON.stringify(p));}catch{}}
  broadcast(p){for(const ws of this.sockets())this.send(ws,p);}
- players(){return this.sockets().map(ws=>{const p=this.data(ws);if(!p?.joined||p.leaving)return null;const {uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt}=p;return {armorType:p.armorType||(shield===25?'light':shield>0?'heavy':'none'),shieldReserve:p.shieldReserve||0,primaryWeapon:p.primaryWeapon||'vandal',secondaryWeapon:p.secondaryWeapon||'classic',uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt,barrierUsed:p.agent==='phoenix'&&p.cUsed>=1,slowCharges:p.agent==='phoenix'?Math.max(0,2-(p.qUsed||0)):null,healCooldown:Math.max(0,45-(Date.now()-(p.lastHeal||0))/1000)};}).filter(Boolean);}
+ players(){return this.sockets().map(ws=>{const p=this.data(ws);if(!p?.joined||p.leaving)return null;const {uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt}=p;return {clove:p.agent==='clove'?clovePublic(p,Date.now()):null,tempHealth:p.tempHealth||0,decayUntil:p.decayUntil||0,armorType:p.armorType||(shield===25?'light':shield>0?'heavy':'none'),shieldReserve:p.shieldReserve||0,primaryWeapon:p.primaryWeapon||'vandal',secondaryWeapon:p.secondaryWeapon||'classic',uid,name,team,agent,weapon,x,y,z,yaw,pitch,crouching,walking,hp,shield,kills,deaths,active,inRound,ultUsed,reviveAt,barrierUsed:p.agent==='phoenix'&&p.cUsed>=1,slowCharges:p.agent==='phoenix'?Math.max(0,2-(p.qUsed||0)):null,healCooldown:Math.max(0,45-(Date.now()-(p.lastHeal||0))/1000)};}).filter(Boolean);}
  hostUid(){
   const now=Date.now(),members=this.players();
   if(this.meta.hostUid&&(members.some(p=>p.uid===this.meta.hostUid)||this.meta.hostUntil>now))return this.meta.hostUid;
@@ -89,13 +91,13 @@ export class GameRoom {
     Object.assign(p,saved,{active:false,lastSeen:now,windowAt:now,messages:0,armoryClient:m.armoryVersion===1,mapChange:m.mapChange===1,mapPending:false});delete p.expires;
     if(p.mapEpoch!==(this.meta.mapEpoch||0)){this.resetForMap(p);}
     for(const old of this.sockets()){if(old!==ws&&this.data(old)?.uid===p.uid){const previous=this.data(old);previous.mapPending=true;this.save(old,previous);old.close(1000,'Replaced');}}
-    if(this.rounds.enabled&&p.roundNumber!==this.meta.round.number){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round.number},spawn(p.team,this.meta.map));equipArmor(p,p.armorType||'heavy');p.armorBase=null;}
-    if(!this.rounds.enabled&&p.hp===0&&now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team,this.meta?.map));equipArmor(p,p.armorType||'heavy');}
-    if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
+    if(this.rounds.enabled&&p.roundNumber!==this.meta.round.number){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round.number},spawn(p.team,this.meta.map));resetClove(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;}
+    if(!this.rounds.enabled&&p.hp===0&&now>=p.respawnAt&&!(p.clove?.reviveWindow>now||p.clove?.riseAt)){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0},spawn(p.team,this.meta?.map));resetClove(p);equipArmor(p,p.armorType||'heavy');}
+    if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,cloveEffects:liveCloveEffects(this,now),slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
    }
    const members=this.players(),attack=members.filter(x=>x.team==='attack').length,defend=members.length-attack;
    Object.assign(p,{joined:true,name:cleanText(m.name)||'特務',team:attack<=defend?'attack':'defend',agent:normalizeAgent(m.agent),weapon:isWeapon(m.weapon)&&m.weapon!=='bladestorm'?m.weapon:'vandal',hp:100,shield:50,kills:0,deaths:0,active:false,resumeToken:[...crypto.getRandomValues(new Uint8Array(32))].map(x=>x.toString(16).padStart(2,'0')).join(''),lastShot:0,lastChat:0,lastAbility:0,cUsed:0,qUsed:0,ultUsed:false,inRound:false,reviveAt:0,roundNumber:this.meta.round?.number||1,mapEpoch:this.meta.mapEpoch||0},spawn(attack<=defend?'attack':'defend',this.meta?.map));
-   if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
+   if(m.map&&m.map!==this.meta.map)p.mapPending=true;this.save(ws,p);if(m.map&&m.map!==this.meta.map)await this.ctx.storage.put('resume:'+p.resumeToken,{...p,active:false,expires:now+180000});this.send(ws,{type:'welcome',protocol:VERSION,serverNow:now,features:FEATURES,cloveEffects:liveCloveEffects(this,now),slowFields:liveSlowFields(this,now),slowFlights:liveSlowFlights(this,now),barriers:liveBarriers(this,now),sprays:(this.sprays||[]).filter(s=>s.expiresAt>now),map:this.meta.map||'ascent',hostUid:this.hostUid(),mode:this.meta.mode||'practice',round:this.rounds.state(),uid:p.uid,resumeToken:p.resumeToken,player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();await this.ctx.storage.setAlarm(now+1000);return;
   }
   if(!p.joined||p.leaving)return;
   if(m.type==='match_restart'&&!p.mapPending){if(this.meta.public||this.hostUid()!==p.uid||this.meta.round.phase!=='finished'){this.send(ws,{type:'map_error',reason:'比賽結束後由房主重新開局；公開房會自動換圖'});return;}await this.resetMatchMap(this.meta.map,now);return;}
@@ -104,7 +106,7 @@ export class GameRoom {
   if(p.mapPending)return;
   if(m.type==='ping'){this.send(ws,{type:'pong',at:m.at});return;}
   if(m.type==='state'&&validPose(m)){
-   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&!p.armoryClient&&p.armorType!=='regen'&&[0,25,50].includes(m.shield)){p.shield=m.shield;p.armorType=m.shield===25?'light':m.shield===50?'heavy':'none';}if(m.active)p.armorBase=null;if(FIREARMS[m.primaryWeapon]?.slot==='primary')p.primaryWeapon=m.primaryWeapon;if(isSidearm(m.secondaryWeapon))p.secondaryWeapon=m.secondaryWeapon;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.spikeEquipped=!!m.holdingSpike&&this.meta.spike?.carrierUid===p.uid;p.agent=normalizeAgent(m.agent);if(isWeapon(m.weapon))p.weapon=m.weapon;}
+   if(p.hp>0){if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase))return;if(m.active)p.inRound=true;if(!p.active&&!p.armoryClient&&p.armorType!=='regen'&&[0,25,50].includes(m.shield)){p.shield=m.shield;p.armorType=m.shield===25?'light':m.shield===50?'heavy':'none';}if(m.active)p.armorBase=null;if(FIREARMS[m.primaryWeapon]?.slot==='primary')p.primaryWeapon=m.primaryWeapon;if(isSidearm(m.secondaryWeapon))p.secondaryWeapon=m.secondaryWeapon;for(const key of ['x','y','z','yaw'])p[key]=m[key];p.pitch=finite(m.pitch,-2,2)?m.pitch:0;p.crouching=!!m.crouching;p.walking=!!m.walking;p.active=!!m.active;p.spikeEquipped=!!m.holdingSpike&&this.meta.spike?.carrierUid===p.uid;if(p.agent!==normalizeAgent(m.agent)){resetClove(p);}p.agent=normalizeAgent(m.agent);if(isWeapon(m.weapon))p.weapon=m.weapon;}
    this.save(ws,p);await this.spike.onState(p,now);await this.rounds.activated();this.queueSnapshot();return;
   }
   if(m.type==='armor_buy'){
@@ -116,15 +118,17 @@ export class GameRoom {
   }
   if(this.rounds.enabled&&this.meta.round.phase==='finished'&&!['chat','ping'].includes(m.type))return;
   if(m.type==='team'&&['attack','defend'].includes(m.team)&&!p.active&&p.hp>0){await this.spike.drop(p,now);p.team=m.team;Object.assign(p,spawn(p.team,this.meta?.map));this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});await this.spike.ensureCarrier();this.snapshot();return;}
+  if(cloveInvulnerable(p,now)&&m.type.startsWith('spike_'))return;
   if(await this.spike.handle(ws,p,m,now))return;
   if(m.type==='revive'){await this.rounds.revive(ws,p,m.targetUid);return;}
   if(this.rounds.enabled&&['ending','finished'].includes(this.meta.round.phase)&&['shot','hit','heal','smoke_launch'].includes(m.type))return;
   if(await slowEvent(this,ws,p,m,now))return;
   if(await barrierEvent(this,ws,p,m,now))return;
+  if(await cloveEvent(this,ws,p,m,now))return;
   if(await skillEvent(this,ws,p,m,now))return;
   if(m.type==='chat'&&now-p.lastChat>=500){p.lastChat=now;this.save(ws,p);this.broadcast({type:'event',event:{type:'chat',senderUid:p.uid,senderName:p.name,senderTeam:p.team,text:cleanText(m.text,240)}});return;}
   if(['shot','hit'].includes(m.type)&&(p.spikeEquipped||this.meta.spike?.action?.uid===p.uid))return;
-  if(m.type==='shot'&&p.hp>0&&p.active){
+  if(m.type==='shot'&&p.hp>0&&p.active&&!cloveInvulnerable(p,now)){
    const w=WEAPONS[p.weapon];if(!w)return;
    if(m.pellet){if(!acceptPellet(p,m,now,w))return;}else if(w.pellets>1)return;else if(m.volley){if(!acceptBladeVolley(p,m,now))return;}else if(now-p.lastShot<w.interval*.8)return;
    if(!['sx','sy','sz','ex','ey','ez'].every(k=>finite(m[k])))return;
@@ -132,20 +136,21 @@ export class GameRoom {
    p.lastShot=now;p.shotUsed=false;p.shotWeapon=p.weapon;p.shotEnd={x:m.ex,y:m.ey,z:m.ez};this.save(ws,p);
    this.broadcast({type:'event',event:{type:'shot',senderUid:p.uid,weapon:p.weapon,pelletIndex:m.pellet?.index||0,sx:m.sx,sy:m.sy,sz:m.sz,ex:m.ex,ey:m.ey,ez:m.ez,color:0xb9f5ff}});return;
   }
-  if(m.type==='hit'&&p.hp>0&&p.active){
+  if(m.type==='hit'&&p.hp>0&&p.active&&!cloveInvulnerable(p,now)){
    const victim=this.sockets().find(s=>this.data(s)?.uid===m.targetUid);if(!victim)return;const v=this.data(victim);
-   if(v.hp<=0||v.team===p.team||!v.active)return;
+   if(v.hp<=0||v.team===p.team||!v.active||cloveInvulnerable(v,now))return;
    const melee=p.weapon==='melee';if(melee){if(Math.hypot(p.x-v.x,p.y-v.y,p.z-v.z)>4.5||now-p.lastShot<420)return;p.lastShot=now;}
    else{if(p.shotUsed||now-p.lastShot>400||!p.shotEnd||Math.hypot(p.shotEnd.x-v.x,p.shotEnd.y-(v.y-1),p.shotEnd.z-v.z)>3.5)return;p.shotUsed=true;}
-   const hitWeapon=melee?p.weapon:(p.shotWeapon||p.weapon),w=WEAPONS[hitWeapon],part=m.isHead===true?'head':m.part==='legs'?'legs':'body',damage=firearmDamage(hitWeapon,part,Math.hypot(p.x-v.x,p.y-v.y,p.z-v.z))??(m.isHead===true?w.head:w.body);Object.assign(v,applyDamage(v,damage));v.lastDamage=now;markArmorDamage(v,now);if(v.armorType==='regen'&&v.hp>0)await this.ctx.storage.setAlarm(now+250);
-   this.send(victim,{type:'damage',hp:v.hp,shield:v.shield,attacker:p.name});
-   if(v.hp===0){v.shieldReserve=0;v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:hitWeapon.toUpperCase(),isHead:!!m.isHead}});}
+   const hitWeapon=melee?p.weapon:(p.shotWeapon||p.weapon),w=WEAPONS[hitWeapon],part=m.isHead===true?'head':m.part==='legs'?'legs':'body',damage=firearmDamage(hitWeapon,part,Math.hypot(p.x-v.x,p.y-v.y,p.z-v.z))??(m.isHead===true?w.head:w.body);Object.assign(v,applyDamage(v,damage));v.damageContributors||={};v.damageContributors[p.uid]=now;v.lastDamage=now;markArmorDamage(v,now);if(v.armorType==='regen'&&v.hp>0)await this.ctx.storage.setAlarm(now+250);
+   this.send(victim,{type:'damage',hp:v.hp,shield:v.shield,tempHealth:v.tempHealth||0,attacker:p.name});
+   if(v.hp===0){recordCloveDeath(v,now);awardCloveContributors(this,p,v,now);v.shieldReserve=0;v.healRemaining=0;v.deaths++;v.respawnAt=this.rounds.enabled?0:now+5000;p.kills++;this.broadcast({type:'event',event:{type:'kill',killerUid:p.uid,killerName:p.name,victimUid:v.uid,victimName:v.name,weaponName:hitWeapon.toUpperCase(),isHead:!!m.isHead}});}
    this.save(ws,p);this.save(victim,v);if(v.hp===0){await this.spike.drop(v,now);await this.rounds.elimination();await this.ctx.storage.setAlarm(now+250);}this.snapshot();return;
   }
 
   this.save(ws,p);
  }
  resetForMap(p){
+  resetClove(p);
   if(p.weapon==='bladestorm')p.weapon='vandal';
   Object.assign(p,{hp:100,shield:50,kills:0,deaths:0,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:this.meta.round.number,mapEpoch:this.meta.mapEpoch||0,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0,lastShot:0,shotUsed:true,shotEnd:null,volley:null,pelletBatch:null,armorType:'heavy',shieldReserve:0,regenReadyAt:0,regenTickAt:0,armorBase:null},spawn(p.team,this.meta.map));
  }
@@ -163,8 +168,8 @@ export class GameRoom {
   await this.ctx.blockConcurrencyWhile(async()=>{
    this.meta.map=map;this.meta.mapEpoch=(this.meta.mapEpoch||0)+1;this.meta.lastMapChange=now;this.meta.hostUntil=now+180000;this.meta.transferUntil=now+180000;
    this.meta.spike=null;this.meta.round={number:1,phase:'waiting',endsAt:0,nextAt:0,scoreAttack:0,scoreDefend:0};
-   this.slowFlights=[];this.slowFields=[];this.sprays=[];this.barriers=[];
-   await this.ctx.storage.delete(['slow','sprays','barriers']);
+   this.cloveEffects={smokes:[],flights:[]};this.slowFlights=[];this.slowFields=[];this.sprays=[];this.barriers=[];
+   await this.ctx.storage.delete(['slow','sprays','barriers','cloveEffects']);
    await this.ctx.storage.put('meta',this.meta);
    const tickets=[];
    for(const socket of this.sockets()){
@@ -180,9 +185,9 @@ export class GameRoom {
  async webSocketError(ws){await this.webSocketClose(ws);}
  async alarm(){
   await this.ready;const sockets=this.sockets(),now=Date.now();if(sockets.length===0){if(this.meta?.transferUntil>now){await this.ctx.storage.setAlarm(this.meta.transferUntil);return;}await this.ctx.storage.deleteAll();this.meta=null;return;}
-  let pending=await this.spike.tick(now);pending=await this.rounds.alarm(now)||pending;pending=expireSmokeFlights(this,now)||pending;pending=await updateBarriers(this,now)||pending;pending=await updateSlowObjects(this,now)||pending;
+  let pending=await this.spike.tick(now);pending=await this.rounds.alarm(now)||pending;pending=await tickClove(this,now)||pending;pending=expireSmokeFlights(this,now)||pending;pending=await updateBarriers(this,now)||pending;pending=await updateSlowObjects(this,now)||pending;
   const stale=await this.ctx.storage.list({prefix:'resume:',limit:1000});for(const [key,value]of stale)if(value.expires<now)await this.ctx.storage.delete(key);
-  for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.mapPending)continue;if(p.armorType==='regen'){pending=tickArmor(p,now)||pending;this.save(ws,p);}if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal&&now-(p.lastDamage||0)>=2000){const amount=Math.min(p.healRate||3,p.healRemaining,100-p.hp);p.hp+=amount;p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0&&!this.rounds.enabled&&!p.reviveAt){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,lastHeal:0,smokeFlights:{},active:false},spawn(p.team,this.meta?.map));equipArmor(p,p.armorType||'heavy');this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
+  for(const ws of sockets){const p=this.data(ws);if((!p.joined&&now-p.connectedAt>15000)||(now-p.lastSeen>30000)){ws.close(1008,'Join timeout');continue;}if(p.mapPending)continue;if(p.armorType==='regen'){pending=tickArmor(p,now)||pending;this.save(ws,p);}if(p.healRemaining>0&&p.hp>0){if(now>=p.nextHeal&&now-(p.lastDamage||0)>=2000){const amount=Math.min(p.healRate||3,p.healRemaining,100-p.hp);p.hp+=amount;p.tempHealth=Math.min(p.tempHealth||0,Math.max(0,150-p.hp));p.healRemaining-=amount;p.nextHeal=now+1000;if(p.hp===100)p.healRemaining=0;this.save(ws,p);}pending ||= p.healRemaining>0;}if(p.hp===0&&!this.rounds.enabled&&!p.reviveAt&&!(p.clove?.reviveWindow>now||p.clove?.riseAt)){if(now>=p.respawnAt){Object.assign(p,{hp:100,shield:50,cUsed:0,qUsed:0,ultUsed:false,lastHeal:0,smokeFlights:{},active:false},spawn(p.team,this.meta?.map));resetClove(p);equipArmor(p,p.armorType||'heavy');this.save(ws,p);this.send(ws,{type:'spawn',player:this.players().find(x=>x.uid===p.uid)});}else pending=true;}}
   this.snapshot();await this.ctx.storage.setAlarm(now+(pending?250:15000));
  }
 }

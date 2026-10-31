@@ -1,0 +1,15 @@
+// Trainer tuning, deliberately separate from the unverified current official patch numbers.
+export const CLOVE=Object.freeze({smokeRange:55,deadSmokeRange:35,smokeRadius:4.2,smokeMs:13500,smokeRechargeMs:30000,meddleSpeed:22,meddleGravity:10,meddleFuseMs:1400,meddleRadius:6.5,decayAmount:90,decayMs:5000,pickupWindowMs:8000,pickupMs:8000,haste:1.15,reviveWindowMs:8000,riseMs:1500,escapeMs:2000,surviveMs:12000,assistWindowMs:8000});
+export const cloveState=p=>(p.clove ||= {});
+export function smokeCharges(p,now){const c=cloveState(p);c.smokeReady=(c.smokeReady||[]).filter(t=>t>now);return Math.max(0,2-c.smokeReady.length);}
+export function smokeAnchor(p){return p.hp>0?p:(p.clove?.deathPosition||p);}
+export function canCloveRevive(p,now){const c=p.clove;return p.agent==='clove'&&p.hp<=0&&!p.reviveAt&&!p.ultUsed&&c?.reviveWindow>now&&!c.riseAt;}
+export function cloveInvulnerable(p,now){return p.agent==='clove'&&(p.clove?.escapeUntil||0)>now;}
+export function cloveDeath(p,now,{allowRevive=true}={}){const c=cloveState(p);Object.assign(c,{deathPosition:{x:p.x,y:p.y,z:p.z},reviveWindow:allowRevive&&!p.ultUsed?now+CLOVE.reviveWindowMs:0,riseAt:0,escapeUntil:0,surviveUntil:0,pickupUntil:0});p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
+export function awardTakedown(p,position,now){if(p.agent!=='clove')return;const c=cloveState(p);c.takedown={...position,at:now};if(p.hp>0&&c.surviveUntil>now){c.surviveUntil=0;c.revivedConfirmed=true;}}
+export function applyDecay(p,now){if(p.hp<=0||cloveInvulnerable(p,now))return;const amount=Math.min(CLOVE.decayAmount,Math.max(0,p.hp-1));p.hp-=amount;p.decayAmount=(p.decayAmount||0)+amount;p.decayUntil=now+CLOVE.decayMs;}
+export function absorbTempHealth(p,damage){p.tempHealth=Math.min(p.tempHealth||0,Math.max(0,150-p.hp));const absorbed=Math.min(p.tempHealth||0,damage);p.tempHealth=Math.max(0,(p.tempHealth||0)-absorbed);return damage-absorbed;}
+export function tickCloveStatuses(p,now){let pending=false;if(p.tempHealth>0){if(now>=(p.clove?.pickupUntil||0))p.tempHealth=0;else pending=true;}if(p.decayUntil){if(now>=p.decayUntil){if(p.hp>0)p.hp=Math.min(100,p.hp+(p.decayAmount||0));p.decayAmount=0;p.decayUntil=0;}else pending=true;}if(p.tempHealth>0)p.tempHealth=Math.min(p.tempHealth,Math.max(0,150-p.hp));return pending;}
+export function clovePublic(p,now){const c=p.clove||{};return {smokes:smokeCharges(p,now),smokeReady:c.smokeReady||[],cUsed:!!c.cUsed,qUsed:!!c.qUsed,takedownUntil:(c.takedown?.at||0)+CLOVE.pickupWindowMs,pickupUntil:c.pickupUntil||0,reviveWindow:c.reviveWindow||0,deathPosition:c.deathPosition||null,riseAt:c.riseAt||0,escapeUntil:c.escapeUntil||0,surviveUntil:c.surviveUntil||0};}
+export function resetClove(p){p.clove={};p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;p.damageContributors={};}
+export function meddlePosition(f,now){const t=Math.min(CLOVE.meddleFuseMs,Math.max(0,now-f.createdAt))/1000;return{x:f.x+f.dx*CLOVE.meddleSpeed*t,y:f.y+f.dy*CLOVE.meddleSpeed*t-CLOVE.meddleGravity*t*t/2,z:f.z+f.dz*CLOVE.meddleSpeed*t};}

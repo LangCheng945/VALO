@@ -4,7 +4,7 @@ const base=process.env.VALO_TEST_SERVER||'http://127.0.0.1:8790',origin='http://
 test('all model-backed identities have explicit model names and only implemented kits expose abilities',()=>{
  assert.equal(AGENT_KEYS.length,28);assert.equal(AGENT_ROLES.length,4);for(const role of AGENT_ROLES)assert.equal(AGENT_KEYS.filter(key=>AGENTS[key].roleId===role.id).length,7);assert.equal(AGENTS.miks.roleId,'controller');assert.equal(AGENTS.veto.roleId,'sentinel');assert(AGENT_KEYS.includes('kayo')&&AGENT_KEYS.includes('vyse'));assert(!AGENT_KEYS.includes('phoenix-original'));assert(!agentSupported('vyse',['agent-models-4']));assert(agentSupported('vyse',['agent-models-28']));assert.equal(agentModelKey('phoenix'),'sage');assert.equal(agentModelKey('iso'),'iso');assert.equal(agentModelKey('clove'),'clove');assert.equal(agentLabel('clove'),'CLOVE');
  for(const key of ['constructor','__proto__',null,{},'']){assert(!isAgent(key));assert.equal(normalizeAgent(key),'jett');}
- assert(AGENTS.jett.abilities&&AGENTS.phoenix.abilities);assert(!AGENTS.iso.abilities&&!AGENTS.clove.abilities);
+ assert(AGENTS.jett.abilities&&AGENTS.phoenix.abilities);assert(!AGENTS.iso.abilities&&AGENTS.clove.abilities);
 });
 function peer(code,agent,resumeToken){
  const ws=new WebSocket(base.replace('http','ws')+'/rooms/'+code,{headers:{Origin:origin}}),messages=[];

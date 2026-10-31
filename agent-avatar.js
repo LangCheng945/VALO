@@ -1,11 +1,11 @@
-import {agentModelKey} from './multiplayer/agents.mjs?v=roles1';
+import {agentModelKey} from './multiplayer/agents.mjs?v=clove1';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 // Local, pinned character data. Gameplay continues to use the original separate hitboxes.
 import {loadWeaponModel} from './weapon-models.js?v=armory1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE,base=new URL('./assets/agents/',import.meta.url),cache=new Map();let dataPromise;
 const json=async url=>{const r=await fetch(url);if(!r.ok)throw Error('Character data '+r.status);return r.json()};
-function data(){return dataPromise||=(Promise.all([json(new URL('manifest.json?v=roles1',base)),json(new URL('rig.json',base))]).catch(e=>{dataPromise=null;throw e}));}
+function data(){return dataPromise||=(Promise.all([json(new URL('manifest.json?v=clove1',base)),json(new URL('rig.json',base))]).catch(e=>{dataPromise=null;throw e}));}
 const floats=(array,scale)=>Float32Array.from(array,v=>v/scale);
 async function source(agent){
  const key=agentModelKey(agent);if(!cache.has(key))cache.set(key,(async()=>{

@@ -1,6 +1,6 @@
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
-import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=roles1';
+import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=clove1';
 import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;

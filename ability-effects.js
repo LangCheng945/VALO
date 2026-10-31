@@ -1,4 +1,4 @@
-import {FirstPersonHands} from './first-person-view.js?v=roles1';
+import {FirstPersonHands} from './first-person-view.js?v=clove1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -23,6 +23,7 @@ const paths={
         <g transform="rotate(22 75 67)"><path d="M75 16C69 29 67 40 68 55L72 59H78L82 55C83 40 81 29 75 16ZM71 75H79L78 92H72Z"/><circle cx="75" cy="67" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/></g>`
 };
 export function abilityIcon(agent,key){
+    if(agent==='clove'){const shapes={c:'<path d="M50 12C35 20 26 35 29 48C10 26 5 47 21 62L44 85L50 95L56 85L79 62C95 47 90 26 71 48C74 35 65 20 50 12Z"/>',q:'<circle cx="50" cy="50" r="21"/><path d="M42 3H58V22H42ZM42 78H58V97H42ZM3 42H22V58H3ZM78 42H97V58H78ZM11 19L22 8L36 23L24 35ZM65 76L76 65L91 79L80 91ZM9 80L23 65L35 77L20 92ZM65 23L80 8L92 20L77 35Z"/>',e:'<path d="M12 62C-2 49 12 28 29 35C31 6 71 5 75 35C98 30 106 63 85 71H25C29 60 43 54 50 56C44 43 29 42 12 62ZM19 79H81V88H19Z"/>',x:'<path d="M50 8L77 42H61V74H80L50 97L20 74H39V42H23Z"/><path d="M8 15H21V57H8ZM79 15H92V57H79Z"/>'};return `<svg viewBox="0 0 100 100" data-agent="clove" aria-hidden="true" fill="currentColor">${shapes[key]||''}</svg>`;}
     if(!['jett','phoenix'].includes(agent))return '';
     const character=agent==='jett'?'jett':'sage';
     const name=character+key.toUpperCase();
@@ -65,17 +66,31 @@ export class AbilityCastView {
  constructor(camera){
   this.root=new T.Group();this.root.name='ability-cast-hands';camera.add(this.root);this.root.visible=false;this.remaining=0;this.elapsed=0;this.hands=new T.Group();this.root.add(this.hands);
   this.handsRig=new FirstPersonHands('jett','orb',null);this.root.remove(this.hands);this.hands=this.handsRig.root;this.root.add(this.hands);
-  const orbMat=shader(`void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);gl_FragColor=vec4(c,.65+rim*.32);}`,{side:T.FrontSide});
+  const orbMat=shader(`uniform float cloveTint;void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);c=mix(c,c.gbr*vec3(1.,.65,1.3),cloveTint);gl_FragColor=vec4(c,.65+rim*.32);}`,{side:T.FrontSide});
   this.orb=new T.Group();this.orb.position.set(.10,-.15,-.75);this.root.add(this.orb);
-  this.orb.add(new T.Mesh(new T.SphereGeometry(.145,32,24),orbMat));
+  orbMat.uniforms.cloveTint={value:0};this.orb.add(new T.Mesh(new T.SphereGeometry(.145,32,24),orbMat));
   const core=new T.Mesh(new T.IcosahedronGeometry(.043,1),new T.MeshBasicMaterial({color:0x71ffe6}));core.scale.set(.7,1.25,.7);this.orb.add(core);
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
- setAgent(agent){this.handsRig.setAgent(agent);}
+ setAgent(agent){this.handsRig.setAgent(agent);const purple=agent==='clove';this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
  get active(){return this.held||this.remaining>0;}
  play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
  holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}
  cancel(){this.held=false;this.remaining=0;this.root.visible=false;}
  update(dt,enabled){this.handsRig.update({dt});if(!enabled)this.cancel();if(!this.active)return;this.elapsed+=dt;if(this.held){this.root.position.y=0;this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);return;}this.remaining=Math.max(0,this.remaining-dt);const t=this.elapsed/this.duration;this.root.position.y=-.32*(Math.max(0,1-t*6)+Math.max(0,(t-.7)/.3));this.orb.rotation.y+=dt*.65;updateEffect(this.orb,this.elapsed);this.wind.rotation.z+=dt*1.8;for(const w of this.wind.children)w.material.opacity=.3*Math.sin(Math.PI*t);this.root.visible=this.active;}
+}
+
+export function makeCloveSmoke(){
+ const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*4.+vec3(time*.14,time*.06,0.));float thread=pow(max(0.,sin(p.y*17.+atan(p.z,p.x)*3.+n*4.-time*.8)),12.);vec3 c=mix(vec3(.20,.10,.31),vec3(.49,.36,.65),n);c+=thread*vec3(.15,.13,.19);gl_FragColor=vec4(c,fade);}`,{side:T.DoubleSide,depthWrite:true});
+ const mesh=new T.Mesh(new T.SphereGeometry(4.2,32,20),material);mesh.name='clove-ruse-smoke';mesh.userData.smokeRadius=4.2;return mesh;
+}
+export function makeMeddleOrb(){
+ const root=new T.Group();root.name='clove-meddle-orb';root.add(new T.Mesh(new T.IcosahedronGeometry(.18,2),new T.MeshBasicMaterial({color:0xa28ad8})));const ring=new T.Mesh(new T.TorusGeometry(.22,.018,5,24),new T.MeshBasicMaterial({color:0xffc4ef}));ring.rotation.x=.8;root.add(ring);return root;
+}
+
+export function makeCloveRevival(){
+ const root=new T.Group();root.name='clove-revival-butterflies';
+ for(let i=0;i<3;i++){const material=new T.MeshBasicMaterial({color:i===1?0xf6b8ef:0xa888e0,transparent:true,opacity:.8,depthWrite:false});const ring=new T.Mesh(new T.TorusGeometry(.55+i*.22,.018,5,36),material);ring.rotation.x=Math.PI/2;ring.position.y=.16+i*.55;root.add(ring);const butterfly=new T.Group();butterfly.position.set(Math.cos(i*2.1)*.55,.65+i*.45,Math.sin(i*2.1)*.55);for(const sign of [-1,1]){const wing=new T.Mesh(new T.OctahedronGeometry(.19,0),material);wing.position.x=sign*.14;wing.scale.set(1,.7,.15);wing.rotation.z=sign*.6;butterfly.add(wing);}root.add(butterfly);}
+ return root;
 }

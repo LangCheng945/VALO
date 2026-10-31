@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=roles1">
+    <link rel="stylesheet" href="./shop.css?v=clove1">
 </head>
 <body class="relative select-none">
 
@@ -462,7 +462,7 @@
         <div style="font-size:10px;letter-spacing:3px;color:#8bcbb8">隊友第一人稱觀戰</div><strong id="spectator-name"></strong>
         <div style="font-size:11px;color:#cad6d9;margin-top:4px">左鍵／← 上一位　右鍵／→ 下一位 · 復活後返回自己</div>
     </div>
-    <style>body.is-spectating #combat-bottom,body.is-spectating #stance-hud,body.is-spectating #scope-overlay{visibility:hidden}body.is-spectating #hud-weapon-name,body.is-spectating #hud-ammo-mag,body.is-spectating #hud-ammo-res{visibility:hidden}</style>
+    <style>body.is-spectating #combat-bottom,body.is-spectating #stance-hud,body.is-spectating #scope-overlay{visibility:hidden}body.is-spectating.clove-active #ability-hud{visibility:visible}body.is-spectating #hud-weapon-name,body.is-spectating #hud-ammo-mag,body.is-spectating #hud-ammo-res{visibility:hidden}</style>
     <!-- ==================== [TAB] MULTIPLAYER SCOREBOARD OVERLAY ==================== -->
     <div id="scoreboard-modal" class="hidden pointer-events-none absolute inset-0 z-25 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="w-full max-w-4xl bg-[#0F1923]/95 border border-white/25 val-clip p-5 shadow-2xl">
@@ -693,17 +693,17 @@
         <div class="agent-picker-roster"><div class="agent-picker-tools"><div id="agent-role-filters" role="group" aria-label="角色定位篩選"></div><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
-        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=roles1';
+        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=clove1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=roles1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=clove1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
-        import {AgentPreview} from './agent-preview.js?v=roles1';
-        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=roles1';
-        import {SpectatorView} from './spectator-view.js?v=roles1';
+        import {AgentPreview} from './agent-preview.js?v=clove1';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=clove1';
+        import {SpectatorView} from './spectator-view.js?v=clove1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -712,7 +712,9 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=roles1';
+        import {CloveKit} from './clove-view.js?v=clove1';
+        import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=clove1';
+        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=clove1';
         import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
@@ -1500,7 +1502,7 @@
         preloadAgentAvatars();
         let spectatorUiState=false;
         function updateSpectatorView(dt){
-            const eligible=state.hp<=0&&!state.inBuyMenu&&!state.roundEnding;
+            document.body.classList.toggle('clove-active',state.agent==='clove');const eligible=state.hp<=0&&!state.inBuyMenu&&!state.roundEnding;
             if(eligible!==spectatorUiState){spectatorUiState=eligible;document.getElementById('spectator-panel').hidden=!eligible;document.body.classList.toggle('is-spectating',eligible);}
             if(!eligible){spectatorView.update(dt,[],false);return camera;}
             const sources=currentRoomId?[...remotePlayers.values()].map(r=>({...r.data,actor:r})):bots.map((b,i)=>({uid:'bot-'+i,name:b.name,team:b.team,hp:b.alive?b.hp:0,active:b.alive,agent:b.agent,weapon:'vandal',yaw:b.group.rotation.y+Math.PI,pitch:0,crouching:false,actor:b}));
@@ -1715,7 +1717,7 @@
         }
         function checkSoloElimination(){
             if(currentRoomId||state.gameMode!=='tactical'||state.roundEnding||state.spikeDetonated)return;
-            const allies=state.hp>0||bots.some(b=>b.alive&&b.team===state.team)||resurrections.size>0;
+            const allies=state.hp>0||state.agent==='clove'&&((state.clove?.reviveWindow||0)>Date.now()||(state.clove?.riseAt||0)>0)||bots.some(b=>b.alive&&b.team===state.team)||resurrections.size>0;
             const enemies=bots.some(b=>b.alive&&b.team!==state.team);
             if(!enemies){if(state.spikePlanted&&state.team==='defend')return;endRound(true,state.roundKills>=5?'ACE':'敵方已全數倒地');}
             else if(!allies){if(state.spikePlanted&&state.team==='attack')return;endRound(false,'我方已全數倒地');}
@@ -1916,13 +1918,13 @@
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.armorType=player.armorType||(player.shield===25?'light':player.shield>0?'heavy':'none');state.shieldReserve=player.shieldReserve||0;if(FIREARMS[player.primaryWeapon]?.slot==='primary')state.primaryWeaponKey=player.primaryWeapon;if(isSidearm(player.secondaryWeapon))state.secondaryWeaponKey=player.secondaryWeapon;state.kills=player.kills;state.deaths=player.deaths;
             yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent==='phoenix'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent==='phoenix'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
-            equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
+            if(state.agent==='clove')cloveKit.sync(player);equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;state.tempHealth=p.tempHealth||0;state.decayUntil=p.decayUntil||0;if(state.agent==='clove')cloveKit.sync(p);if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2120,13 +2122,13 @@
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
                     if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(isAgent(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(isSidearm(message.player.weapon))state.secondaryWeaponKey=message.player.weapon;else if(FIREARMS[message.player.weapon]?.slot==='primary')state.primaryWeaponKey=message.player.weapon;}
-                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const ev of [...(message.cloveEffects?.smokes||[]),...(message.cloveEffects?.flights||[])])cloveKit.receive(ev);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
-                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e')confirmHealing();},
+                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{cloveKit.pendingUntil=0;state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e'&&state.agent==='phoenix')confirmHealing();},
                 spikeError:reason=>{networkSpikeRetryAt=performance.now()+1000;cancelSpikeAction();abilityNotice(reason);},
                 armorResult:player=>{state.armorType=player.armorType;state.shield=player.shield;state.shieldReserve=player.shieldReserve||0;updateHealthHUD();updateShopUI();},armorError:reason=>shopFeedback(reason),
-                damage(message){state.hp=message.hp;state.shield=message.shield;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
+                damage(message){state.hp=message.hp;state.shield=message.shield;state.tempHealth=message.tempHealth||0;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
@@ -2141,6 +2143,7 @@
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
+            if(cloveKit.receive(ev))return;
             if(ev.type==='revive'){
                 if(ev.phase==='complete'){removeCorpse(ev.targetUid);return;}
                 const actor=remotePlayers.get(ev.targetUid);if(!corpses.has(ev.targetUid)&&actor)markCorpse(ev.targetUid,new THREE.Vector3(ev.x,ev.y,ev.z),actor.data.team,actor);
@@ -2383,7 +2386,7 @@
         }
         let shotgunContext=null;
         function fireWeapon() {
-            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding) return;
+            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()) return;
             if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
@@ -2501,7 +2504,7 @@
                     const bot = bots[hit.object.userData.botIndex];
                     if (bot && bot.alive && bot.team!==state.team) {
                         const part=isHead?'head':hit.object.userData.part==='legs'?'legs':'body',dmg=firearmDamage(state.weaponKey,part,hit.distance)??(isHead?wpn.headDmg:wpn.bodyDmg);
-                        bot.hp -= dmg;bot.lastDamage=performance.now();
+                        bot.hp -= absorbTempHealth(bot,dmg);bot.lastPlayerDamage=Date.now();bot.lastDamage=performance.now();
                         showHitmarker(isHead);
                         if(showPelletFX)createImpactBurst(hit.point, isHead, true);
 
@@ -2599,6 +2602,7 @@
         }
 
         function handleBotKilled(bot, isHead,creditPlayer=true,killerName=state.playerName,causeWeapon='VANDAL') {
+            cloveKit.takedown(bot,creditPlayer||Date.now()-(bot.lastPlayerDamage||0)<=CLOVE.assistWindowMs);
             bot.alive = false;
             bot.dyingTimer = .65;bot.hp=0;bot.hpBg.visible=bot.hpFill.visible=false;markCorpse('bot:'+bot.index,bot.group.position,bot.team,bot);
             if(creditPlayer){
@@ -2869,6 +2873,7 @@
             for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life=(f.expiresAt-now)/1000;f.age=Math.max(0,(now-f.createdAt)/1000);if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);continue;}f.mesh.scale.setScalar(Math.max(.01,fieldRadius(f,now)/SLOW.fieldRadius));updateEffect(f.mesh,f.age,Math.min(1,f.life*2));}
         }
         const cloudFlights=new Map(),cloudIds=new Set(),sprays=new Map();let lastSpray=0;
+        const cloveKit=new CloveKit({state,map:realMap,camera,scene,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid,position:()=>yawObject.position.clone(),bots:()=>bots,obstacles:()=>[realMap.collisionMesh,...temporaryWalls],send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,elimination:checkSoloElimination,prepare:()=>{isMouseDown=false;resetMovementInput();setScope(false);abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:held=>{beginAbilityCast('orb',.6);if(held)abilityCast.holdOrb();},cancelCast:()=>abilityCast.cancel(),smoke:ev=>{if(smokeSpheres.some(s=>s.id===ev.id))return;const mesh=makeCloveSmoke();mesh.position.set(ev.x,ev.y,ev.z);mesh.scale.setScalar(.1);scene.add(mesh);smokeSpheres.push({mesh,id:ev.id,kind:'clove',life:CLOVE.smokeMs/1000,createdAt:ev.createdAt-slowClockOffset,expiresAt:ev.expiresAt-slowClockOffset});},revive:pos=>{removeCorpse('self');yawObject.position.set(pos.x,pos.y,pos.z);playerVelocity.set(0,0,0);resetMovementInput();equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();updateAliveHUD();},fatal:reason=>applyDamageToPlayer(10000,reason,'CLOVE')});
         function deployCloud(position,id,expiresAt){if(id&&cloudIds.has(id)){const existing=smokeSpheres.find(s=>s.id===id);if(existing&&expiresAt)existing.expiresAt=expiresAt;return;}if(id){cloudIds.add(id);if(cloudIds.size>128)cloudIds.delete(cloudIds.values().next().value);}spawnSmokeAtPosition(position,id,expiresAt||Date.now()+2500);}
         function removeCloudFlight(id){const f=cloudFlights.get(id);if(f){disposeEffect(f.mesh);cloudFlights.delete(id);}}
         function createCloudFlight(event,remote=false){
@@ -2880,7 +2885,7 @@
             beginAbilityCast('wind',.25);const p=camera.getWorldPosition(new THREE.Vector3()),d=camera.getWorldDirection(new THREE.Vector3());p.addScaledVector(d,.4);
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
-        function clearFieldObjects(){clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        function clearFieldObjects(){cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -2936,12 +2941,13 @@
         function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
-            const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
+            const names=state.agent==='clove'?{c:'Pick-me-up · 暫時生命與加速',q:'Meddle · 減損靈球',e:'Ruse · 死亡後仍可放煙',x:'Not Dead Yet · 限時復活'}:{c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
             if(abilityIconAgent!==state.agent){
                 abilityIconAgent=state.agent;
                 for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);if(!enabled)names[k]='技能尚未加入';const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
             }
-            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(!enabled?false:k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
+            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(!enabled||state.hp<=0&&!(state.agent==='clove'&&['e','x'].includes(k))?false:k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
+            if(state.agent==='clove')document.getElementById('skill-e-name').textContent='E · '+state.eCharges;
             const chargeSignature=state.agent+state.qCharges;if(abilityChargeSignature!==chargeSignature){abilityChargeSignature=chargeSignature;document.getElementById('skill-q-charges').innerHTML=Array.from({length:enabled?(sage?2:1):0},(_,i)=>`<i class="ability-charge ${state.qCharges>i?'ready':''}"></i>`).join('');}
             for(const k of ['c','q','e']) {
                 const el=document.getElementById(`skill-${k}-cd`);
@@ -2954,13 +2960,14 @@
         }
         function resetAbilities() {
             cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.healRemaining=0;state.slowPendingUntil=0;state.barrierPendingUntil=0;
-            state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
+            state.ultUsed=false;cloveKit.reset();state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
             clearTimeout(bladeEmptyTimer);state.bladeStormActive=false;state.bladeKnives=0;state.weaponAmmo={};
             if(!AGENTS[state.agent].abilities)state.cCharges=state.qCharges=0;
             state.eCharges=AGENTS[state.agent].abilities?1:0;state.xCharges=state.eCharges;state.cCooldown=state.qCooldown=state.eCooldown=0;
-            state.dashReadyUntil=0;state.dashArmedAt=0;updateAbilityHUD();
+            state.dashReadyUntil=0;state.dashArmedAt=0;if(state.agent==='clove')cloveKit.refresh();updateAbilityHUD();
         }
         function triggerAbilityC() {
+            if(cloveKit.key('KeyC'))return;
             if(state.cCharges<=0||state.inBuyMenu||state.hp<=0)return;
             if(state.agent==='jett') {
                 if(!throwCloudburst())return;
@@ -2970,12 +2977,14 @@
             state.cCharges--;sfx.playAbilitySound('smoke');updateAbilityHUD();
         }
         function triggerAbilityQ() {
+            if(cloveKit.key('KeyQ'))return;
             if(state.qCharges<=0||state.inBuyMenu||state.hp<=0)return;
             if(state.agent==='jett'){beginAbilityCast('wind',.55);state.climbingRope=null;playerVelocity.y=14;canJump=false;sfx.playAbilitySound('updraft');}
             else {equipSlowOrb();return;}
             state.qCharges--;updateAbilityHUD();
         }
         function triggerAbilityE() {
+            if(cloveKit.key('KeyE'))return;
             if(state.inBuyMenu||state.hp<=0||!AGENTS[state.agent].abilities)return;
             if(state.agent==='jett') {
                 const now=performance.now();
@@ -2999,6 +3008,7 @@
             updateAbilityHUD();
         }
         function triggerUltimateX() {
+            if(cloveKit.key('KeyX'))return;
             if(state.inBuyMenu||state.hp<=0||!AGENTS[state.agent].abilities)return;
             if(state.agent==='jett'&&state.bladeStormActive){if(state.bladeKnives>0){if(state.weaponKey!=='bladestorm')equipWeaponSlot('bladestorm');}else abilityNotice('飛刀已用盡');return;}
             if(state.xCharges<=0)return;
@@ -3011,7 +3021,7 @@
          ********************************************************************/
         function equipWeaponSlot(slotKey,{fresh=false}={}) {
             if(slotKey==='bladestorm'&&(!state.bladeStormActive||state.bladeKnives<=0))return;
-            clearTimeout(bladeEmptyTimer);
+            cloveKit.cancelEquip();clearTimeout(bladeEmptyTimer);
             if(state.weaponKey!=='bladestorm')state.weaponAmmo[state.weaponKey]={mag:state.mag,reserve:state.reserve};
             cancelSlowEquip();
             cancelBarrierPlacement();abilityCast.cancel();
@@ -3037,7 +3047,7 @@
         window.selectAgent = function(agentKey) {
             if(!isAgent(agentKey))return false;
             if(currentRoomId&&!agentSupported(agentKey,roomSocket?.serverFeatures)){const message='連線伺服器正在更新這個角色，請稍後重新加入房間';shopFeedback(message);document.getElementById('agent-picker-feedback').textContent=message;return false;}
-            state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
+            cloveKit.clear();state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             for(const key of AGENT_KEYS){const card=document.getElementById('agent-card-'+key);card.classList.toggle('active',agentKey===key);card.setAttribute('aria-pressed',String(agentKey===key));}
             document.getElementById('agent-picker').close();
@@ -3120,11 +3130,11 @@
         let previewAgent=state.agent,selectedAgentRole='all',selectedEntryScope=null,agentPickerStartsGame=false;
         const agentEntryScope=()=>selectedMap+'::'+(currentRoomId||'solo');
         const roleDescriptions={'決鬥者':'在交戰中創造突破口，協助隊伍取得進攻空間。','守衛者':'守住關鍵位置，保護隊伍並限制敵方推進。','先鋒':'探查威脅，協助隊伍打開進攻路線。','控場者':'掌握視野與節奏，協助隊伍進出據點。','特務':'選擇角色外型，投入訓練與對戰。'};
-        const pickerSkills={jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
+        const pickerSkills={clove:[['c','Pick-me-up','近期擊殺或傷害助攻後取得暫時生命與加速。'],['q','Meddle','裝備並投擲靈球，使範圍內角色暫時減損生命。'],['e','Ruse','開啟地圖標記煙霧，死亡後仍可從倒地位置放煙。'],['x','Not Dead Yet','倒地後限時復活；需擊殺或傷害助攻才能存活。']],jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
         function previewAgentChoice(key){
             previewAgent=key;const agent=AGENTS[key];
             document.getElementById('agent-preview-role').textContent=agent.role;document.getElementById('agent-preview-name').textContent=agent.short;document.getElementById('agent-preview-name').style.setProperty('--name-chars',agent.short.length);document.getElementById('agent-preview-description').textContent=roleDescriptions[agent.role]||roleDescriptions['特務'];document.getElementById('agent-preview-art').src='./assets/ui/'+agent.model+'.webp';
-            document.getElementById('agent-preview-status').textContent=agent.abilities?'技能可用':'專屬技能尚未加入 · 可使用槍械、近戰與 Spike';
+            document.getElementById('agent-preview-status').textContent=agent.abilities?(key==='clove'&&currentRoomId&&!roomSocket?.serverFeatures?.includes('clove-kit-1')?'外型可用 · 連線後端尚未更新技能':'技能可用'):'專屬技能尚未加入 · 可使用槍械、近戰與 Spike';
             const skills=document.getElementById('agent-preview-skills');skills.replaceChildren();
             for(const [ability,name,description]of pickerSkills[key]||['c','q','e','x'].map(k=>[k,'技能尚未加入',''])){
                 const button=document.createElement('button');button.type='button';button.disabled=!agent.abilities;button.title=name;button.innerHTML=`${abilityIcon(key,ability)}<span>${ability.toUpperCase()}</span>`;button.addEventListener('click',()=>{document.getElementById('agent-preview-description').textContent=name+' · '+description;});skills.appendChild(button);
@@ -3191,17 +3201,17 @@
             document.getElementById('shop-sell-weapon').disabled=!state.pendingWeapon;
             document.getElementById('shop-sell-shield').disabled=!state.pendingShield;
             const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
-            document.getElementById('shop-ability-passive').innerHTML=!enabled?`<span>◇</span><b>${agentLabel(state.agent)}</b><small>外型可用 · 技能尚未加入</small>`:sage?'<span>◇</span><b>SAGE</b><small>守衛者</small>':'<span>◌</span><b>飄浮</b><small>按住空白鍵 · 被動</small>';
+            document.getElementById('shop-ability-passive').innerHTML=!enabled?`<span>◇</span><b>${agentLabel(state.agent)}</b><small>外型可用 · 技能尚未加入</small>`:sage?'<span>◇</span><b>SAGE</b><small>守衛者</small>':`<span>◌</span><b>${state.agent==='clove'?'CLOVE':'飄浮'}</b><small>${state.agent==='clove'?'死亡後仍可放煙':'按住空白鍵 · 被動'}</small>`;
             for(const [key,icon,name,charges] of [
                 ['c',sage?'▥':'☁',sage?'屏障靈球':'雲爆煙霧',state.cCharges],
                 ['q',sage?'◉':'▲',sage?'緩速靈球':'氣流竄升',state.qCharges],
                 ['e',sage?'✚':'➤',sage?'治癒靈球':'逐風衝刺',state.eCharges]
-            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?name:key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
+            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?(state.agent==='clove'?{c:'Pick-me-up',q:'Meddle',e:'Ruse'}[key]:name):key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
         }
 
         function setHudText(id,value){const el=document.getElementById(id),text=String(value);if(el.textContent!==text)el.textContent=text;}
         function updateHealthHUD() {
-            setHudText('hud-hp',Math.max(0,Math.ceil(state.hp)));
+            setHudText('hud-hp',Math.max(0,Math.ceil(state.hp+(state.tempHealth||0))));
             setHudText('hud-shield',Math.max(0,Math.ceil(state.shield)));setHudText('hud-shield-reserve',state.armorType==='regen'?'儲備 '+Math.floor(state.shieldReserve):'');
         }
 
@@ -3445,7 +3455,8 @@
         document.addEventListener('pointerlockerror',()=>{if(!immersiveEntryPending){showBuyMenu();abilityNotice('請再次點擊「進入戰場」鎖定滑鼠');}});
 
         document.addEventListener('mousemove', (e) => {
-            if (!state.isLocked || state.inBuyMenu || state.hp<=0) return;
+            if(!state.isLocked||state.inBuyMenu)return;if(cloveKit.mouseMove(e))return;
+            if(state.hp<=0)return;
             const zoom = WEAPONS[state.weaponKey].zoomLevels?.[state.scopeLevel - 1] || 1;
             const sens = 0.006 * state.sensitivity / zoom;
             yawObject.rotation.y -= e.movementX * sens;
@@ -3458,6 +3469,7 @@
             if (document.pointerLockElement !== renderer.domElement && e.target === renderer.domElement) {
                 safeRequestPointerLock();
             }
+            if(cloveKit.mouseDown(e)){e.preventDefault();return;}
             if(state.hp<=0){if(e.button===0||e.button===2){e.preventDefault();spectatorView.cycle(e.button===0?-1:1);}return;}
             if(state.slowEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)throwSlowOrb();return;}
             if(state.barrierEquipped&&(e.button===0||e.button===2)){e.preventDefault();if(e.button===0)placeBarrier();else rotateBarrier();return;}
@@ -3541,6 +3553,7 @@
             }
             if (state.inBuyMenu || !state.isLocked) return;
             if (['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(code)) e.preventDefault();
+            if(state.agent==='clove'&&['KeyC','KeyQ','KeyE','KeyX'].includes(code)){cloveKit.key(code);return;}
             if(state.hp<=0){if(code==='ArrowLeft'||code==='ArrowRight'){e.preventDefault();spectatorView.cycle(code==='ArrowLeft'?-1:1);}return;}
             if(code==='KeyF'&&toggleRope()){e.preventDefault();return;}
             if(code==='Space'&&state.climbingRope){state.climbingRope=null;playerVelocity.y=6;canJump=false;moveState.glide=true;e.preventDefault();return;}
@@ -3791,19 +3804,19 @@
         function botCanSee(eye,target){
             const delta=target.clone().sub(eye),distance=delta.length();if(distance>42||distance<.001)return false;
             const line=new THREE.Line3(eye,target);
-            if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<(3.8*s.mesh.scale.x)**2))return false;
+            if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<((s.mesh.userData.smokeRadius||3.8)*s.mesh.scale.x)**2))return false;
             raycaster.set(eye,delta.divideScalar(distance));raycaster.near=0;raycaster.far=Math.max(0,distance-.4);
             return raycaster.intersectObjects(shootableMeshes,false).length===0;
         }
 
         function updateBotsAndVFX(dt) {
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0);gunGroup.visible=state.hp>0&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
                 const s = smokeSpheres[i];
-                s.life=Math.max(0,(s.expiresAt-Date.now())/1000);s.age=2.5-s.life;updateEffect(s.mesh,s.age,Math.min(1,s.life*4));
+                s.life=Math.max(0,(s.expiresAt-Date.now())/1000);s.age=s.createdAt?Math.max(0,(Date.now()-s.createdAt)/1000):2.5-s.life;updateEffect(s.mesh,s.age,Math.min(1,s.life*4));
                 const targetScale = s.life > 1.0 ? 1.0 : Math.max(0.01, s.life);
                 s.mesh.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), dt * 6);
                 s.mesh.rotation.y += dt * 0.4;
@@ -3941,14 +3954,14 @@
 
         function applyDamageToPlayer(dmg, attackerName = '敵方特務', weaponName = 'VANDAL', isHead = false) {
             if(currentRoomId)return;
-            if (state.hp <= 0) return;state.lastDamage=performance.now();
+            if (state.hp <= 0||weaponName!=='SPIKE'&&cloveInvulnerable(state,Date.now())) return;state.lastDamage=performance.now();
             markArmorDamage(state,performance.now());
             if (state.shield > 0) {
                 const absorb = armorAbsorb(state,dmg);
                 state.shield -= absorb;
-                state.hp -= (dmg - absorb);
+                state.hp -= absorbTempHealth(state,dmg - absorb);
             } else {
-                state.hp -= dmg;
+                state.hp -= absorbTempHealth(state,dmg);
             }
             updateHealthHUD();
             pushMyNetworkState(true);
@@ -3969,14 +3982,15 @@
                 updateAliveHUD();
                 pushMyNetworkState(true);
 
-                ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();
+                cloveKit.death();ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();
             }
         }
 
         function updateTimersAndSpike(dt) {
+            cloveKit.update(dt);
             if(!currentRoomId&&state.armorType==='regen'){tickArmor(state,performance.now());updateHealthHUD();}
             if(state.isLocked&&!state.inBuyMenu) {
-                if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.healRemaining-=heal;updateHealthHUD();}
+                if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.tempHealth=Math.min(state.tempHealth||0,Math.max(0,150-state.hp));state.healRemaining-=heal;updateHealthHUD();}
                 for(const b of bots)if(b.alive&&b.healRemaining>0&&performance.now()-(b.lastDamage||0)>=2000){const amount=Math.min(b.healRemaining,(b.healRate||20)*dt,100-b.hp);b.hp+=amount;b.healRemaining-=amount;b.hpFill.scale.x=b.hp/100;if(b.hp>=100)b.healRemaining=0;}
 
 
@@ -4171,7 +4185,7 @@
             updateRope(dt);
             // Player Movement Physics
             if (state.isLocked && state.hp > 0 && !state.roundEnding && !state.climbingRope) {
-                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position);
+                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position)*cloveKit.movement();
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
 

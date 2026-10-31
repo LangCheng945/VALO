@@ -1,3 +1,4 @@
+import {resetClove} from './clove-rules.mjs';
 import {equipArmor} from './armor.mjs';
 import {matchWinner,isOvertime,choosePublicMap} from './match-rules.mjs';
 import {MAP_IDS,spawn} from './protocol.mjs';
@@ -27,15 +28,15 @@ export class RoundRules {
   if(!this.enabled||this.room.meta.round.phase!=='playing')return;
   const now=Date.now(),players=this.room.players().filter(p=>p.inRound);
   const attack=players.filter(p=>p.team==='attack'),defend=players.filter(p=>p.team==='defend');
-  if(!attack.some(p=>p.hp>0||p.reviveAt>now)&&this.room.spike?.state()?.phase!=='planted')await this.finish('defend','敵方已全數倒地');
-  else if(!defend.some(p=>p.hp>0||p.reviveAt>now))await this.finish('attack','敵方已全數倒地');
+  if(!attack.some(p=>p.hp>0||p.reviveAt>now||p.clove?.riseAt>0||p.clove?.reviveWindow>now)&&this.room.spike?.state()?.phase!=='planted')await this.finish('defend','敵方已全數倒地');
+  else if(!defend.some(p=>p.hp>0||p.reviveAt>now||p.clove?.riseAt>0||p.clove?.reviveWindow>now))await this.finish('attack','敵方已全數倒地');
  }
  async revive(ws,caster,targetUid){
   const room=this.room,fail=reason=>room.send(ws,{type:'ability_error',reason});
   if(caster.agent!=='phoenix'||caster.hp<=0||!caster.active||caster.ultUsed)return fail('目前無法使用復活');
   if(this.enabled&&room.meta.round.phase!=='playing')return fail('回合結束後無法復活');
   const target=room.sockets().find(s=>room.data(s)?.uid===targetUid),p=target&&room.data(target);
-  if(!p?.joined||p.uid===caster.uid||p.team!==caster.team||p.hp>0||p.reviveAt)return fail('請選擇倒地的隊友');
+  if(!p?.joined||p.uid===caster.uid||p.team!==caster.team||p.hp>0||p.reviveAt||p.clove?.riseAt)return fail('請選擇倒地的隊友');
   if(Math.hypot(caster.x-p.x,caster.y-p.y,caster.z-p.z)>8)return fail('隊友距離太遠');
   caster.ultUsed=true;p.reviveAt=Date.now()+2500;p.reviveBy=caster.uid;
   room.save(ws,caster);room.save(target,p);
@@ -48,6 +49,7 @@ export class RoundRules {
    const p=room.data(ws);if(!p?.joined||!p.reviveAt)continue;
    if(this.enabled&&room.meta.round.phase!=='playing'){p.reviveAt=0;room.save(ws,p);continue;}
    if(now<p.reviveAt){pending=true;continue;}
+   if(p.clove){p.clove.reviveWindow=0;p.clove.riseAt=0;p.clove.escapeUntil=0;p.clove.surviveUntil=0;}
    Object.assign(p,{hp:100,shield:0,shieldReserve:0,regenReadyAt:0,regenTickAt:0,active:false,reviveAt:0,respawnAt:0,healRemaining:0});room.save(ws,p);
    room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
    room.broadcast({type:'event',event:{type:'revive',phase:'complete',targetUid:p.uid}});
@@ -65,10 +67,10 @@ export class RoundRules {
     r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
-     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
+     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));resetClove(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
      room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
     }
-    room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
+    room.cloveEffects={smokes:[],flights:[]};await room.ctx.storage.delete('cloveEffects');room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
     room.meta.spike=null;await room.spike?.ensureCarrier();await this.publish();
    }
   }

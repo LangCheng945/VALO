@@ -49,7 +49,7 @@ const catalog={
   "name": "Clove",
   "model": "clove",
   "role": "控場者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 14333612,
    "glove": 12896725,

@@ -10,5 +10,5 @@ export const spawn=(team,map='ascent')=>map==='abyss'?(team==='attack'?{x:66,y:1
 export const cleanText=(value,max=24)=>String(value??'').replace(/[<>"'&\u0000-\u001f]/g,'').trim().slice(0,max);
 export const finite=(value,min=-500,max=500)=>typeof value==='number'&&Number.isFinite(value)&&value>=min&&value<=max;
 export function validPose(p){return p&&finite(p.x)&&finite(p.y,-80,150)&&finite(p.z)&&finite(p.yaw,-1000,1000);}
-export function applyDamage(player,damage){const absorbed=armorAbsorb(player,damage);return {shield:player.shield-absorbed,hp:Math.max(0,player.hp-(damage-absorbed))};}
+export function applyDamage(player,damage){const absorbed=armorAbsorb(player,damage),healthDamage=damage-absorbed,availableTemp=Math.min(player.tempHealth||0,Math.max(0,150-player.hp)),temp=Math.min(availableTemp,healthDamage);return {shield:player.shield-absorbed,tempHealth:Math.max(0,availableTemp-temp),hp:Math.max(0,player.hp-(healthDamage-temp))};}
 export function validEndpoint(url){try{const u=new URL(url);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password;}catch{return false;}}
