@@ -216,7 +216,7 @@ const catalog={
   "short": "MIKS",
   "name": "Miks",
   "model": "miks",
-  "role": "特務",
+  "role": "控場者",
   "abilities": false,
   "hands": {
    "skin": 11636085,
@@ -328,7 +328,7 @@ const catalog={
   "short": "VETO",
   "name": "Veto",
   "model": "veto",
-  "role": "特務",
+  "role": "守衛者",
   "abilities": false,
   "hands": {
    "skin": 11636085,
@@ -394,7 +394,14 @@ const catalog={
   }
  }
 };
-export const AGENTS=Object.freeze(Object.fromEntries(Object.entries(catalog).map(([key,value])=>[key,Object.freeze({...value,hands:Object.freeze(value.hands)})])));
+export const AGENT_ROLES=Object.freeze([
+ Object.freeze({id:'initiator',name:'先鋒',label:'先鋒'}),
+ Object.freeze({id:'controller',name:'控場者',label:'控場者（煙角）'}),
+ Object.freeze({id:'duelist',name:'決鬥者',label:'決鬥者'}),
+ Object.freeze({id:'sentinel',name:'守衛者',label:'守衛'})
+]);
+const roleId=name=>AGENT_ROLES.find(role=>role.name===name)?.id;
+export const AGENTS=Object.freeze(Object.fromEntries(Object.entries(catalog).map(([key,value])=>[key,Object.freeze({...value,roleId:roleId(value.role),hands:Object.freeze(value.hands)})])));
 export const AGENT_KEYS=Object.freeze(Object.keys(AGENTS));
 export const isAgent=key=>typeof key==='string'&&Object.hasOwn(AGENTS,key);
 export const normalizeAgent=key=>isAgent(key)?key:'jett';

@@ -1,8 +1,8 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import WebSocket from 'ws';
-import {AGENTS,AGENT_KEYS,agentLabel,agentModelKey,normalizeAgent,isAgent,agentSupported} from '../agents.mjs';
+import {AGENTS,AGENT_KEYS,AGENT_ROLES,agentLabel,agentModelKey,normalizeAgent,isAgent,agentSupported} from '../agents.mjs';
 const base=process.env.VALO_TEST_SERVER||'http://127.0.0.1:8790',origin='http://127.0.0.1:8000',delay=ms=>new Promise(r=>setTimeout(r,ms));
 test('all model-backed identities have explicit model names and only implemented kits expose abilities',()=>{
- assert.equal(AGENT_KEYS.length,28);assert(AGENT_KEYS.includes('kayo')&&AGENT_KEYS.includes('vyse'));assert(!AGENT_KEYS.includes('phoenix-original'));assert(!agentSupported('vyse',['agent-models-4']));assert(agentSupported('vyse',['agent-models-28']));assert.equal(agentModelKey('phoenix'),'sage');assert.equal(agentModelKey('iso'),'iso');assert.equal(agentModelKey('clove'),'clove');assert.equal(agentLabel('clove'),'CLOVE');
+ assert.equal(AGENT_KEYS.length,28);assert.equal(AGENT_ROLES.length,4);for(const role of AGENT_ROLES)assert.equal(AGENT_KEYS.filter(key=>AGENTS[key].roleId===role.id).length,7);assert.equal(AGENTS.miks.roleId,'controller');assert.equal(AGENTS.veto.roleId,'sentinel');assert(AGENT_KEYS.includes('kayo')&&AGENT_KEYS.includes('vyse'));assert(!AGENT_KEYS.includes('phoenix-original'));assert(!agentSupported('vyse',['agent-models-4']));assert(agentSupported('vyse',['agent-models-28']));assert.equal(agentModelKey('phoenix'),'sage');assert.equal(agentModelKey('iso'),'iso');assert.equal(agentModelKey('clove'),'clove');assert.equal(agentLabel('clove'),'CLOVE');
  for(const key of ['constructor','__proto__',null,{},'']){assert(!isAgent(key));assert.equal(normalizeAgent(key),'jett');}
  assert(AGENTS.jett.abilities&&AGENTS.phoenix.abilities);assert(!AGENTS.iso.abilities&&!AGENTS.clove.abilities);
 });

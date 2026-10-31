@@ -463,3 +463,19 @@ community projects `arhmAli/Valorant-Agent-Menu-Idea` and
 `fincci/valorant-agent-select-page`; these are community references, not verified
 current Riot UI assets. No images or executable code were copied from those
 projects. The blue stage background is authored CSS/geometry.
+
+
+### Choose a role before entering gameplay
+
+The first gameplay entry on a map or in a different room now opens character
+selection before requesting fullscreen/pointer lock. Confirmation applies the
+previewed role and starts gameplay in that same user gesture. Escape/cancel never
+confirms a choice. Buying/resuming within the same session does not ask again;
+manual appearance changes in the shop still work without starting the game.
+A rematch invalidates the previous match selection, while reconnecting to the
+same room retains it. Free roam and other gameplay entry buttons share the gate.
+
+Four filters (Initiator / Controller, including the smoke-role label / Duelist /
+Sentinel) combine with text search. All 28 verified models have a role identifier;
+Miks is Controller and Veto is Sentinel. Each available role group contains seven
+models. The existing ability-kit availability remains unchanged.

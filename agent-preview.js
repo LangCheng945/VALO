@@ -1,4 +1,4 @@
-import {AgentAvatar} from './agent-avatar.js?v=agents28';
+import {AgentAvatar} from './agent-avatar.js?v=roles1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE;
 // A separate small preview scene. It only runs while the character picker is open;

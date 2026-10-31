@@ -1,3 +1,4 @@
+const {confirmAgentIfNeeded}=require('./browser-entry.cjs');
 // Run the real Worker (npm run dev --prefix multiplayer) and static game server on 8000 first.
 const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),assert=require('assert');
 const {promisify}=require('util'),run=promisify(require('child_process').execFile);
@@ -22,7 +23,7 @@ const {promisify}=require('util'),run=promisify(require('child_process').execFil
  for(const p of pages)await p.evaluate(()=>{document.activeElement?.blur();setMenuView('buy');});
  await a.locator('#shield-card-regen').click();await a.waitForFunction(()=>__net.state.armorType==='regen'&&__net.state.shieldReserve===25);
  await b.locator('#wpn-card-ghost').click();await b.waitForFunction(()=>__net.state.secondaryWeaponKey==='ghost');assert.equal(await b.evaluate(()=>__net.state.primaryWeaponKey),'vandal');
- await a.locator('#btn-start-combat').click();await b.locator('#btn-start-combat').click();for(const p of pages)await p.evaluate(()=>{document.activeElement?.blur();__net.activate();});
+ await a.locator('#btn-start-combat').click();await confirmAgentIfNeeded(a);await b.locator('#btn-start-combat').click();await confirmAgentIfNeeded(b);for(const p of pages)await p.evaluate(()=>{document.activeElement?.blur();__net.activate();});
  await a.evaluate(()=>__net.pose(.6667,4.8667,-2.8));await b.evaluate(()=>__net.pose(.6667,4.8667,-.8));await b.waitForTimeout(400);await a.waitForFunction(()=>[...__net.players.values()][0].appearance.gun?.name==='detailed-ghost');await b.evaluate(()=>__net.fire());await a.waitForFunction(()=>__net.state.hp<100&&__net.state.hp>0&&__net.state.shield===0);
  const hp=await a.evaluate(()=>__net.state.hp);await a.evaluate(()=>{__net.state.shield=50;__net.state.shieldReserve=999;__net.push(true);});await a.waitForFunction(()=>__net.state.shield<25&&__net.state.shieldReserve<=25);
  await a.waitForFunction(()=>__net.state.shield===25&&__net.state.shieldReserve===0,null,{timeout:10000});assert.equal(await a.evaluate(()=>__net.state.hp),hp);await b.waitForFunction(()=>[...__net.players.values()][0].data.shield===25&&[...__net.players.values()][0].data.shieldReserve===0);assert.deepEqual(errors,[]);

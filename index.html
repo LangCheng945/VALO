@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=select1">
+    <link rel="stylesheet" href="./shop.css?v=roles1">
 </head>
 <body class="relative select-none">
 
@@ -690,20 +690,20 @@
         <aside class="agent-picker-team" aria-label="目前隊伍"><h3>你的隊伍</h3><div id="agent-picker-squad"></div></aside>
         <div id="agent-stage" data-ready="false"><img id="agent-preview-art" alt=""><span>拖曳旋轉角色</span></div>
         <section class="agent-picker-detail" aria-live="polite"><p id="agent-preview-role"></p><h3 id="agent-preview-name"></h3><div id="agent-preview-skills"></div><p id="agent-preview-description"></p><p id="agent-preview-status"></p></section>
-        <div class="agent-picker-roster"><div class="agent-picker-tools"><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
+        <div class="agent-picker-roster"><div class="agent-picker-tools"><div id="agent-role-filters" role="group" aria-label="角色定位篩選"></div><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
-        import {AGENTS,AGENT_KEYS,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=agents28';
+        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=roles1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=agents28';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=roles1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
-        import {AgentPreview} from './agent-preview.js?v=select1';
-        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=agents28';
-        import {SpectatorView} from './spectator-view.js?v=agents28';
+        import {AgentPreview} from './agent-preview.js?v=roles1';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=roles1';
+        import {SpectatorView} from './spectator-view.js?v=roles1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -712,7 +712,7 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=agents28';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=roles1';
         import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
@@ -1722,7 +1722,7 @@
         }
         function receiveRoomRound(round){
             if(!round){roomRound=null;return;}
-            const previous=roomRound;roomRound={...round,clockOffset:round.serverNow-Date.now()};
+            const previous=roomRound;roomRound={...round,clockOffset:round.serverNow-Date.now()};if(previous?.phase==='finished'&&round.phase!=='finished')selectedEntryScope=null;
             if(!previous||previous.number!==round.number){if(previous){state.pendingWeapon=null;state.pendingSidearm=null;state.hasPlayedThisRound=false;updateShopUI();}clearFieldObjects();clearCorpses();state.roundEnding=false;}
             if(round.phase==='ending'&&previous?.phase!=='ending'){state.roundEnding=true;resetMovementInput();showCenterBanner('回合結束',round.reason+' · 下一回合重生',3100);}
             state.roundEnding=['ending','finished'].includes(round.phase);
@@ -3035,8 +3035,8 @@
         }
 
         window.selectAgent = function(agentKey) {
-            if(!isAgent(agentKey))return;
-            if(currentRoomId&&!agentSupported(agentKey,roomSocket?.serverFeatures)){const message='連線伺服器正在更新這個角色，請稍後重新加入房間';shopFeedback(message);document.getElementById('agent-picker-feedback').textContent=message;return;}
+            if(!isAgent(agentKey))return false;
+            if(currentRoomId&&!agentSupported(agentKey,roomSocket?.serverFeatures)){const message='連線伺服器正在更新這個角色，請稍後重新加入房間';shopFeedback(message);document.getElementById('agent-picker-feedback').textContent=message;return false;}
             state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             for(const key of AGENT_KEYS){const card=document.getElementById('agent-card-'+key);card.classList.toggle('active',agentKey===key);card.setAttribute('aria-pressed',String(agentKey===key));}
@@ -3045,7 +3045,7 @@
             const ag = AGENTS[agentKey];
             document.getElementById('hud-agent-short').textContent = ag.short;
             updateAliveHUD();
-            abilityCast.cancel();updateAbilityHUD();
+            abilityCast.cancel();updateAbilityHUD();return true;
         };
 
         window.buyWeapon = function(key){
@@ -3117,7 +3117,8 @@
         };
         setMenuView('training');
         const agentPicker=document.getElementById('agent-picker'),agentSearch=document.getElementById('agent-search'),agentPreview=new AgentPreview(document.getElementById('agent-stage'),{skinTexture:smiteTexture});
-        let previewAgent=state.agent;
+        let previewAgent=state.agent,selectedAgentRole='all',selectedEntryScope=null,agentPickerStartsGame=false;
+        const agentEntryScope=()=>selectedMap+'::'+(currentRoomId||'solo');
         const roleDescriptions={'決鬥者':'在交戰中創造突破口，協助隊伍取得進攻空間。','守衛者':'守住關鍵位置，保護隊伍並限制敵方推進。','先鋒':'探查威脅，協助隊伍打開進攻路線。','控場者':'掌握視野與節奏，協助隊伍進出據點。','特務':'選擇角色外型，投入訓練與對戰。'};
         const pickerSkills={jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
         function previewAgentChoice(key){
@@ -3129,7 +3130,7 @@
                 const button=document.createElement('button');button.type='button';button.disabled=!agent.abilities;button.title=name;button.innerHTML=`${abilityIcon(key,ability)}<span>${ability.toUpperCase()}</span>`;button.addEventListener('click',()=>{document.getElementById('agent-preview-description').textContent=name+' · '+description;});skills.appendChild(button);
             }
             for(const role of AGENT_KEYS){const button=document.getElementById('agent-card-'+role);button.classList.toggle('active',role===key);button.setAttribute('aria-pressed',String(role===key));}
-            const supported=!currentRoomId||agentSupported(key,roomSocket?.serverFeatures);const confirm=document.getElementById('agent-picker-confirm');confirm.disabled=!supported;confirm.innerHTML='確認選擇 <span>'+agent.short+'</span>';if(!supported)document.getElementById('agent-preview-status').textContent='連線伺服器正在更新這個角色，請稍後重新加入房間';
+            const supported=!currentRoomId||agentSupported(key,roomSocket?.serverFeatures);const confirm=document.getElementById('agent-picker-confirm');confirm.disabled=!supported;confirm.innerHTML=(agentPickerStartsGame?'確認並開始':'確認選擇')+' <span>'+agent.short+'</span>';if(!supported)document.getElementById('agent-preview-status').textContent='連線伺服器正在更新這個角色，請稍後重新加入房間';
             updatePickerSquad(key);agentPreview.show(key);
         }
         function updatePickerSquad(pending=state.agent){
@@ -3140,14 +3141,27 @@
             }
         }
         for(const key of AGENT_KEYS){
-            const agent=AGENTS[key],button=document.createElement('button');button.id='agent-card-'+key;button.type='button';button.className='agent-option';button.dataset.search=(agent.short+' '+agent.name+' '+agent.role).toLowerCase();button.setAttribute('aria-pressed',String(key===state.agent));button.title=agent.short+' · '+agent.role;
+            const agent=AGENTS[key],button=document.createElement('button');button.id='agent-card-'+key;button.type='button';button.className='agent-option';button.dataset.role=agent.roleId;button.dataset.search=(agent.short+' '+agent.name+' '+agent.role+' '+(AGENT_ROLES.find(role=>role.id===agent.roleId)?.label||'')+' '+agent.roleId).toLowerCase();button.setAttribute('aria-pressed',String(key===state.agent));button.title=agent.short+' · '+agent.role;
             button.innerHTML=`<img src="./assets/ui/${agent.model}.webp" alt="" loading="lazy" decoding="async"><span>${agent.short}</span>`;button.addEventListener('click',()=>previewAgentChoice(key));document.getElementById('agent-picker-grid').appendChild(button);
         }
+        function filterAgentRoster(){
+            const query=agentSearch.value.trim().toLowerCase();let count=0;
+            for(const button of document.querySelectorAll('.agent-option')){button.hidden=!(selectedAgentRole==='all'||button.dataset.role===selectedAgentRole)||!button.dataset.search.includes(query);if(!button.hidden)count++;}
+            for(const button of document.querySelectorAll('#agent-role-filters button'))button.setAttribute('aria-pressed',String(button.dataset.role===selectedAgentRole));
+            document.getElementById('agent-picker-feedback').textContent=count?`${count} 位角色`:'找不到符合的角色';
+        }
+        for(const role of [{id:'all',label:'全部'},...AGENT_ROLES]){
+            const button=document.createElement('button');button.type='button';button.dataset.role=role.id;button.id='agent-role-'+role.id;
+            const count=AGENT_KEYS.filter(key=>role.id==='all'||AGENTS[key].roleId===role.id).length;button.innerHTML=role.label+` <span>${count}</span>`;button.addEventListener('click',()=>{selectedAgentRole=role.id;filterAgentRoster();});document.getElementById('agent-role-filters').appendChild(button);
+        }
         agentPicker.addEventListener('keydown',event=>{event.stopPropagation();if(event.code==='Escape'){event.preventDefault();agentPicker.close();}});
-        agentPicker.addEventListener('close',()=>agentPreview.stop());
-        agentSearch.addEventListener('input',()=>{const query=agentSearch.value.trim().toLowerCase();let count=0;for(const button of document.querySelectorAll('.agent-option')){button.hidden=!button.dataset.search.includes(query);if(!button.hidden)count++;}document.getElementById('agent-picker-feedback').textContent=count?`${count} 位角色`:'找不到符合的角色';});
-        document.getElementById('agent-picker-confirm').addEventListener('click',()=>selectAgent(previewAgent));
-        window.openAgentPicker=()=>{agentSearch.value='';agentSearch.dispatchEvent(new Event('input'));document.getElementById('agent-picker-map').textContent=mapDefinition.name.toUpperCase()+' / '+(currentRoomId==='PUBLIC'?'公開房間':currentRoomId?'好友房間':'訓練模式');agentPicker.showModal();previewAgentChoice(state.agent);agentSearch.focus();};
+        agentPicker.addEventListener('close',()=>{agentPreview.stop();agentPickerStartsGame=false;});
+        agentSearch.addEventListener('input',filterAgentRoster);
+        document.getElementById('agent-picker-confirm').addEventListener('click',()=>{
+            const start=agentPickerStartsGame;if(selectAgent(previewAgent)!==true)return;
+            selectedEntryScope=agentEntryScope();if(start)lockPointerAndPlay();
+        });
+        window.openAgentPicker=({startGame=false}={})=>{agentPickerStartsGame=startGame;selectedAgentRole='all';agentSearch.value='';filterAgentRoster();document.getElementById('agent-picker-map').textContent=mapDefinition.name.toUpperCase()+' / '+(currentRoomId==='PUBLIC'?'公開房間':currentRoomId?'好友房間':'訓練模式');agentPicker.showModal();previewAgentChoice(state.agent);agentSearch.focus();};
         const groupIds={sidearm:'shop-sidearms',smg:'shop-smgs-list',shotgun:'shop-shotguns-list',rifle:'shop-rifles',sniper:'shop-snipers-list',heavy:'shop-heavy-list'};
         for(const key of FIREARM_KEYS){
             let card=document.getElementById('wpn-card-'+key);if(!card){card=document.createElement('button');card.id='wpn-card-'+key;card.className='val-card p-4 text-left space-y-3';card.innerHTML=`<div><strong>${WEAPONS[key].name}</strong><span>¤ ${WEAPONS[key].cost}</span></div><svg></svg><div>${WEAPONS[key].magSize} 發</div>`;card.addEventListener('click',()=>buyWeapon(key));}
@@ -3400,6 +3414,7 @@
             if(immersiveEntryPending)return;
             if(currentRoomId&&!roomSocket?.connected){networkFeedback('尚未重新連上房間，請稍候');return;}
             if(!realMap.ready)return;
+            if(selectedEntryScope!==agentEntryScope()){openAgentPicker({startGame:true});return;}
             if (state.training.finished) resetRound();
             sfx.init();sfx.preloadSamples();
             resetMovementInput();immersiveEntryPending=true;immersiveEntryCancelled=false;
