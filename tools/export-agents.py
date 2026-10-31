@@ -30,12 +30,12 @@ names,bind,order,poses,tracks,motions,agents=[var(k) for k in ['Zw','vw','PD','M
 # Keep only rifle upper-body poses and the locomotion tracks actually used by this client.
 selected=['stand:vandal','crouch:vandal','walk:vandal','run:vandal','crouchWalk:vandal']
 data={'names':names,'parents':bind['parents'],'bindT':shorts(bind['t']),'bindQ':[v/32767 for v in shorts(bind['q'])],'order':order,'poses':{},'tracks':{},'motions':{k:motions[k] for k in selected}}
-for k in {motions[m]['base'] for m in selected}:data['poses'][k]={'t':shorts(poses[k]['t']),'q':[v/32767 for v in shorts(poses[k]['q'])]}
-for k in {motions[m]['track'] for m in selected if 'track' in motions[m]}:data['tracks'][k]={'moving':tracks[k]['moving'],'t':shorts(tracks[k]['t']),'q':[v/32767 for v in shorts(tracks[k]['q'])]}
+for k in sorted({motions[m]['base'] for m in selected}):data['poses'][k]={'t':shorts(poses[k]['t']),'q':[v/32767 for v in shorts(poses[k]['q'])]}
+for k in sorted({motions[m]['track'] for m in selected if 'track' in motions[m]}):data['tracks'][k]={'moving':tracks[k]['moving'],'t':shorts(tracks[k]['t']),'q':[v/32767 for v in shorts(tracks[k]['q'])]}
 root=pathlib.Path(__file__).resolve().parents[1]/'assets/agents';root.mkdir(exist_ok=True)
 (root/'rig.json').write_text(json.dumps(data,separators=(',',':')))
 manifest={}
-for key in ['jett','sage']:
+for key in ['jett','sage','iso','clove']:
  d=agents[key];manifest[key]={k:d[k] for k in ['verts','tris','layout']}
  for kind in ['bin','albedo','orm']:
   value=read('site/aim-agents/'+d[kind]);name=key+('.bin' if kind=='bin' else '.'+kind+'.jpg');(root/name).write_bytes(value)
@@ -43,4 +43,4 @@ for key in ['jett','sage']:
 manifest['rig']='rig.json';(root/'manifest.json').write_text(json.dumps(manifest,indent=2))
 files={p.name:{'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}for p in sorted(root.iterdir())if p.name!='provenance.json'}
 (root/'provenance.json').write_text(json.dumps({'sourceRepository':'https://github.com/unkwsr/open-aim','sourceCommit':COMMIT,'sourceMetadata':JS,'sourcePath':'site/aim-agents','credit':'ishoutu aim trainer; VALORANT character assets belong to Riot Games. The repository MIT license does not cover character assets.','processing':'Original packed meshes and textures; selected rig and locomotion data decoded from literals. No upstream executable JavaScript is included.','files':files},indent=2))
-print({k:(manifest[k]['verts'],manifest[k]['tris'])for k in ['jett','sage']});print('asset bytes',sum(p.stat().st_size for p in root.iterdir()))
+print({k:(manifest[k]['verts'],manifest[k]['tris'])for k in ['jett','sage','iso','clove']});print('asset bytes',sum(p.stat().st_size for p in root.iterdir()))

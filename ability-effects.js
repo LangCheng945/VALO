@@ -1,4 +1,4 @@
-import {FirstPersonHands} from './first-person-view.js?v=armory1';
+import {FirstPersonHands} from './first-person-view.js?v=agents4';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -23,6 +23,7 @@ const paths={
         <g transform="rotate(22 75 67)"><path d="M75 16C69 29 67 40 68 55L72 59H78L82 55C83 40 81 29 75 16ZM71 75H79L78 92H72Z"/><circle cx="75" cy="67" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/></g>`
 };
 export function abilityIcon(agent,key){
+    if(!['jett','phoenix'].includes(agent))return '';
     const character=agent==='jett'?'jett':'sage';
     const name=character+key.toUpperCase();
     return `<svg viewBox="0 0 100 100" data-agent="${character}" aria-hidden="true" focusable="false" fill="currentColor">${paths[name]||paths.jettC}</svg>`;

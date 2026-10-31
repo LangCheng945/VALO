@@ -1,3 +1,4 @@
+import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=agents4';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
@@ -79,9 +80,9 @@ export class FirstPersonHands{
    const seam=new T.Mesh(new T.TorusGeometry(.035,.0014,4,16),cuff);seam.rotation.x=Math.PI/2;arm.add(seam);this.root.add(arm);
    this.arms.push({side,hand,arm,sleeveMesh,cuff:end,seam});
   }
-  this.update({});
+  this.setAgent(agent);this.update({});
  }
- setAgent(agent){const sage=agent!=='jett';this.materials.glove.color.setHex(sage?0xa3674d:0x030b10).convertSRGBToLinear();this.materials.sleeve.color.setHex(sage?0x546761:0x08171b).convertSRGBToLinear();this.materials.cuff.color.setHex(sage?0x0e7566:0x21616a).convertSRGBToLinear();}
+ setAgent(agent){const colors=AGENTS[normalizeAgent(agent)].hands;for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
  update({reload=0,magazine=null,inspect=0,meleeGrip=null,dt=0}={}){
   this.elapsed+=dt;const p=this.profile;
   for(const a of this.arms){

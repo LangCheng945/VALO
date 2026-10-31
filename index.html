@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=shopfix3">
+    <link rel="stylesheet" href="./shop.css?v=agents4">
 </head>
 <body class="relative select-none">
 
@@ -667,7 +667,7 @@
                         <div class="text-xs text-white/70">爆頭 78 · 身體 26 · [3] 切換紫金爪刀</div>
                     </button>
 </div>
-                    <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button></div>
+                    <div class="agent-selector"><button id="agent-card-jett" onclick="selectAgent('jett')" class="val-card active">JETT <small>機動</small></button><button id="agent-card-phoenix" onclick="selectAgent('phoenix')" class="val-card">SAGE <small>控場</small></button><button id="agent-card-iso" title="外型可用 · 專屬技能尚未加入" onclick="selectAgent('iso')" class="val-card">ISO <small>外型</small></button><button id="agent-card-clove" title="外型可用 · 專屬技能尚未加入" onclick="selectAgent('clove')" class="val-card">CLOVE <small>外型</small></button></div>
                     <div class="shield-selector"><h3>護盾</h3><button id="shield-card-heavy" onclick="buyShield(50)" class="val-card active"><img src="./assets/ui/buy/heavy.png" alt="" class="shield-icon">重型護盾 <span>50 / ¤1000</span></button><button id="shield-card-light" onclick="buyShield(25)" class="val-card"><img src="./assets/ui/buy/light.png" alt="" class="shield-icon">輕型護盾 <span>25 / ¤400</span></button><button id="shield-card-regen" onclick="buyShield('regen')" class="val-card"><img src="./assets/ui/buy/regen.png" alt="" class="shield-icon">再生護盾 <span>25＋25 儲備 / ¤650</span><small>3 秒未受傷後，每秒回充 10 點</small></button></div>
                     <div class="loadout-note"><b id="shop-detail-title">VANDAL</b><p id="shop-detail-body">爆頭 160 · 身體 40 · 25 發</p><p id="shop-detail-economy"></p></div>
                     <section class="shop-abilities" aria-label="技能配置"><h3>ABILITIES <small>技能 · 訓練配給</small></h3><div id="shop-ability-passive"></div><div id="shop-ability-c"></div><div id="shop-ability-q"></div><div id="shop-ability-e"></div></section>
@@ -685,15 +685,16 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <script type="module">
+        import {AGENTS,AGENT_KEYS,isAgent,agentModelKey,agentLabel} from './multiplayer/agents.mjs?v=agents4';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=armory1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=agents4';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
-        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=armory1';
-        import {SpectatorView} from './spectator-view.js?v=armory1';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=agents4';
+        import {SpectatorView} from './spectator-view.js?v=agents4';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -702,7 +703,7 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=armory1';
+        import {abilityIcon,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=agents4';
         import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
@@ -1072,24 +1073,6 @@
             weapon.glowColor = weapon.id==='melee'?0xe5b448:SMITE_SKIN.energy;
         });
 
-        const AGENTS = {
-            jett: {
-                id: 'jett',
-                short: 'JETT',
-                qName: '[Q] 氣流竄升',
-                qIcon: '▲',
-                eName: '[E] 逐風衝刺',
-                eIcon: '⚡'
-            },
-            phoenix: {
-                id: 'phoenix',
-                short: 'SAGE',
-                qName: '[Q] 緩速靈球',
-                qIcon: '◉',
-                eName: '[E] 治癒靈球',
-                eIcon: '✚'
-            }
-        };
 
         /********************************************************************
          * 3. GAME STATE
@@ -1514,7 +1497,7 @@
             const sources=currentRoomId?[...remotePlayers.values()].map(r=>({...r.data,actor:r})):bots.map((b,i)=>({uid:'bot-'+i,name:b.name,team:b.team,hp:b.alive?b.hp:0,active:b.alive,agent:b.agent,weapon:'vandal',yaw:b.group.rotation.y+Math.PI,pitch:0,crouching:false,actor:b}));
             const candidates=eligible?spectatorCandidates(sources,{uid:currentUser?.uid,team:state.team}):[];
             const target=spectatorView.update(dt,candidates,eligible);
-            setHudText('spectator-name',target?`${target.name||'隊友'} · ${target.agent==='jett'?'JETT':'SAGE'} · ${Math.ceil(target.hp)} HP`:'沒有存活隊友 · 等待下一回合');
+            setHudText('spectator-name',target?`${target.name||'隊友'} · ${agentLabel(target.agent)} · ${Math.ceil(target.hp)} HP`:'沒有存活隊友 · 等待下一回合');
             return spectatorView.active?spectatorView.camera:camera;
         }
 
@@ -1694,7 +1677,7 @@
             else{rp.group.rotation.x=0;rp.hpBg.visible=rp.hpFill.visible=rp.nameSprite.visible=true;removeCorpse(p.uid);}
         }
         function reviveTarget(){
-            if(state.hp<=0||state.agent==='jett'||state.inBuyMenu||!state.isLocked||state.xCharges<=0||state.roundEnding)return null;
+            if(state.hp<=0||state.agent!=='phoenix'||state.inBuyMenu||!state.isLocked||state.xCharges<=0||state.roundEnding)return null;
             scene.updateMatrixWorld(true);const origin=camera.getWorldPosition(new THREE.Vector3()),direction=camera.getWorldDirection(new THREE.Vector3());let chosen=null,best=Infinity;
             for(const c of corpses.values()){
                 if(c.team!==state.team||c.uid===(currentUser?.uid||'self')||resurrections.has(c.uid))continue;
@@ -1840,7 +1823,7 @@
             group.add(bodyMesh, leftLeg, rightLeg, leftArm, rightArm, botGun, headMesh, hpBg, hpFill);
             scene.add(group);
 
-            const agent=idx<0?state.agent:(Math.random()<.5?'jett':'phoenix');
+            const agent=idx<0?state.agent:AGENT_KEYS[Math.floor(Math.random()*AGENT_KEYS.length)];
             const appearance=new AgentAvatar(group,agent,{color:ally?0x00f5d4:0xff4655,skinTexture:smiteTexture,onReady:()=>{
                 for(const material of [armorMat,outlineRedMat,chestTrimMat,headHelmetMat,visorMat])material.visible=false;botGun.visible=false;
             }});
@@ -1923,14 +1906,14 @@
         }
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.armorType=player.armorType||(player.shield===25?'light':player.shield>0?'heavy':'none');state.shieldReserve=player.shieldReserve||0;if(FIREARMS[player.primaryWeapon]?.slot==='primary')state.primaryWeaponKey=player.primaryWeapon;if(isSidearm(player.secondaryWeapon))state.secondaryWeaponKey=player.secondaryWeapon;state.kills=player.kills;state.deaths=player.deaths;
-            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent!=='jett'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent!=='jett'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
+            yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent==='phoenix'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent==='phoenix'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
             equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;if(state.agent!=='jett'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -1956,7 +1939,7 @@
             ctx.fillStyle = '#FFFFFF';
             ctx.font = 'bold 20px "Noto Sans TC", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`${nameText} [${agentKey==='jett'?'JETT':'SAGE'}]`, 128, 39);
+            ctx.fillText(`${nameText} [${agentLabel(agentKey)}]`, 128, 39);
 
             const tex = new THREE.CanvasTexture(c);
             tex.encoding = THREE.sRGBEncoding;
@@ -2127,7 +2110,7 @@
                     for(const id of ['btn-copy-room','btn-leave-room','room-hud-pill'])document.getElementById(id).classList.remove('hidden');
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
-                    if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(['jett','phoenix'].includes(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(isSidearm(message.player.weapon))state.secondaryWeaponKey=message.player.weapon;else if(FIREARMS[message.player.weapon]?.slot==='primary')state.primaryWeaponKey=message.player.weapon;}
+                    if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(isAgent(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(isSidearm(message.player.weapon))state.secondaryWeaponKey=message.player.weapon;else if(FIREARMS[message.player.weapon]?.slot==='primary')state.primaryWeaponKey=message.player.weapon;}
                     applyServerSpawn(message.player);receiveRoomRound(message.round);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
@@ -2853,7 +2836,7 @@
         }
         function receiveSlowEvent(e){
             if(e.type==='slow_launch'){
-                const own=e.senderUid===currentUser?.uid;createSlowFlight(e,!own);if(own){state.slowPendingUntil=0;if(state.agent!=='jett')state.qCharges=e.remaining;updateAbilityHUD();}return;
+                const own=e.senderUid===currentUser?.uid;createSlowFlight(e,!own);if(own){state.slowPendingUntil=0;if(state.agent==='phoenix')state.qCharges=e.remaining;updateAbilityHUD();}return;
             }
             if(e.type==='slow_step'){const f=slowFlights.get(e.id);if(f?.remote){f.mesh.position.set(e.x,e.y,e.z);f.velocity.set(e.vx,e.vy,e.vz);f.awaiting=false;}return;}
             if(e.type==='slow_remove'){removeSlowFlight(e.id);return;}
@@ -2903,7 +2886,7 @@
             const hit=ray.intersectObjects(nearby,false)[0];if(!hit?.face){abilityNotice('靠近牆面或地板，再按 T 噴漆');return;}
             const matrix=hit.object.matrixWorld.clone();if(hit.instanceId!==undefined){const instance=new THREE.Matrix4();hit.object.getMatrixAt(hit.instanceId,instance);matrix.multiply(instance);}
             const normal=hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(matrix)).normalize();if(normal.dot(dir)>0)normal.negate();
-            const design=state.sprayDesign==='agent'?(state.agent==='jett'?'jett':'sage'):state.sprayDesign;
+            const design=state.sprayDesign==='agent'?(['jett','phoenix'].includes(state.agent)?agentModelKey(state.agent):'gg'):state.sprayDesign;
             const artState=sprayAssetState(design);if(artState!=='ready'){abilityNotice(artState==='error'?'噴漆圖片載入失敗，請重新整理':'噴漆圖片載入中，請稍候');return;}
             const e={type:'spray',ownerUid:currentUser?.uid||'solo',x:hit.point.x,y:hit.point.y,z:hit.point.z,nx:normal.x,ny:normal.y,nz:normal.z,yaw:yawObject.rotation.y,design:design||'jett',expiresAt:Date.now()+30000};
             if(currentRoomId){lastSpray=Date.now();pushMyNetworkState(true);broadcastRoomEvent(e);}else receiveSpray(e);
@@ -2943,14 +2926,14 @@
         let abilityIconAgent=null,abilityChargeSignature=null;
         function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
-            const sage=state.agent!=='jett';
+            const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
             const names={c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
             if(abilityIconAgent!==state.agent){
                 abilityIconAgent=state.agent;
-                for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
+                for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);if(!enabled)names[k]='技能尚未加入';const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
             }
-            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
-            const chargeSignature=state.agent+state.qCharges;if(abilityChargeSignature!==chargeSignature){abilityChargeSignature=chargeSignature;document.getElementById('skill-q-charges').innerHTML=Array.from({length:sage?2:1},(_,i)=>`<i class="ability-charge ${state.qCharges>i?'ready':''}"></i>`).join('');}
+            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(!enabled?false:k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
+            const chargeSignature=state.agent+state.qCharges;if(abilityChargeSignature!==chargeSignature){abilityChargeSignature=chargeSignature;document.getElementById('skill-q-charges').innerHTML=Array.from({length:enabled?(sage?2:1):0},(_,i)=>`<i class="ability-charge ${state.qCharges>i?'ready':''}"></i>`).join('');}
             for(const k of ['c','q','e']) {
                 const el=document.getElementById(`skill-${k}-cd`);
                 const charges=state[k+'Charges'];const cd=state[k+'Cooldown'];
@@ -2961,10 +2944,11 @@
             document.getElementById('skill-x-box').style.opacity=state.xCharges>0||state.bladeStormActive&&state.bladeKnives>0?'1':'.3';
         }
         function resetAbilities() {
-            cancelSlowEquip();cancelBarrierPlacement();state.slowPendingUntil=0;state.barrierPendingUntil=0;
+            cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.healRemaining=0;state.slowPendingUntil=0;state.barrierPendingUntil=0;
             state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
             clearTimeout(bladeEmptyTimer);state.bladeStormActive=false;state.bladeKnives=0;state.weaponAmmo={};
-            state.eCharges=1;state.xCharges=1;state.cCooldown=state.qCooldown=state.eCooldown=0;
+            if(!AGENTS[state.agent].abilities)state.cCharges=state.qCharges=0;
+            state.eCharges=AGENTS[state.agent].abilities?1:0;state.xCharges=state.eCharges;state.cCooldown=state.qCooldown=state.eCooldown=0;
             state.dashReadyUntil=0;state.dashArmedAt=0;updateAbilityHUD();
         }
         function triggerAbilityC() {
@@ -2983,7 +2967,7 @@
             state.qCharges--;updateAbilityHUD();
         }
         function triggerAbilityE() {
-            if(state.inBuyMenu||state.hp<=0)return;
+            if(state.inBuyMenu||state.hp<=0||!AGENTS[state.agent].abilities)return;
             if(state.agent==='jett') {
                 const now=performance.now();
                 if(state.dashReadyUntil>now) {
@@ -3006,10 +2990,10 @@
             updateAbilityHUD();
         }
         function triggerUltimateX() {
-            if(state.inBuyMenu||state.hp<=0)return;
+            if(state.inBuyMenu||state.hp<=0||!AGENTS[state.agent].abilities)return;
             if(state.agent==='jett'&&state.bladeStormActive){if(state.bladeKnives>0){if(state.weaponKey!=='bladestorm')equipWeaponSlot('bladestorm');}else abilityNotice('飛刀已用盡');return;}
             if(state.xCharges<=0)return;
-            if(state.agent!=='jett'){const target=reviveTarget();if(!target){abilityNotice('瞄準附近倒地隊友，再按 X');return;}if(currentRoomId){roomSocket.send({type:'revive',targetUid:target.uid});}else{state.xCharges--;beginAbilityCast('orb',.8);startResurrection(target.uid,target.actor);}updateAbilityHUD();return;}
+            if(state.agent==='phoenix'){const target=reviveTarget();if(!target){abilityNotice('瞄準附近倒地隊友，再按 X');return;}if(currentRoomId){roomSocket.send({type:'revive',targetUid:target.uid});}else{state.xCharges--;beginAbilityCast('orb',.8);startResurrection(target.uid,target.actor);}updateAbilityHUD();return;}
             state.xCharges--;state.bladeStormActive=true;state.bladeKnives=BLADE_CAPACITY;equipWeaponSlot('bladestorm');sfx.playAbilitySound('updraft');updateAbilityHUD();
         }
 
@@ -3042,10 +3026,11 @@
         }
 
         window.selectAgent = function(agentKey) {
+            if(!isAgent(agentKey))return;
+            if(currentRoomId&&!AGENTS[agentKey].abilities&&!roomSocket?.serverFeatures?.includes('agent-models-4')){shopFeedback('連線伺服器正在更新新角色，請稍後重新加入房間');return;}
             state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
-            document.getElementById('agent-card-jett').classList.toggle('active', agentKey === 'jett');
-            document.getElementById('agent-card-phoenix').classList.toggle('active', agentKey === 'phoenix');
+            for(const key of AGENT_KEYS)document.getElementById('agent-card-'+key).classList.toggle('active',agentKey===key);
 
             const ag = AGENTS[agentKey];
             document.getElementById('hud-agent-short').textContent = ag.short;
@@ -3144,18 +3129,18 @@
             for(const key of FIREARM_KEYS){const side=isSidearm(key),pending=state[side?'pendingSidearm':'pendingWeapon'],current=state[side?'secondaryWeaponKey':'primaryWeaponKey'],el=document.getElementById('wpn-card-'+key),owned=current===key,q=quoteExchange(state.creds,pending,current,key,WEAPONS[key].cost);el.classList.toggle('active',owned);el.classList.toggle('equipped',state.weaponKey===key);el.querySelector('.weapon-owned').textContent=owned?(pending?.key===key?'已購買 · 可退還':'已擁有'):'';el.classList.toggle('unaffordable',!q.ok);el.setAttribute('aria-label',`${WEAPONS[key].name}，${owned?'已擁有':WEAPONS[key].cost+' 信用點'}`);}
             for(const type of ['heavy','light','regen'])document.getElementById('shield-card-'+type).classList.toggle('active',state.armorType===type);
             document.getElementById('shop-agent-name').textContent=AGENTS[state.agent].short;
-            document.querySelector('.shop-agent-emblem').innerHTML=`<img alt="" src="./assets/ui/${state.agent==='jett'?'jett':'sage'}.webp">`;
+            document.querySelector('.shop-agent-emblem').innerHTML=`<img alt="" src="./assets/ui/${agentModelKey(state.agent)}.webp">`;
             document.getElementById('shop-owned-label').textContent=state.primaryWeaponKey.toUpperCase()+' / '+state.secondaryWeaponKey.toUpperCase();
             document.getElementById('shop-refund-label').textContent=`本次可退還 ¤${(state.pendingWeapon?.cost||0)+(state.pendingSidearm?.cost||0)+(state.pendingShield?.cost||0)}`;
             document.getElementById('shop-sell-weapon').disabled=!state.pendingWeapon;
             document.getElementById('shop-sell-shield').disabled=!state.pendingShield;
-            const sage=state.agent!=='jett';
-            document.getElementById('shop-ability-passive').innerHTML=sage?'<span>◇</span><b>SAGE</b><small>守衛者</small>':'<span>◌</span><b>飄浮</b><small>按住空白鍵 · 被動</small>';
+            const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
+            document.getElementById('shop-ability-passive').innerHTML=!enabled?`<span>◇</span><b>${agentLabel(state.agent)}</b><small>外型可用 · 技能尚未加入</small>`:sage?'<span>◇</span><b>SAGE</b><small>守衛者</small>':'<span>◌</span><b>飄浮</b><small>按住空白鍵 · 被動</small>';
             for(const [key,icon,name,charges] of [
                 ['c',sage?'▥':'☁',sage?'屏障靈球':'雲爆煙霧',state.cCharges],
                 ['q',sage?'◉':'▲',sage?'緩速靈球':'氣流竄升',state.qCharges],
                 ['e',sage?'✚':'➤',sage?'治癒靈球':'逐風衝刺',state.eCharges]
-            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${name}</b><small>${state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
+            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?name:key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
         }
 
         function setHudText(id,value){const el=document.getElementById(id),text=String(value);if(el.textContent!==text)el.textContent=text;}

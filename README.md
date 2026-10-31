@@ -391,7 +391,7 @@ BANDIT 的名稱可在社群 API client 更新及武器輪盤找到，WARDEN 只
 ### Bot navigation and Sage placement update
 
 Solo bots now random-walk from safe authored anchors at round start, with floor,
-ledge, capsule and spacing checks, and randomly wear the available Jett/Sage rigs.
+ledge, capsule and spacing checks, and randomly wear the available Jett/Sage/Iso/Clove rigs.
 Tactical allies follow in a loose formation, share nearby last-seen contacts and
 continue toward sites after the player dies. Both teams retain line-of-sight and
 smoke checks before damaging enemies. Actual-map A* runs incrementally (20 node
@@ -410,3 +410,19 @@ on client and Worker. Approach lanes, Haven C's unstriped courtyard and overlapp
 upper/lower floors no longer count as sites. Reference and reconstruction limits:
 [multiplayer/map-sites-reference.md](multiplayer/map-sites-reference.md). These are
 reconstructed planting regions, not verified original game trigger volumes.
+
+
+### Iso and Clove character appearances
+
+The selector and solo bot appearance pool now include Iso and Clove alongside
+Jett and Sage. Packed native character meshes, albedo/ORM maps and the shared
+117-bone rig come from the same pinned open-aim source. The loader retains the
+existing hitboxes, team outlines, locomotion, corpse and spectator behavior.
+Network snapshots and reconnects preserve all four identities; old backends cannot
+select the two new appearances until their `agent-models-4` feature is deployed.
+
+Iso and Clove are appearance options with firearms, melee, movement and Spike;
+their dedicated ability kits are not implemented. Their skill UI explicitly marks
+this and cannot cast Sage/Jett abilities. First-person hands use the existing
+authored mesh with per-agent sleeve/glove colours, not native full viewmodel rigs.
+Agent-art source details: assets/ui/README.md; mesh hashes: assets/agents/provenance.json.

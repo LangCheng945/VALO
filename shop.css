@@ -68,3 +68,5 @@
 .loadout-weapons .weapon-owned{grid-area:auto;margin:0!important;position:absolute;top:2px;right:4px;width:auto;height:10px;min-height:0;line-height:10px;font-size:7px;text-align:right}.loadout-weapons .weapon-owned:empty{display:none}
 .pending-reference{align-items:center;text-align:center}
 .shield-selector .val-card{align-items:center;text-align:center}
+
+.agent-selector{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}.agent-selector .val-card{min-width:0;padding:4px 2px;font-size:9px;letter-spacing:0}

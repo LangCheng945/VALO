@@ -6,6 +6,30 @@
   "credit": "ishoutu aim trainer; VALORANT character assets belong to Riot Games. The repository MIT license does not cover character assets.",
   "processing": "Original packed meshes and textures; selected rig and locomotion data decoded from literals. No upstream executable JavaScript is included.",
   "files": {
+    "clove.albedo.jpg": {
+      "bytes": 101858,
+      "sha256": "889d74cd451f3c4860b15a3357b9901758538a55c83e9478bbc5f41294fd1685"
+    },
+    "clove.bin": {
+      "bytes": 145196,
+      "sha256": "2412dd3d8be43a8ce2e4f62f89fa58278e177e15e0da6df89e00357b8e2c63a3"
+    },
+    "clove.orm.jpg": {
+      "bytes": 91505,
+      "sha256": "ce2f9343ca388e071e417e87a537a5ae6b67baa080a3b1c10de8acc439a0c1dc"
+    },
+    "iso.albedo.jpg": {
+      "bytes": 84469,
+      "sha256": "d7e8f2b3d23b538cd7fa32ca40016f846c6f86dbf552ced241a43268fc3acd75"
+    },
+    "iso.bin": {
+      "bytes": 158540,
+      "sha256": "b4869ec36f7d5c82ac14ebec13c720a6b5332e6c2847a84aff1a16bba7b636e9"
+    },
+    "iso.orm.jpg": {
+      "bytes": 65364,
+      "sha256": "c2371e34c0af31be337419a99312e6e718113eec32b4ec72d193714134f53ee9"
+    },
     "jett.albedo.jpg": {
       "bytes": 98414,
       "sha256": "e3f6f7bf8d430f593eb809ffc85b4ddcd1a50aea3c1ff8f160c63f74f028a1b9"
@@ -19,12 +43,12 @@
       "sha256": "bda7c71be31508bb408ce9704802691adc8a6a7014ba196d9cabc378e8a91995"
     },
     "manifest.json": {
-      "bytes": 515,
-      "sha256": "bcf813969a0e7f92727da7f5c75b47cfbf9c3c5ccba4fbb4a81b4858e15de44d"
+      "bytes": 1009,
+      "sha256": "e47c5b476f8d5085f9261f8f0fc86bfd24733e999f1e04baeb97e692d535199d"
     },
     "rig.json": {
       "bytes": 158985,
-      "sha256": "74f12d49456225bec921f41f18ebfcbddbd6941d2b88482a3d8757828721db9a"
+      "sha256": "aadfd0d17f26f2f8007634b01a8fc87e31015769279f0a6dfb224fea4ed19580"
     },
     "sage.albedo.jpg": {
       "bytes": 70395,

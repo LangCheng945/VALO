@@ -31,5 +31,37 @@
     "albedo": "sage.albedo.jpg",
     "orm": "sage.orm.jpg"
   },
+  "iso": {
+    "verts": 5765,
+    "tris": 4997,
+    "layout": [
+      0,
+      34592,
+      51888,
+      74948,
+      98008,
+      121068,
+      151052
+    ],
+    "bin": "iso.bin",
+    "albedo": "iso.albedo.jpg",
+    "orm": "iso.orm.jpg"
+  },
+  "clove": {
+    "verts": 5049,
+    "tris": 5279,
+    "layout": [
+      0,
+      30296,
+      45444,
+      65640,
+      85836,
+      106032,
+      137708
+    ],
+    "bin": "clove.bin",
+    "albedo": "clove.albedo.jpg",
+    "orm": "clove.orm.jpg"
+  },
   "rig": "rig.json"
 }

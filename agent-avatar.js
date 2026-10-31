@@ -1,13 +1,14 @@
+import {AGENT_KEYS,agentModelKey} from './multiplayer/agents.mjs?v=agents4';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 // Local, pinned character data. Gameplay continues to use the original separate hitboxes.
 import {loadWeaponModel} from './weapon-models.js?v=armory1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE,base=new URL('./assets/agents/',import.meta.url),cache=new Map();let dataPromise;
 const json=async url=>{const r=await fetch(url);if(!r.ok)throw Error('Character data '+r.status);return r.json()};
-function data(){return dataPromise||=(Promise.all([json(new URL('manifest.json',base)),json(new URL('rig.json',base))]).catch(e=>{dataPromise=null;throw e}));}
+function data(){return dataPromise||=(Promise.all([json(new URL('manifest.json?v=agents4',base)),json(new URL('rig.json',base))]).catch(e=>{dataPromise=null;throw e}));}
 const floats=(array,scale)=>Float32Array.from(array,v=>v/scale);
 async function source(agent){
- const key=agent==='jett'?'jett':'sage';if(!cache.has(key))cache.set(key,(async()=>{
+ const key=agentModelKey(agent);if(!cache.has(key))cache.set(key,(async()=>{
   const [manifest,rig]=await data(),m=manifest[key],r=await fetch(new URL(m.bin,base));if(!r.ok)throw Error('Character mesh '+r.status);const b=await r.arrayBuffer(),[p,n,u,si,sw,ix,inv]=m.layout;
   if(b.byteLength!==inv+rig.names.length*64)throw Error('Invalid character mesh');
   const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(floats(new Int16Array(b,p,m.verts*3),10),3));geometry.setAttribute('normal',new T.BufferAttribute(floats(new Int8Array(b,n,m.verts*3),127),3));geometry.setAttribute('uv',new T.BufferAttribute(floats(new Uint16Array(b,u,m.verts*2),65535),2));geometry.setAttribute('skinIndex',new T.BufferAttribute(new Uint8Array(b,si,m.verts*4),4));geometry.setAttribute('skinWeight',new T.BufferAttribute(floats(new Uint8Array(b,sw,m.verts*4),255),4));const indices=new Uint16Array(b,ix,m.tris*3).slice();for(let i=0;i<indices.length;i+=3){const a=indices[i+1];indices[i+1]=indices[i+2];indices[i+2]=a;}geometry.setIndex(new T.BufferAttribute(indices,1));
@@ -16,7 +17,7 @@ async function source(agent){
   return {key,rig,geometry,albedo,orm,inverses:new Float32Array(b,inv,rig.names.length*16)};
  })().catch(e=>{cache.delete(key);throw e}));return cache.get(key);
 }
-export function preloadAgentAvatars(){return Promise.allSettled([source('jett'),source('phoenix')]);}
+export function preloadAgentAvatars(){return Promise.allSettled(AGENT_KEYS.map(source));}
 function pose(skin,motion,time,pitch=0){
  const {rig,bones}=skin,m=rig.motions[motion]||rig.motions['stand:vandal'],p=rig.poses[m.base];
  for(let i=0;i<rig.order.length;i++){const b=bones[rig.order[i]];b.position.fromArray(p.t,i*3);b.quaternion.fromArray(p.q,i*4).normalize();}
@@ -32,7 +33,7 @@ export class AgentAvatar {
   this.parent=parent;this.root=new T.Group();this.root.name='character-appearance';parent.add(this.root);this.weaponCarrier=new T.Group();this.root.add(this.weaponCarrier);this.color=color;this.skinTexture=skinTexture;this.onReady=onReady;this.elapsed=0;this.generation=0;this.setAgent(agent);this.setWeapon('vandal');
  }
  setAgent(agent){
-  const key=agent==='jett'?'jett':'sage';if(this.key===key)return;this.key=key;const generation=++this.generation;
+  const key=agentModelKey(agent);if(this.key===key)return;this.key=key;const generation=++this.generation;
   this.ready=source(agent).then(s=>{
    if(this.parent.userData.disposed||generation!==this.generation)return false;
    const previousStage=this.skin?.stage;
