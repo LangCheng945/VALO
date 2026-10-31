@@ -35,12 +35,18 @@ for k in sorted({motions[m]['track'] for m in selected if 'track' in motions[m]}
 root=pathlib.Path(__file__).resolve().parents[1]/'assets/agents';root.mkdir(exist_ok=True)
 (root/'rig.json').write_text(json.dumps(data,separators=(',',':')))
 manifest={}
-for key in ['jett','sage','iso','clove']:
- d=agents[key];manifest[key]={k:d[k] for k in ['verts','tris','layout']}
+for key in sorted(agents):
+ d=dict(agents[key]);d['verts']=int(d['verts']);d['tris']=int(d['tris']);d['layout']=[int(v) for v in d['layout']];manifest[key]={k:d[k] for k in ['verts','tris','layout']}
  for kind in ['bin','albedo','orm']:
   value=read('site/aim-agents/'+d[kind]);name=key+('.bin' if kind=='bin' else '.'+kind+'.jpg');(root/name).write_bytes(value)
   manifest[key][kind]=name
+ # Validate before advertising any source entry as a usable model.
+ b=(root/manifest[key]['bin']).read_bytes();assert len(b)==d['layout'][6]+len(names)*64,key
+ assert max(b[d['layout'][3]:d['layout'][3]+d['verts']*4])<len(names),key
+ indices=struct.unpack_from('<'+'H'*(d['tris']*3),b,d['layout'][5]);assert max(indices)<d['verts'],key
+ art='kay-o' if key=='kayo' else key
+ (root.parent/'ui'/f'{key}.webp').write_bytes(read(f'site/images/agent-art/{art}.webp'))
 manifest['rig']='rig.json';(root/'manifest.json').write_text(json.dumps(manifest,indent=2))
 files={p.name:{'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}for p in sorted(root.iterdir())if p.name!='provenance.json'}
 (root/'provenance.json').write_text(json.dumps({'sourceRepository':'https://github.com/unkwsr/open-aim','sourceCommit':COMMIT,'sourceMetadata':JS,'sourcePath':'site/aim-agents','credit':'ishoutu aim trainer; VALORANT character assets belong to Riot Games. The repository MIT license does not cover character assets.','processing':'Original packed meshes and textures; selected rig and locomotion data decoded from literals. No upstream executable JavaScript is included.','files':files},indent=2))
-print({k:(manifest[k]['verts'],manifest[k]['tris'])for k in ['jett','sage','iso','clove']});print('asset bytes',sum(p.stat().st_size for p in root.iterdir()))
+print({k:(d['verts'],d['tris'])for k,d in manifest.items() if isinstance(d,dict)});print('asset bytes',sum(p.stat().st_size for p in root.iterdir()))

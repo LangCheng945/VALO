@@ -1,11 +1,11 @@
-import {AGENT_KEYS,agentModelKey} from './multiplayer/agents.mjs?v=agents4';
+import {agentModelKey} from './multiplayer/agents.mjs?v=agents28';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 // Local, pinned character data. Gameplay continues to use the original separate hitboxes.
 import {loadWeaponModel} from './weapon-models.js?v=armory1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE,base=new URL('./assets/agents/',import.meta.url),cache=new Map();let dataPromise;
 const json=async url=>{const r=await fetch(url);if(!r.ok)throw Error('Character data '+r.status);return r.json()};
-function data(){return dataPromise||=(Promise.all([json(new URL('manifest.json?v=agents4',base)),json(new URL('rig.json',base))]).catch(e=>{dataPromise=null;throw e}));}
+function data(){return dataPromise||=(Promise.all([json(new URL('manifest.json?v=agents28',base)),json(new URL('rig.json',base))]).catch(e=>{dataPromise=null;throw e}));}
 const floats=(array,scale)=>Float32Array.from(array,v=>v/scale);
 async function source(agent){
  const key=agentModelKey(agent);if(!cache.has(key))cache.set(key,(async()=>{
@@ -17,7 +17,7 @@ async function source(agent){
   return {key,rig,geometry,albedo,orm,inverses:new Float32Array(b,inv,rig.names.length*16)};
  })().catch(e=>{cache.delete(key);throw e}));return cache.get(key);
 }
-export function preloadAgentAvatars(){return Promise.allSettled(AGENT_KEYS.map(source));}
+export function preloadAgentAvatars(agents=['jett','phoenix']){return Promise.allSettled([...new Set(agents)].slice(0,4).map(source));}
 function pose(skin,motion,time,pitch=0){
  const {rig,bones}=skin,m=rig.motions[motion]||rig.motions['stand:vandal'],p=rig.poses[m.base];
  for(let i=0;i<rig.order.length;i++){const b=bones[rig.order[i]];b.position.fromArray(p.t,i*3);b.quaternion.fromArray(p.q,i*4).normalize();}

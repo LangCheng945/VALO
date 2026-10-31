@@ -6,6 +6,54 @@
   "credit": "ishoutu aim trainer; VALORANT character assets belong to Riot Games. The repository MIT license does not cover character assets.",
   "processing": "Original packed meshes and textures; selected rig and locomotion data decoded from literals. No upstream executable JavaScript is included.",
   "files": {
+    "astra.albedo.jpg": {
+      "bytes": 108793,
+      "sha256": "d51cb596055fb3082b8e084875f1c27bcb76a732ad75103832236d2d9b77ad6b"
+    },
+    "astra.bin": {
+      "bytes": 142368,
+      "sha256": "1fe33256969a29947cbe518a99180b649de1c54fefe44ca9ade60bcc2f9b9f8e"
+    },
+    "astra.orm.jpg": {
+      "bytes": 82817,
+      "sha256": "1495f4e679a5c5698b5a2326211720720cf972d0180a0b81ac406ac1c5120885"
+    },
+    "breach.albedo.jpg": {
+      "bytes": 105647,
+      "sha256": "25638edbc25943c49eef86c1f04ed97d56d9091b95a1ca61a3441c4721f9aace"
+    },
+    "breach.bin": {
+      "bytes": 227212,
+      "sha256": "16a7808e4b818a556989c5a70951c20b33d19fe5271f52553e3061628c5b4960"
+    },
+    "breach.orm.jpg": {
+      "bytes": 86166,
+      "sha256": "059953af7e691531c501be93b84ff3859dd9273ba41476ba2f3f3c348ea1aad6"
+    },
+    "brimstone.albedo.jpg": {
+      "bytes": 60592,
+      "sha256": "8ccf99d8127b94446d10a2bd90ad3d314eb0baffc63aa801fbe1ffaddda72932"
+    },
+    "brimstone.bin": {
+      "bytes": 149108,
+      "sha256": "e18fb25f796bb6e1d1e38037042e17b24df1815f3f270639406f8c92cfa3c053"
+    },
+    "brimstone.orm.jpg": {
+      "bytes": 56892,
+      "sha256": "1d9546e5a01da59b1e7a28c6fcd4a320152c947f00b439bd3633ef06d7fe1b06"
+    },
+    "chamber.albedo.jpg": {
+      "bytes": 81597,
+      "sha256": "f53d7bd07b6414db05b9ddbea37c0e7f973aaa924426c826d4f344c2ec5710b5"
+    },
+    "chamber.bin": {
+      "bytes": 145192,
+      "sha256": "c2831752dd835b33506b71a5dfd8d59b7e69e43ac3a3727a70502c20f7ab4273"
+    },
+    "chamber.orm.jpg": {
+      "bytes": 65813,
+      "sha256": "2858871f054a9719e2363de27c399bb70d1f8b645661eeb7afcb18ea8337b733"
+    },
     "clove.albedo.jpg": {
       "bytes": 101858,
       "sha256": "889d74cd451f3c4860b15a3357b9901758538a55c83e9478bbc5f41294fd1685"
@@ -17,6 +65,66 @@
     "clove.orm.jpg": {
       "bytes": 91505,
       "sha256": "ce2f9343ca388e071e417e87a537a5ae6b67baa080a3b1c10de8acc439a0c1dc"
+    },
+    "cypher.albedo.jpg": {
+      "bytes": 68720,
+      "sha256": "0ea33bd34aade003058be3bce4146073bad3e63042c094c5d4fed34c4b1ac098"
+    },
+    "cypher.bin": {
+      "bytes": 115376,
+      "sha256": "9be06b6bcb6bfd7b08654c0d387eb2ebaf034e737f1a55fefaa226ffc3d6ee6c"
+    },
+    "cypher.orm.jpg": {
+      "bytes": 55949,
+      "sha256": "da10cef83eb6e749d272bb8af70a57be8bed51526684de31b2446cc009204136"
+    },
+    "deadlock.albedo.jpg": {
+      "bytes": 196389,
+      "sha256": "c41791e362675e42d3f4b908c205c5b3cb721d5893d4914cb4b5e56db9b5ae85"
+    },
+    "deadlock.bin": {
+      "bytes": 166412,
+      "sha256": "1c7d2fe9348497f42e2724920fa040ed38f5204032bd1640346cdc95f0487382"
+    },
+    "deadlock.orm.jpg": {
+      "bytes": 182914,
+      "sha256": "5b2731e2705ff5deea0a6947aba4d826572c11662a6fc0ff5793dcb0b394dd8e"
+    },
+    "fade.albedo.jpg": {
+      "bytes": 91345,
+      "sha256": "7d1c2c8232d909892d133c3bb4d02a4649dc5cfb00a2796db2af4f776c83406d"
+    },
+    "fade.bin": {
+      "bytes": 153168,
+      "sha256": "ffc39fec4297454595d3cfb837bb15ecf1e6f7f6aa8dedf1a8b770697c35c3f9"
+    },
+    "fade.orm.jpg": {
+      "bytes": 64461,
+      "sha256": "39eb8555d9800168e873c857c30a3e5a7957e7182f4bcbff794ba25a24891ca7"
+    },
+    "gekko.albedo.jpg": {
+      "bytes": 62247,
+      "sha256": "fbe3e34907f7e4e73ac3504b5fc548ac201f2e742348bfcb7132f09270e5678f"
+    },
+    "gekko.bin": {
+      "bytes": 248924,
+      "sha256": "f3fbc8da29d9940fa668909aa50af90d90103604203f7e787d32ed944b8c6b5b"
+    },
+    "gekko.orm.jpg": {
+      "bytes": 42786,
+      "sha256": "1bd25d385d8d477e16581ab3f257269ea722d24ee88ab010c2649b4041e0ab8e"
+    },
+    "harbor.albedo.jpg": {
+      "bytes": 86721,
+      "sha256": "23915e56860034865a38f023614ff3e5a32699b66d0cf541bef5046bac16db06"
+    },
+    "harbor.bin": {
+      "bytes": 222592,
+      "sha256": "e95413b8ca7f6afc25d40a4e5906f25f93eea98936e706dfe85eb74f452d240c"
+    },
+    "harbor.orm.jpg": {
+      "bytes": 79161,
+      "sha256": "b5b213ce8f74004d107e0633eb66d29bfcc35f6d51f4db1e93133628f14a3658"
     },
     "iso.albedo.jpg": {
       "bytes": 84469,
@@ -42,9 +150,93 @@
       "bytes": 69729,
       "sha256": "bda7c71be31508bb408ce9704802691adc8a6a7014ba196d9cabc378e8a91995"
     },
+    "kayo.albedo.jpg": {
+      "bytes": 74054,
+      "sha256": "f33b1e2d5890b3c9d2f84effc906f1cd0e0bd8889f99f4cb0346f591ba009d4b"
+    },
+    "kayo.bin": {
+      "bytes": 223624,
+      "sha256": "75acce71a307aab4ff6d73adad6ea2f1f2671c8c30330ddbeb0881acb4c95b88"
+    },
+    "kayo.orm.jpg": {
+      "bytes": 71757,
+      "sha256": "e347513ab6c75ea6f7321a76077d1804f6ae010a2ce83d900ecc3b2d0704647c"
+    },
+    "killjoy.albedo.jpg": {
+      "bytes": 80659,
+      "sha256": "2cf3fe4677d43cad85a1355f30369cd51011ea0a2f8087ca321b0878823a8ff1"
+    },
+    "killjoy.bin": {
+      "bytes": 175828,
+      "sha256": "2c069c86ef57ee59ec3dbbf255813921c82a9642ba8916fda454e96d20fa8ff7"
+    },
+    "killjoy.orm.jpg": {
+      "bytes": 56345,
+      "sha256": "e77105edc4b4503df4d114234fb56035657b85f68a1456d93605fd4c4dbb9d33"
+    },
     "manifest.json": {
-      "bytes": 1009,
-      "sha256": "e47c5b476f8d5085f9261f8f0fc86bfd24733e999f1e04baeb97e692d535199d"
+      "bytes": 7062,
+      "sha256": "ca733522c2d77aec9d00fad0586c7e97bcefdf6cc4795d1d45ecd524286528f4"
+    },
+    "miks.albedo.jpg": {
+      "bytes": 136140,
+      "sha256": "cbbab6c47a698af2d6634b4e72159192abdf7efae7c08ce18641426fdd379498"
+    },
+    "miks.bin": {
+      "bytes": 152068,
+      "sha256": "aeb4d0f60effdbd863d59b3cf8d4f8036bd04a24629e4ca956cc6dbe2f4093c4"
+    },
+    "miks.orm.jpg": {
+      "bytes": 128083,
+      "sha256": "6800a51053d51ac0e3366d7e0a73df9634f7a2392f0ed83c242e2c421c99264f"
+    },
+    "neon.albedo.jpg": {
+      "bytes": 130910,
+      "sha256": "ad961e98a8acd4016de254ec3556ac1857940e89928a738f06965979cafad774"
+    },
+    "neon.bin": {
+      "bytes": 171652,
+      "sha256": "5fd0436779ebc63d20bbaddb1189d3241052a3c75c87058b829dc9a432575365"
+    },
+    "neon.orm.jpg": {
+      "bytes": 105464,
+      "sha256": "dec474ecc25e68d079bc9231586edebd930c14594e74595c768194c978eff1e9"
+    },
+    "omen.albedo.jpg": {
+      "bytes": 59082,
+      "sha256": "78c4b5330100c86323f52575a2ff33025489482e8f7076289389c2d56ad68008"
+    },
+    "omen.bin": {
+      "bytes": 219384,
+      "sha256": "5942bedac6226a8984130bf1a1214d5bc1f1a82c713e0eead22c2c2c04bcc9a2"
+    },
+    "omen.orm.jpg": {
+      "bytes": 57388,
+      "sha256": "cb49a190dc613b74a96604919a4cf912a00e7276a61ac85c3a21ea0ed3c86166"
+    },
+    "raze.albedo.jpg": {
+      "bytes": 108095,
+      "sha256": "c618bcdccf9b0f5c60573c4b2c5f4ecb1ebab2e6764dac0844827585d2432b98"
+    },
+    "raze.bin": {
+      "bytes": 150056,
+      "sha256": "8d8011842aaa50418b20f7a52f4d97d09a53305a7350905e8c1bc3359e44483a"
+    },
+    "raze.orm.jpg": {
+      "bytes": 95248,
+      "sha256": "90092cb390572f1110289f3c16e62d2b4140d338cc32445faeb40ba5be01c5be"
+    },
+    "reyna.albedo.jpg": {
+      "bytes": 90845,
+      "sha256": "203b116316c9a60e8ad93a7565936e0c45465febfb615543d890f29fe87e94a5"
+    },
+    "reyna.bin": {
+      "bytes": 130292,
+      "sha256": "8ad2e1a7558200a473b5d23136f1e235bbdf2cf96b7c4ec91eba183b5c954d31"
+    },
+    "reyna.orm.jpg": {
+      "bytes": 81117,
+      "sha256": "a81e73e9229e8172c899e02c9171d98d6719579c3931c8d3f48392be4d3bbae5"
     },
     "rig.json": {
       "bytes": 158985,
@@ -61,6 +253,102 @@
     "sage.orm.jpg": {
       "bytes": 65404,
       "sha256": "83933b6cb0a6b11e9cd0fbd7cf91df3fc06c02722ea75291523fe2ba47373605"
+    },
+    "skye.albedo.jpg": {
+      "bytes": 112289,
+      "sha256": "71fbd207494c54a325073f0f19dd27fcd28130ae16e03ee8786ceb59d07a5555"
+    },
+    "skye.bin": {
+      "bytes": 141416,
+      "sha256": "a2a2443371bcec5bb81fceb4f473ae63b039db83d3a4d59ccaa1b1c5b538f06e"
+    },
+    "skye.orm.jpg": {
+      "bytes": 76693,
+      "sha256": "9a1f4b36e103de8bc774ab2f14a9073f75b77c36948c225d29ed2e4be16a205c"
+    },
+    "sova.albedo.jpg": {
+      "bytes": 217275,
+      "sha256": "bbbf06fdbe27b1e22a941c2eb96049d6f33a6ec572c95e5c0e150ab3fa2d340f"
+    },
+    "sova.bin": {
+      "bytes": 215396,
+      "sha256": "b372adbfc19a3ce1cfeeebdbe59b904345333498f04d6e25e1bde6e18e17ee61"
+    },
+    "sova.orm.jpg": {
+      "bytes": 112427,
+      "sha256": "8d16ed2261eb634f92de1b1962accea23c27547be03a4de3b9296e5a8b4c3067"
+    },
+    "tejo.albedo.jpg": {
+      "bytes": 211727,
+      "sha256": "fc08849e287a34b326e0a23a89d68c8c022dcaaa80028a3f10b346c045019f74"
+    },
+    "tejo.bin": {
+      "bytes": 185500,
+      "sha256": "a80f6f868350233c4f05dcb9804faaeb1b50455ce74d527fb8d3be3619c200f0"
+    },
+    "tejo.orm.jpg": {
+      "bytes": 214091,
+      "sha256": "10f6bbcf5f484db5b418935cdad16ccf485f5178e9ef32af42245ace9206158b"
+    },
+    "veto.albedo.jpg": {
+      "bytes": 148677,
+      "sha256": "9e944014fe7b27cc95590c54ca6b66c4ac1f018cd46f8989b8fcfc329b9c9cc2"
+    },
+    "veto.bin": {
+      "bytes": 114304,
+      "sha256": "85ec6a3c8787a08925b5117df94d40ac086bc656131ebe4f4680c23b80e69684"
+    },
+    "veto.orm.jpg": {
+      "bytes": 134103,
+      "sha256": "e911e86fc0098b521ea1e5006122021a37b8f6386a380dc893acc4358dece9cc"
+    },
+    "viper.albedo.jpg": {
+      "bytes": 138529,
+      "sha256": "24050b6c797b15b56e8724e5139bd5c5d44d7fc7af3a7a5b042663ce96f551e3"
+    },
+    "viper.bin": {
+      "bytes": 180084,
+      "sha256": "7cf3bcb1b6ab101622d167be7a6a1be6b91d62359e31675e6bcc19aa360ee010"
+    },
+    "viper.orm.jpg": {
+      "bytes": 84397,
+      "sha256": "801a7804d1ca7980cba0c8562e752a1f85aeadf0226a11d6c8dc2e0f4c9e5cfa"
+    },
+    "vyse.albedo.jpg": {
+      "bytes": 68091,
+      "sha256": "3b8c4a9715627bcf252330aaefc71558281e60a07e1bbb78d33c7e2194346c63"
+    },
+    "vyse.bin": {
+      "bytes": 455660,
+      "sha256": "105cfe33f9c54c6d474b98c5a64dd9859057ffc6d655e33344087a8aaf35e594"
+    },
+    "vyse.orm.jpg": {
+      "bytes": 59065,
+      "sha256": "bc7f8e5a5cac52b341f0580f0b4607951340f9633c1e026d575f62b9813af911"
+    },
+    "waylay.albedo.jpg": {
+      "bytes": 150102,
+      "sha256": "bcb0a0994283a191ffc982cb029a25a10f2ed276f67faac047b09e8d159df760"
+    },
+    "waylay.bin": {
+      "bytes": 137096,
+      "sha256": "5b9759604b7397444b491c3cd02d9f7fc11fb0e26d6a3255b30ca816f5a8d290"
+    },
+    "waylay.orm.jpg": {
+      "bytes": 84422,
+      "sha256": "6a3b04c9952d6165c061220dc67bbbc25d72bf62133c73805c5b11479a7eaba2"
+    },
+    "yoru.albedo.jpg": {
+      "bytes": 86504,
+      "sha256": "d2549273d3810a9ad97e70f8466870fbfa1314791e2ecf67cb6d451fbfb5c410"
+    },
+    "yoru.bin": {
+      "bytes": 184092,
+      "sha256": "91409041da52a05d181aa732d8b62ef6c014a1a9e979df3b0437c1ed70b5310a"
+    },
+    "yoru.orm.jpg": {
+      "bytes": 62798,
+      "sha256": "ae9c8cb60f4f6db22d47482884a18b1093406d3a24a1589f1f25a6eb0c797245"
     }
   }
 }

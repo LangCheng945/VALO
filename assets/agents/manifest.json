@@ -1,35 +1,163 @@
 {
-  "jett": {
-    "verts": 4398,
-    "tris": 5189,
+  "astra": {
+    "verts": 4765,
+    "tris": 5802,
     "layout": [
       0,
-      26388,
-      39584,
-      57176,
-      74768,
-      92360,
-      123496
+      28592,
+      42888,
+      61948,
+      81008,
+      100068,
+      134880
     ],
-    "bin": "jett.bin",
-    "albedo": "jett.albedo.jpg",
-    "orm": "jett.orm.jpg"
+    "bin": "astra.bin",
+    "albedo": "astra.albedo.jpg",
+    "orm": "astra.orm.jpg"
   },
-  "sage": {
-    "verts": 4434,
-    "tris": 5362,
+  "breach": {
+    "verts": 8463,
+    "tris": 6999,
     "layout": [
       0,
-      26604,
-      39908,
-      57644,
-      75380,
-      93116,
-      125288
+      50780,
+      76172,
+      110024,
+      143876,
+      177728,
+      219724
     ],
-    "bin": "sage.bin",
-    "albedo": "sage.albedo.jpg",
-    "orm": "sage.orm.jpg"
+    "bin": "breach.bin",
+    "albedo": "breach.albedo.jpg",
+    "orm": "breach.orm.jpg"
+  },
+  "brimstone": {
+    "verts": 5035,
+    "tris": 5980,
+    "layout": [
+      0,
+      30212,
+      45320,
+      65460,
+      85600,
+      105740,
+      141620
+    ],
+    "bin": "brimstone.bin",
+    "albedo": "brimstone.albedo.jpg",
+    "orm": "brimstone.orm.jpg"
+  },
+  "chamber": {
+    "verts": 5090,
+    "tris": 5135,
+    "layout": [
+      0,
+      30540,
+      45812,
+      66172,
+      86532,
+      106892,
+      137704
+    ],
+    "bin": "chamber.bin",
+    "albedo": "chamber.albedo.jpg",
+    "orm": "chamber.orm.jpg"
+  },
+  "clove": {
+    "verts": 5049,
+    "tris": 5279,
+    "layout": [
+      0,
+      30296,
+      45444,
+      65640,
+      85836,
+      106032,
+      137708
+    ],
+    "bin": "clove.bin",
+    "albedo": "clove.albedo.jpg",
+    "orm": "clove.orm.jpg"
+  },
+  "cypher": {
+    "verts": 3940,
+    "tris": 4191,
+    "layout": [
+      0,
+      23640,
+      35460,
+      51220,
+      66980,
+      82740,
+      107888
+    ],
+    "bin": "cypher.bin",
+    "albedo": "cypher.albedo.jpg",
+    "orm": "cypher.orm.jpg"
+  },
+  "deadlock": {
+    "verts": 5810,
+    "tris": 6152,
+    "layout": [
+      0,
+      34860,
+      52292,
+      75532,
+      98772,
+      122012,
+      158924
+    ],
+    "bin": "deadlock.bin",
+    "albedo": "deadlock.albedo.jpg",
+    "orm": "deadlock.orm.jpg"
+  },
+  "fade": {
+    "verts": 5364,
+    "tris": 5506,
+    "layout": [
+      0,
+      32184,
+      48276,
+      69732,
+      91188,
+      112644,
+      145680
+    ],
+    "bin": "fade.bin",
+    "albedo": "fade.albedo.jpg",
+    "orm": "fade.orm.jpg"
+  },
+  "gekko": {
+    "verts": 10072,
+    "tris": 4987,
+    "layout": [
+      0,
+      60432,
+      90648,
+      130936,
+      171224,
+      211512,
+      241436
+    ],
+    "bin": "gekko.bin",
+    "albedo": "gekko.albedo.jpg",
+    "orm": "gekko.orm.jpg"
+  },
+  "harbor": {
+    "verts": 8551,
+    "tris": 5921,
+    "layout": [
+      0,
+      51308,
+      76964,
+      111168,
+      145372,
+      179576,
+      215104
+    ],
+    "bin": "harbor.bin",
+    "albedo": "harbor.albedo.jpg",
+    "orm": "harbor.orm.jpg"
   },
   "iso": {
     "verts": 5765,
@@ -47,21 +175,277 @@
     "albedo": "iso.albedo.jpg",
     "orm": "iso.orm.jpg"
   },
-  "clove": {
-    "verts": 5049,
-    "tris": 5279,
+  "jett": {
+    "verts": 4398,
+    "tris": 5189,
     "layout": [
       0,
-      30296,
-      45444,
-      65640,
-      85836,
-      106032,
-      137708
+      26388,
+      39584,
+      57176,
+      74768,
+      92360,
+      123496
     ],
-    "bin": "clove.bin",
-    "albedo": "clove.albedo.jpg",
-    "orm": "clove.orm.jpg"
+    "bin": "jett.bin",
+    "albedo": "jett.albedo.jpg",
+    "orm": "jett.orm.jpg"
+  },
+  "kayo": {
+    "verts": 8078,
+    "tris": 7749,
+    "layout": [
+      0,
+      48468,
+      72704,
+      105016,
+      137328,
+      169640,
+      216136
+    ],
+    "bin": "kayo.bin",
+    "albedo": "kayo.albedo.jpg",
+    "orm": "kayo.orm.jpg"
+  },
+  "killjoy": {
+    "verts": 6035,
+    "tris": 6933,
+    "layout": [
+      0,
+      36212,
+      54320,
+      78460,
+      102600,
+      126740,
+      168340
+    ],
+    "bin": "killjoy.bin",
+    "albedo": "killjoy.albedo.jpg",
+    "orm": "killjoy.orm.jpg"
+  },
+  "miks": {
+    "verts": 5031,
+    "tris": 6487,
+    "layout": [
+      0,
+      30188,
+      45284,
+      65408,
+      85532,
+      105656,
+      144580
+    ],
+    "bin": "miks.bin",
+    "albedo": "miks.albedo.jpg",
+    "orm": "miks.orm.jpg"
+  },
+  "neon": {
+    "verts": 5839,
+    "tris": 6923,
+    "layout": [
+      0,
+      35036,
+      52556,
+      75912,
+      99268,
+      122624,
+      164164
+    ],
+    "bin": "neon.bin",
+    "albedo": "neon.albedo.jpg",
+    "orm": "neon.orm.jpg"
+  },
+  "omen": {
+    "verts": 8668,
+    "tris": 4978,
+    "layout": [
+      0,
+      52008,
+      78012,
+      112684,
+      147356,
+      182028,
+      211896
+    ],
+    "bin": "omen.bin",
+    "albedo": "omen.albedo.jpg",
+    "orm": "omen.orm.jpg"
+  },
+  "raze": {
+    "verts": 5417,
+    "tris": 4801,
+    "layout": [
+      0,
+      32504,
+      48756,
+      70424,
+      92092,
+      113760,
+      142568
+    ],
+    "bin": "raze.bin",
+    "albedo": "raze.albedo.jpg",
+    "orm": "raze.orm.jpg"
+  },
+  "reyna": {
+    "verts": 4342,
+    "tris": 5270,
+    "layout": [
+      0,
+      26052,
+      39080,
+      56448,
+      73816,
+      91184,
+      122804
+    ],
+    "bin": "reyna.bin",
+    "albedo": "reyna.albedo.jpg",
+    "orm": "reyna.orm.jpg"
+  },
+  "sage": {
+    "verts": 4434,
+    "tris": 5362,
+    "layout": [
+      0,
+      26604,
+      39908,
+      57644,
+      75380,
+      93116,
+      125288
+    ],
+    "bin": "sage.bin",
+    "albedo": "sage.albedo.jpg",
+    "orm": "sage.orm.jpg"
+  },
+  "skye": {
+    "verts": 4739,
+    "tris": 5734,
+    "layout": [
+      0,
+      28436,
+      42656,
+      61612,
+      80568,
+      99524,
+      133928
+    ],
+    "bin": "skye.bin",
+    "albedo": "skye.albedo.jpg",
+    "orm": "skye.orm.jpg"
+  },
+  "sova": {
+    "verts": 7758,
+    "tris": 7498,
+    "layout": [
+      0,
+      46548,
+      69824,
+      100856,
+      131888,
+      162920,
+      207908
+    ],
+    "bin": "sova.bin",
+    "albedo": "sova.albedo.jpg",
+    "orm": "sova.orm.jpg"
+  },
+  "tejo": {
+    "verts": 6546,
+    "tris": 6757,
+    "layout": [
+      0,
+      39276,
+      58916,
+      85100,
+      111284,
+      137468,
+      178012
+    ],
+    "bin": "tejo.bin",
+    "albedo": "tejo.albedo.jpg",
+    "orm": "tejo.orm.jpg"
+  },
+  "veto": {
+    "verts": 3659,
+    "tris": 4995,
+    "layout": [
+      0,
+      21956,
+      32936,
+      47572,
+      62208,
+      76844,
+      106816
+    ],
+    "bin": "veto.bin",
+    "albedo": "veto.albedo.jpg",
+    "orm": "veto.orm.jpg"
+  },
+  "viper": {
+    "verts": 6449,
+    "tris": 6194,
+    "layout": [
+      0,
+      38696,
+      58044,
+      83840,
+      109636,
+      135432,
+      172596
+    ],
+    "bin": "viper.bin",
+    "albedo": "viper.albedo.jpg",
+    "orm": "viper.orm.jpg"
+  },
+  "vyse": {
+    "verts": 15608,
+    "tris": 20067,
+    "layout": [
+      0,
+      93648,
+      140472,
+      202904,
+      265336,
+      327768,
+      448172
+    ],
+    "bin": "vyse.bin",
+    "albedo": "vyse.albedo.jpg",
+    "orm": "vyse.orm.jpg"
+  },
+  "waylay": {
+    "verts": 4744,
+    "tris": 4997,
+    "layout": [
+      0,
+      28464,
+      42696,
+      61672,
+      80648,
+      99624,
+      129608
+    ],
+    "bin": "waylay.bin",
+    "albedo": "waylay.albedo.jpg",
+    "orm": "waylay.orm.jpg"
+  },
+  "yoru": {
+    "verts": 6769,
+    "tris": 5742,
+    "layout": [
+      0,
+      40616,
+      60924,
+      88000,
+      115076,
+      142152,
+      176604
+    ],
+    "bin": "yoru.bin",
+    "albedo": "yoru.albedo.jpg",
+    "orm": "yoru.orm.jpg"
   },
   "rig": "rig.json"
 }

@@ -426,3 +426,21 @@ their dedicated ability kits are not implemented. Their skill UI explicitly mark
 this and cannot cast Sage/Jett abilities. First-person hands use the existing
 authored mesh with per-agent sleeve/glove colours, not native full viewmodel rigs.
 Agent-art source details: assets/ui/README.md; mesh hashes: assets/agents/provenance.json.
+
+
+### Full available model catalog
+
+All 28 complete character entries in the pinned open-aim `fD` table are now
+exported and validated: Astra, Breach, Brimstone, Chamber, Clove, Cypher, Deadlock,
+Fade, Gekko, Harbor, Iso, Jett, KAY/O, Killjoy, Miks, Neon, Omen, Raze, Reyna,
+Sage, Skye, Sova, Tejo, Veto, Viper, Vyse, Waylay and Yoru. Phoenix has portrait
+art but no complete mesh in this source, so no substitute model is advertised.
+The historical `phoenix` wire identity continues to mean Sage.
+
+The searchable character dialog replaces the four-button selector. Matching
+portraits load lazily; native 3D meshes/textures load only for appearing characters.
+Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
+remote actors, corpse rendering and spectator labels share the same catalog.
+The backend advertises `agent-models-28`, retaining the previous four-role flag.
+Roles beyond Jett/Sage remain appearance options without dedicated abilities.
+Authored first-person hands are approximations, not original per-character rigs.

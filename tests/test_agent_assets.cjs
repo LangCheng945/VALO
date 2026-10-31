@@ -1,6 +1,7 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto'),assert=require('assert');const root=path.join(__dirname,'../assets/agents'),m=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'))),rig=JSON.parse(fs.readFileSync(path.join(root,'rig.json'))),provenance=JSON.parse(fs.readFileSync(path.join(root,'provenance.json')));
 assert.equal(rig.names.length,117);assert.equal(rig.parents.length,117);rig.parents.forEach((p,i)=>assert(p<i));
-for(const key of ['jett','sage','iso','clove']){const d=m[key],b=fs.readFileSync(path.join(root,d.bin));assert.equal(b.length,d.layout[6]+117*64);for(let i=0;i<d.verts*4;i++)assert(b[d.layout[3]+i]<117);for(let i=0;i<d.tris*3;i++)assert(b.readUInt16LE(d.layout[5]+i*2)<d.verts);assert(d.tris<6000);}
+const keys=Object.keys(m).filter(k=>k!=='rig');assert.equal(keys.length,28);
+for(const key of keys){const d=m[key],b=fs.readFileSync(path.join(root,d.bin));assert.equal(b.length,d.layout[6]+117*64);for(let i=0;i<d.verts*4;i++)assert(b[d.layout[3]+i]<117);for(let i=0;i<d.tris*3;i++)assert(b.readUInt16LE(d.layout[5]+i*2)<d.verts);assert(d.tris>0&&d.tris<25000);}
 for(const [key,m]of Object.entries(rig.motions)){const p=rig.poses[m.base];assert.equal(p.t.length,rig.order.length*3);assert.equal(p.q.length,rig.order.length*4);if(m.track){const t=rig.tracks[m.track];assert.equal(t.t.length,m.frames*t.moving.length*3);assert.equal(t.q.length,m.frames*t.moving.length*4);}}
 for(const [name,info]of Object.entries(provenance.files)){const b=fs.readFileSync(path.join(root,name));assert.equal(b.length,info.bytes);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),info.sha256);}
-console.log('PASS four compact character meshes, 117-bone rig, locomotion tracks and pinned hashes');
+console.log('PASS 28 verified character meshes, 117-bone rig, locomotion tracks and pinned hashes');

@@ -16,7 +16,7 @@ for(const map of (process.env.MAPS||'ascent,haven,summit,abyss').split(',')){
   const upper=new THREE.Vector3((site.minX+site.maxX)/2*m.scale,(site.maxFloor+1)*m.scale+2.2,(site.minZ+site.maxZ)/2*m.scale);
   return{name:site.name,supported,upperRejected:m.getPlantSite(upper)===null};
  }));assert(sites.every(s=>s.supported&&s.upperRejected),JSON.stringify(sites));console.log('PASS '+map+' each plant region has supported walkable ground and rejects the overlapping upper floor',sites);
- assert.equal(spawned.count,9);assert(spawned.valid);assert(spawned.random);assert(spawned.skins);assert(spawned.agents.every(a=>['jett','phoenix','iso','clove'].includes(a)));console.log('PASS '+map+' random connected safe spawns and native agent models',spawned);
+ assert.equal(spawned.count,9);assert(spawned.valid);assert(spawned.random);assert(spawned.skins);assert(spawned.agents.every(a=>Object.keys(JSON.parse(fs.readFileSync(path.join(__dirname,'../assets/agents/manifest.json')))).map(k=>k==='sage'?'phoenix':k).includes(a)));console.log('PASS '+map+' random connected safe spawns and native agent models',spawned);
  // Follow an authored reachable training anchor through the real collision map.
  const route=await page.evaluate(async()=>{const h=__bot,nav=new h.navType(h.map),start=h.map.getSpawn('attack').position;start.y-=2.2;let pair;
   const anchor=h.map.getBotSpawns(false)[0];pair={start,end:new THREE.Vector3(anchor.x,anchor.y,anchor.z)};
