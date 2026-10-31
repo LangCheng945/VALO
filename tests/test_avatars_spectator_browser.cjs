@@ -7,7 +7,7 @@ await p.route('**/index.html',r=>{let s=fs.readFileSync(path.join(__dirname,'../
 await p.goto('http://127.0.0.1:8000/index.html');await p.waitForFunction(()=>__obs?.map.ready,null,{timeout:150000});if(useNew){
  await p.evaluate(()=>setMenuView('buy'));
  for(const key of ['iso','clove']){
-  await p.locator('#btn-agent-picker').click();await p.locator('#agent-card-'+key).click();assert.equal(await p.locator('#shop-agent-name').textContent(),key.toUpperCase());assert((await p.locator('#shop-ability-passive').textContent()).includes('技能尚未加入'));
+  await p.locator('#btn-agent-picker').click();await p.locator('#agent-card-'+key).click();await p.locator('#agent-picker-confirm').click();assert.equal(await p.locator('#shop-agent-name').textContent(),key.toUpperCase());assert((await p.locator('#shop-ability-passive').textContent()).includes('技能尚未加入'));
   const safe=await p.evaluate(()=>{const h=__obs;h.state.inBuyMenu=false;h.state.isLocked=true;h.state.hp=50;const y=h.pose.position.y;h.c();h.q();h.e();h.x();h.state.inBuyMenu=true;return{charges:[h.state.cCharges,h.state.qCharges,h.state.eCharges,h.state.xCharges],heal:h.state.healingEquipped,barrier:h.state.barrierEquipped,blade:h.state.bladeStormActive,y:h.pose.position.y,oldY:y,icons:document.querySelectorAll('#ability-hud svg').length}});
   assert.deepEqual(safe.charges,[0,0,0,0]);assert(!safe.heal&&!safe.barrier&&!safe.blade);assert.equal(safe.y,safe.oldY);assert.equal(safe.icons,0);
  }

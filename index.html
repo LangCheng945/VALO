@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=agents28">
+    <link rel="stylesheet" href="./shop.css?v=select1">
 </head>
 <body class="relative select-none">
 
@@ -685,10 +685,12 @@
     <script src="./vendor/mesh-bvh.js"></script>
     <script type="importmap">{"imports":{"three":"./vendor/three-shim.js"}}</script>
     <dialog id="agent-picker" aria-labelledby="agent-picker-title">
-        <form method="dialog" class="agent-picker-heading"><h2 id="agent-picker-title">選擇角色</h2><button type="submit" aria-label="關閉選角">✕</button></form>
-        <p class="agent-picker-description">選擇角色外型。Jett／Sage 可使用技能；其餘角色目前提供一般戰鬥與 Spike。</p>
-        <label class="agent-search-label" for="agent-search">搜尋角色</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off">
-        <div id="agent-picker-grid"></div><p id="agent-picker-feedback" role="status"></p>
+        <div class="agent-picker-sky" aria-hidden="true"></div>
+        <form method="dialog" class="agent-picker-heading"><div><span id="agent-picker-map"></span><h2 id="agent-picker-title">選擇你的特務</h2></div><button type="submit" aria-label="關閉選角">✕</button></form>
+        <aside class="agent-picker-team" aria-label="目前隊伍"><h3>你的隊伍</h3><div id="agent-picker-squad"></div></aside>
+        <div id="agent-stage" data-ready="false"><img id="agent-preview-art" alt=""><span>拖曳旋轉角色</span></div>
+        <section class="agent-picker-detail" aria-live="polite"><p id="agent-preview-role"></p><h3 id="agent-preview-name"></h3><div id="agent-preview-skills"></div><p id="agent-preview-description"></p><p id="agent-preview-status"></p></section>
+        <div class="agent-picker-roster"><div class="agent-picker-tools"><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
         import {AGENTS,AGENT_KEYS,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=agents28';
@@ -699,6 +701,7 @@
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
+        import {AgentPreview} from './agent-preview.js?v=select1';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=agents28';
         import {SpectatorView} from './spectator-view.js?v=agents28';
         import {spectatorCandidates} from './spectator-rules.mjs';
@@ -3113,15 +3116,38 @@
             document.getElementById('tab-training').classList.toggle('selected',view!=='buy');
         };
         setMenuView('training');
-        const agentPicker=document.getElementById('agent-picker'),agentSearch=document.getElementById('agent-search');
+        const agentPicker=document.getElementById('agent-picker'),agentSearch=document.getElementById('agent-search'),agentPreview=new AgentPreview(document.getElementById('agent-stage'),{skinTexture:smiteTexture});
+        let previewAgent=state.agent;
+        const roleDescriptions={'決鬥者':'在交戰中創造突破口，協助隊伍取得進攻空間。','守衛者':'守住關鍵位置，保護隊伍並限制敵方推進。','先鋒':'探查威脅，協助隊伍打開進攻路線。','控場者':'掌握視野與節奏，協助隊伍進出據點。','特務':'選擇角色外型，投入訓練與對戰。'};
+        const pickerSkills={jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
+        function previewAgentChoice(key){
+            previewAgent=key;const agent=AGENTS[key];
+            document.getElementById('agent-preview-role').textContent=agent.role;document.getElementById('agent-preview-name').textContent=agent.short;document.getElementById('agent-preview-name').style.setProperty('--name-chars',agent.short.length);document.getElementById('agent-preview-description').textContent=roleDescriptions[agent.role]||roleDescriptions['特務'];document.getElementById('agent-preview-art').src='./assets/ui/'+agent.model+'.webp';
+            document.getElementById('agent-preview-status').textContent=agent.abilities?'技能可用':'專屬技能尚未加入 · 可使用槍械、近戰與 Spike';
+            const skills=document.getElementById('agent-preview-skills');skills.replaceChildren();
+            for(const [ability,name,description]of pickerSkills[key]||['c','q','e','x'].map(k=>[k,'技能尚未加入',''])){
+                const button=document.createElement('button');button.type='button';button.disabled=!agent.abilities;button.title=name;button.innerHTML=`${abilityIcon(key,ability)}<span>${ability.toUpperCase()}</span>`;button.addEventListener('click',()=>{document.getElementById('agent-preview-description').textContent=name+' · '+description;});skills.appendChild(button);
+            }
+            for(const role of AGENT_KEYS){const button=document.getElementById('agent-card-'+role);button.classList.toggle('active',role===key);button.setAttribute('aria-pressed',String(role===key));}
+            const supported=!currentRoomId||agentSupported(key,roomSocket?.serverFeatures);const confirm=document.getElementById('agent-picker-confirm');confirm.disabled=!supported;confirm.innerHTML='確認選擇 <span>'+agent.short+'</span>';if(!supported)document.getElementById('agent-preview-status').textContent='連線伺服器正在更新這個角色，請稍後重新加入房間';
+            updatePickerSquad(key);agentPreview.show(key);
+        }
+        function updatePickerSquad(pending=state.agent){
+            const own={name:state.playerName,agent:pending,self:true},others=currentRoomId?[...remotePlayers.values()].filter(r=>r.data.team===state.team).map(r=>r.data):bots.filter(b=>b.team===state.team).map(b=>({name:b.name,agent:b.agent}));
+            const list=document.getElementById('agent-picker-squad');list.replaceChildren();
+            for(const player of [own,...others].slice(0,5)){
+                const row=document.createElement('div');row.className='agent-squad-row';const image=document.createElement('img');image.src='./assets/ui/'+agentModelKey(player.agent)+'.webp';image.alt='';const name=document.createElement('span');name.textContent=player.name+(player.self?(pending===state.agent?'（你）':'（選擇中）'):'');const role=document.createElement('small');role.textContent=agentLabel(player.agent);row.append(image,name,role);list.appendChild(row);
+            }
+        }
         for(const key of AGENT_KEYS){
-            const agent=AGENTS[key],button=document.createElement('button');button.id='agent-card-'+key;button.type='button';button.className='agent-option';button.classList.toggle('active',key===state.agent);button.dataset.search=(agent.short+' '+agent.name+' '+agent.role).toLowerCase();button.setAttribute('aria-pressed',String(key===state.agent));
-            button.innerHTML=`<img src="./assets/ui/${agent.model}.webp" alt="" loading="lazy" decoding="async"><span>${agent.short}</span><small>${agent.role} · ${agent.abilities?'技能可用':'外型可用'}</small>`;
-            button.addEventListener('click',()=>selectAgent(key));document.getElementById('agent-picker-grid').appendChild(button);
+            const agent=AGENTS[key],button=document.createElement('button');button.id='agent-card-'+key;button.type='button';button.className='agent-option';button.dataset.search=(agent.short+' '+agent.name+' '+agent.role).toLowerCase();button.setAttribute('aria-pressed',String(key===state.agent));button.title=agent.short+' · '+agent.role;
+            button.innerHTML=`<img src="./assets/ui/${agent.model}.webp" alt="" loading="lazy" decoding="async"><span>${agent.short}</span>`;button.addEventListener('click',()=>previewAgentChoice(key));document.getElementById('agent-picker-grid').appendChild(button);
         }
         agentPicker.addEventListener('keydown',event=>{event.stopPropagation();if(event.code==='Escape'){event.preventDefault();agentPicker.close();}});
+        agentPicker.addEventListener('close',()=>agentPreview.stop());
         agentSearch.addEventListener('input',()=>{const query=agentSearch.value.trim().toLowerCase();let count=0;for(const button of document.querySelectorAll('.agent-option')){button.hidden=!button.dataset.search.includes(query);if(!button.hidden)count++;}document.getElementById('agent-picker-feedback').textContent=count?`${count} 位角色`:'找不到符合的角色';});
-        window.openAgentPicker=()=>{agentSearch.value='';agentSearch.dispatchEvent(new Event('input'));agentPicker.showModal();agentSearch.focus();};
+        document.getElementById('agent-picker-confirm').addEventListener('click',()=>selectAgent(previewAgent));
+        window.openAgentPicker=()=>{agentSearch.value='';agentSearch.dispatchEvent(new Event('input'));document.getElementById('agent-picker-map').textContent=mapDefinition.name.toUpperCase()+' / '+(currentRoomId==='PUBLIC'?'公開房間':currentRoomId?'好友房間':'訓練模式');agentPicker.showModal();previewAgentChoice(state.agent);agentSearch.focus();};
         const groupIds={sidearm:'shop-sidearms',smg:'shop-smgs-list',shotgun:'shop-shotguns-list',rifle:'shop-rifles',sniper:'shop-snipers-list',heavy:'shop-heavy-list'};
         for(const key of FIREARM_KEYS){
             let card=document.getElementById('wpn-card-'+key);if(!card){card=document.createElement('button');card.id='wpn-card-'+key;card.className='val-card p-4 text-left space-y-3';card.innerHTML=`<div><strong>${WEAPONS[key].name}</strong><span>¤ ${WEAPONS[key].cost}</span></div><svg></svg><div>${WEAPONS[key].magSize} 發</div>`;card.addEventListener('click',()=>buyWeapon(key));}

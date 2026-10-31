@@ -444,3 +444,22 @@ remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
 Roles beyond Jett/Sage remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
+
+
+### Character selection stage
+
+The picker now uses a full-screen composition with a central native 3D model,
+actual teammate list, role/implemented-skill information, portrait rows and an
+explicit confirmation action. Previewing, searching or cancelling does not change
+the selected role; confirmation preserves backend capability checks. Dragging
+rotates the model. No fabricated selection countdown or teammate identities are
+shown. The roster still contains all 28 verified models.
+
+The preview uses a separate scene capped at 30 FPS / one million render pixels,
+pauses on close, and disposes its own cloned material textures when switching
+models without disposing gameplay textures. It uses the existing rifle stance,
+not original selection cinematics. Layout inspiration was inspected in public
+community projects `arhmAli/Valorant-Agent-Menu-Idea` and
+`fincci/valorant-agent-select-page`; these are community references, not verified
+current Riot UI assets. No images or executable code were copied from those
+projects. The blue stage background is authored CSS/geometry.
