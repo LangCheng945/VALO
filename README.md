@@ -421,9 +421,8 @@ existing hitboxes, team outlines, locomotion, corpse and spectator behavior.
 Network snapshots and reconnects preserve all four identities; old backends cannot
 select the two new appearances until their `agent-models-4` feature is deployed.
 
-Iso remains an appearance option with firearms, melee, movement and Spike.
-Clove now has the trainer ability kit documented below. Their skill UI explicitly marks
-this and cannot cast Sage/Jett abilities. First-person hands use the existing
+Iso and Clove now have their own trainer ability kits documented below.
+They do not inherit Sage/Jett abilities. First-person hands use the existing
 authored mesh with per-agent sleeve/glove colours, not native full viewmodel rigs.
 Agent-art source details: assets/ui/README.md; mesh hashes: assets/agents/provenance.json.
 
@@ -442,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Clove remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -490,6 +489,31 @@ models. The existing ability-kit availability remains unchanged.
 
 The Worker advertises `clove-kit-1`, owns charges, credit, decay, temporary health, revival deadlines, smoke lifetime and burst targets, and replays live smoke/projectiles to reconnects and late joins. Old backends retain the appearance but cannot consume these new abilities. Round/map resets clear effects and status, and Spike ends the round without creating another self-revive opportunity. The solo version uses the same status rules; bots can receive decay and credit the player's recent damage assist.
 
-These are **trainer approximations**, not a verified current official patch: timings/ranges/charges live in `multiplayer/clove-rules.mjs`; abilities and ultimates still use the existing per-round training allocation rather than the full credit/ultimate-point economy. Meddle currently bursts on first contact instead of reproducing all bounce/fuse behavior. The Worker validates trajectories/ranges but does not load map triangles or authoritative movement, so terrain and line-of-sight validation are incomplete. The revive escape phase ends automatically. Icons, butterfly effects and purple smoke are authored approximations, not original game animations or sounds. Iso's kit remains unavailable.
+These are **trainer approximations**, not a verified current official patch: timings/ranges/charges live in `multiplayer/clove-rules.mjs`; abilities and ultimates still use the existing per-round training allocation rather than the full credit/ultimate-point economy. Meddle currently bursts on first contact instead of reproducing all bounce/fuse behavior. The Worker validates trajectories/ranges but does not load map triangles or authoritative movement, so terrain and line-of-sight validation are incomplete. The revive escape phase ends automatically. Icons, butterfly effects and purple smoke are authored approximations, not original game animations or sounds. Iso's trainer kit is documented below.
 
 Validation: `node tests/test_clove_browser.cjs`, `cd multiplayer && npm test`. The browser test exercises native fullscreen/pointer lock, planner placement, C damage/expiry, Q equip/throw, dead E/X, escape fire lockout and reset cleanup. Worker tests include real WebSocket peers for assist credit, remote smoke, late joins, revival and survival confirmation.
+
+
+### Iso trainer ability kit
+
+- **C / Contingency**: one moving, indestructible finite bullet plane. It blocks shots from both sides, with a matching Worker segment-intersection check, but does not obstruct walking or ability projectiles.
+- **Q / Undercut**: two waves pass through terrain; swept volume checks apply timed Vulnerable (double weapon damage) to others, including teammates, without dealing direct damage.
+- **E / Double Tap**: a preparation delay precedes an initial single-hit shield. A recent kill/damage assist during focus creates an owner-only, shootable orb; a validated shot restores the shield and refreshes focus. One shotgun trigger is one shielded damage instance, including its remaining pellets. Other attacks still deal damage.
+- **X / Kill Contract**: catches the nearest supported enemy along a finite forward corridor, drops carried Spike at the original position, and transfers both players into an authored purple arena. The short setup phase prevents shooting and movement; temporary cover then disappears. Ability use, buying, outside damage and escaping the arena bounds are blocked. A winner returns with the original health, armor and ammunition. The defeated player's corpse returns to the original map position, preserving Sage/Clove revival. Timeout kills both; disconnect forfeits and restores the survivor. Round/map changes release the arena.
+
+The backend advertises `iso-kit-1`; new clients also join with `isoRules: 1`, so older clients without relocation handling cannot be captured. Charges, moving walls, Vulnerable, shield consumption, owned orb hits, duel participants, timing and return poses are server-managed. Active effects replay on join/reconnect; disconnect cannot preserve a stale arena. Solo duels use the same tuning with a strafing, shooting bot; the other bots cannot interfere.
+
+This is an approximation with **one concurrent duel per room**, an authored circular arena and finite-plane wall, not the original arena model, cinematics or sounds. The focus shield protects supported weapon hits, not Spike's existing guaranteed-lethal blast rule. Timings, ranges, initial shield and per-round allocation are explicit trainer tuning in `multiplayer/iso-rules.mjs`, not verified current official values; full utility/ultimate-point economy and every ability interaction remain outside this implementation. Global player movement and static-map line of sight still have the existing client-trust limitations.
+
+Validation: `node tests/test_iso_browser.cjs` covers local C/Q/E/orbs, arena bounds, suppression, health/ammo restoration and lethal timeout. `node tests/test_iso_network_browser.cjs` runs two isolated Chromium clients through actual room UI, relocation callbacks and a real arena weapon raycast; it also verifies Clove resurrection at the returned corpse. `cd multiplayer && npm test` includes real WebSocket shield/orb/wall/realm checks and disconnect/reconnect.
+
+Clove/Iso ability icons are vector silhouettes redrawn from the user-provided reference sheets (`ability-icons.mjs`), mapped by skill identity rather than sheet position. The circular Iso arena uses blue-violet floor motifs, glowing curved setup panels and low-poly purple terrain based on the supplied screenshots (`iso-arena.js`); it is an authored approximation, not an imported official level.
+
+
+### Solo tactical bot follow and Spike defuse
+
+Allies use a bounded trail of the player's grounded positions so turns do not immediately replace a reachable route with a distant destination. Distant followers return to the trail instead of chasing stale shared contacts; allied labels and cyan radar markers make their location visible. Navigation keeps capsule/floor checks, stores the last valid position, and resets outstanding jobs on death. Training respawn now uses connected safe spawn sampling instead of a raw random X offset that could land inside walls or outside supported ground.
+
+Defenders prioritize the planted Spike. A nearby defender with a clear interaction path stops to defuse for seven seconds; losing that actor preserves the 3.5-second checkpoint for another bot or the player. Visible threats interrupt nonurgent attempts; an expiring fuse can force a commitment. Attackers guard nearby positions. Bots in the main world continue acting while the player is in an Iso duel, while realm checks still prohibit cross-realm combat. The AI remains a lightweight local tactical simulation, not a full original-game bot system; multiplayer rooms still disable solo bots.
+
+Validation: `node --test tests/test_bot_tactics.mjs`, `node tests/test_bot_defuse_browser.cjs`, `MAPS=ascent node tests/test_bot_navigation_browser.cjs`. Browser checks cover a reachable route through actual map collision, ally follow/combat, walking to an actual Spike, interrupt-and-takeover defuse, round victory and safe training respawn.

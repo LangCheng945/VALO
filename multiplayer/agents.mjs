@@ -35,7 +35,7 @@ const catalog={
   "name": "Iso",
   "model": "iso",
   "role": "決鬥者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 14068376,
    "glove": 1647411,

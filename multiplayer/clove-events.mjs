@@ -6,7 +6,7 @@ export const liveCloveEffects=(room,now)=>({smokes:(room.cloveEffects?.smokes||[
 const persist=room=>room.ctx.storage.put('cloveEffects',room.cloveEffects);
 export async function detonateMeddle(room,f,position,now){
  room.cloveEffects.flights=room.cloveEffects.flights.filter(t=>t.id!==f.id);
- for(const socket of room.sockets()){if(room.rounds.enabled&&room.meta.round.phase!=='playing')continue;const target=room.data(socket);if(!target?.joined||target.hp<=0||!target.inRound&&room.rounds.enabled)continue;if(distance({...target,y:target.y-1},position)<=CLOVE.meddleRadius){applyDecay(target,now);room.save(socket,target);room.send(socket,{type:'damage',hp:target.hp,shield:target.shield,tempHealth:target.tempHealth||0,attacker:'減損',cause:'decay'});}}
+ for(const socket of room.sockets()){if(room.rounds.enabled&&room.meta.round.phase!=='playing')continue;const target=room.data(socket);if(!target?.joined||target.realm||target.hp<=0||!target.inRound&&room.rounds.enabled)continue;if(distance({...target,y:target.y-1},position)<=CLOVE.meddleRadius){applyDecay(target,now);room.save(socket,target);room.send(socket,{type:'damage',hp:target.hp,shield:target.shield,tempHealth:target.tempHealth||0,attacker:'減損',cause:'decay'});}}
  room.broadcast({type:'event',event:{type:'clove_meddle_burst',id:f.id,...position,createdAt:now}});await persist(room);room.snapshot();
 }
 export async function cloveEvent(room,ws,p,m,now){

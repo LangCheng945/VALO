@@ -1,4 +1,5 @@
-import {FirstPersonHands} from './first-person-view.js?v=clove1';
+import {referencedAbilityIcon} from './ability-icons.mjs?v=references1';
+import {FirstPersonHands} from './first-person-view.js?v=iso1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -23,7 +24,7 @@ const paths={
         <g transform="rotate(22 75 67)"><path d="M75 16C69 29 67 40 68 55L72 59H78L82 55C83 40 81 29 75 16ZM71 75H79L78 92H72Z"/><circle cx="75" cy="67" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/></g>`
 };
 export function abilityIcon(agent,key){
-    if(agent==='clove'){const shapes={c:'<path d="M50 12C35 20 26 35 29 48C10 26 5 47 21 62L44 85L50 95L56 85L79 62C95 47 90 26 71 48C74 35 65 20 50 12Z"/>',q:'<circle cx="50" cy="50" r="21"/><path d="M42 3H58V22H42ZM42 78H58V97H42ZM3 42H22V58H3ZM78 42H97V58H78ZM11 19L22 8L36 23L24 35ZM65 76L76 65L91 79L80 91ZM9 80L23 65L35 77L20 92ZM65 23L80 8L92 20L77 35Z"/>',e:'<path d="M12 62C-2 49 12 28 29 35C31 6 71 5 75 35C98 30 106 63 85 71H25C29 60 43 54 50 56C44 43 29 42 12 62ZM19 79H81V88H19Z"/>',x:'<path d="M50 8L77 42H61V74H80L50 97L20 74H39V42H23Z"/><path d="M8 15H21V57H8ZM79 15H92V57H79Z"/>'};return `<svg viewBox="0 0 100 100" data-agent="clove" aria-hidden="true" fill="currentColor">${shapes[key]||''}</svg>`;}
+    if(['iso','clove'].includes(agent))return referencedAbilityIcon(agent,key);
     if(!['jett','phoenix'].includes(agent))return '';
     const character=agent==='jett'?'jett':'sage';
     const name=character+key.toUpperCase();
@@ -73,7 +74,7 @@ export class AbilityCastView {
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
- setAgent(agent){this.handsRig.setAgent(agent);const purple=agent==='clove';this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
+ setAgent(agent){this.handsRig.setAgent(agent);const purple=['clove','iso'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
  get active(){return this.held||this.remaining>0;}
  play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
  holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}

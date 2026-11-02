@@ -1,3 +1,5 @@
+import {endIsoDuel} from './iso-events.mjs';
+import {resetIso} from './iso-rules.mjs';
 import {resetClove} from './clove-rules.mjs';
 import {equipArmor} from './armor.mjs';
 import {matchWinner,isOvertime,choosePublicMap} from './match-rules.mjs';
@@ -18,7 +20,7 @@ export class RoundRules {
  }
  async finish(winner,reason){
   if(!this.enabled||this.room.meta.round.phase!=='playing')return;
-  const r=this.room.meta.round;r.phase='ending';r.winner=winner;r.reason=reason;r.nextAt=Date.now()+3300;
+  const r=this.room.meta.round;r.phase='ending';await endIsoDuel(this.room,Date.now());r.winner=winner;r.reason=reason;r.nextAt=Date.now()+3300;
   if(winner==='attack')r.scoreAttack++;else if(winner==='defend')r.scoreDefend++;
   const champion=matchWinner(r.scoreAttack,r.scoreDefend);
   if(champion){r.phase='finished';r.matchWinner=champion;r.endsAt=0;r.nextAt=this.room.meta.public?Date.now()+12000:0;for(const ws of this.room.sockets()){const p=this.room.data(ws);if(!p?.joined)continue;p.active=false;p.healRemaining=0;p.reviveAt=0;p.smokeFlights={};this.room.save(ws,p);}}
@@ -36,7 +38,7 @@ export class RoundRules {
   if(caster.agent!=='phoenix'||caster.hp<=0||!caster.active||caster.ultUsed)return fail('目前無法使用復活');
   if(this.enabled&&room.meta.round.phase!=='playing')return fail('回合結束後無法復活');
   const target=room.sockets().find(s=>room.data(s)?.uid===targetUid),p=target&&room.data(target);
-  if(!p?.joined||p.uid===caster.uid||p.team!==caster.team||p.hp>0||p.reviveAt||p.clove?.riseAt)return fail('請選擇倒地的隊友');
+  if(!p?.joined||p.realm||caster.realm||p.uid===caster.uid||p.team!==caster.team||p.hp>0||p.reviveAt||p.clove?.riseAt)return fail('請選擇倒地的隊友');
   if(Math.hypot(caster.x-p.x,caster.y-p.y,caster.z-p.z)>8)return fail('隊友距離太遠');
   caster.ultUsed=true;p.reviveAt=Date.now()+2500;p.reviveBy=caster.uid;
   room.save(ws,caster);room.save(target,p);
@@ -67,10 +69,10 @@ export class RoundRules {
     r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
-     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));resetClove(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
+     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));resetClove(p);resetIso(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
      room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
     }
-    room.cloveEffects={smokes:[],flights:[]};await room.ctx.storage.delete('cloveEffects');room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
+    room.isoEffects={walls:[],flights:[],orbs:[],duel:null};await room.ctx.storage.delete('isoEffects');room.cloveEffects={smokes:[],flights:[]};await room.ctx.storage.delete('cloveEffects');room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
     room.meta.spike=null;await room.spike?.ensureCarrier();await this.publish();
    }
   }

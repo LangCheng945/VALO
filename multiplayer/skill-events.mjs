@@ -1,5 +1,5 @@
 import{finite,validPose}from'./protocol.mjs';
-export const FEATURES=Object.freeze(['rounds','resurrection','guided-smoke','ally-heal','sprays','segmented-barrier','thrown-slow','blade-volley','map-change','match-rules','public-random-map','spike','armory','agent-models-4','agent-models-28','clove-kit-1']);
+export const FEATURES=Object.freeze(['rounds','resurrection','guided-smoke','ally-heal','sprays','segmented-barrier','thrown-slow','blade-volley','map-change','match-rules','public-random-map','spike','armory','agent-models-4','agent-models-28','clove-kit-1','iso-kit-1']);
 const unit=(m,keys)=>keys.every(k=>finite(m[k],-1.1,1.1))&&Math.abs(Math.hypot(...keys.map(k=>m[k]))-1)<.15;
 const point=m=>validPose({...m,yaw:0});
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
@@ -8,7 +8,7 @@ export async function skillEvent(room,ws,p,m,now){
  if(m.type==='heal'){
   if(p.agent!=='phoenix'||p.hp<=0||!p.active||now-(p.lastHeal||0)<45000){fail(room,ws,'治療尚未就緒');return true;}
   const target=m.targetUid?room.sockets().find(s=>room.data(s)?.uid===m.targetUid):ws,v=target&&room.data(target);
-  if(!v?.joined||v.hp<=0||v.hp>=100||v.team!==p.team||dist(p,v)>40){fail(room,ws,'請瞄準範圍內受傷的隊友，或右鍵自補');return true;}
+  if(!v?.joined||v.realm||p.realm||v.hp<=0||v.hp>=100||v.team!==p.team||dist(p,v)>40){fail(room,ws,'請瞄準範圍內受傷的隊友，或右鍵自補');return true;}
   p.lastHeal=now;room.save(ws,p);const self=v.uid===p.uid;
   // Re-read the attachment when healing self, preserving the cooldown written above.
   const healed=room.data(target);healed.healRemaining=self?30:100;healed.healRate=self?3:20;healed.nextHeal=now+1000;room.save(target,healed);
