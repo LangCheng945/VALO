@@ -37,6 +37,7 @@ export class RoomClient {
     else if(message.type==='ability_error')this.callbacks.abilityError?.(message.reason);
     else if(message.type==='event')this.callbacks.event?.(message.event);
     else if(message.type==='damage')this.callbacks.damage?.(message);
+    else if(message.type==='omen_relocate')this.callbacks.omenRelocate?.(message.player);
     else if(message.type==='iso_relocate')this.callbacks.isoRelocate?.(message.player);
     else if(message.type==='spawn')this.callbacks.spawn?.(message.player);
     else if(message.type==='pong')this.callbacks.latency?.(Math.max(0,Date.now()-message.at));

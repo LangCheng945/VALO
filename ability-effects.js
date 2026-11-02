@@ -1,5 +1,5 @@
 import {referencedAbilityIcon} from './ability-icons.mjs?v=references1';
-import {FirstPersonHands} from './first-person-view.js?v=iso1';
+import {FirstPersonHands} from './first-person-view.js?v=omen1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -24,6 +24,8 @@ const paths={
         <g transform="rotate(22 75 67)"><path d="M75 16C69 29 67 40 68 55L72 59H78L82 55C83 40 81 29 75 16ZM71 75H79L78 92H72Z"/><circle cx="75" cy="67" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/></g>`
 };
 export function abilityIcon(agent,key){
+    if(agent==='omen'){const shapes={c:'<path d="M18 78L35 60V27L50 12L65 27V60L82 78H64L50 65L36 78ZM25 88H75V96H25Z"/>',q:'<path fill-rule="evenodd" d="M2 50C25 12 75 12 98 50C75 88 25 88 2 50ZM50 30C24 30 24 70 50 70C76 70 76 30 50 30ZM45 35H55V65H45Z"/>',e:'<circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="7"/><path d="M16 58C29 31 58 30 72 48C52 39 33 48 27 65ZM30 76C53 74 75 60 79 40C92 67 60 90 30 76Z"/>',x:'<path d="M10 84L28 28L41 50L50 7L59 50L72 28L90 84H69L60 67L50 93L40 67L31 84Z"/>'};return `<svg viewBox="0 0 100 100" data-agent="omen" data-ability="${key}" aria-hidden="true" focusable="false" fill="currentColor">${shapes[key]||''}</svg>`;}
+
     if(['iso','clove'].includes(agent))return referencedAbilityIcon(agent,key);
     if(!['jett','phoenix'].includes(agent))return '';
     const character=agent==='jett'?'jett':'sage';
@@ -67,14 +69,14 @@ export class AbilityCastView {
  constructor(camera){
   this.root=new T.Group();this.root.name='ability-cast-hands';camera.add(this.root);this.root.visible=false;this.remaining=0;this.elapsed=0;this.hands=new T.Group();this.root.add(this.hands);
   this.handsRig=new FirstPersonHands('jett','orb',null);this.root.remove(this.hands);this.hands=this.handsRig.root;this.root.add(this.hands);
-  const orbMat=shader(`uniform float cloveTint;void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);c=mix(c,c.gbr*vec3(1.,.65,1.3),cloveTint);gl_FragColor=vec4(c,.65+rim*.32);}`,{side:T.FrontSide});
+  const orbMat=shader(`uniform float cloveTint;void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);c=mix(c,vec3(.18,.12,.46)*(.55+rim*.55+n*.35),cloveTint);gl_FragColor=vec4(c,.65+rim*.32);}`,{side:T.FrontSide});
   this.orb=new T.Group();this.orb.position.set(.10,-.15,-.75);this.root.add(this.orb);
   orbMat.uniforms.cloveTint={value:0};this.orb.add(new T.Mesh(new T.SphereGeometry(.145,32,24),orbMat));
   const core=new T.Mesh(new T.IcosahedronGeometry(.043,1),new T.MeshBasicMaterial({color:0x71ffe6}));core.scale.set(.7,1.25,.7);this.orb.add(core);
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
- setAgent(agent){this.handsRig.setAgent(agent);const purple=['clove','iso'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
+ setAgent(agent){this.handsRig.setAgent(agent);const purple=['clove','iso','omen'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
  get active(){return this.held||this.remaining>0;}
  play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
  holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}

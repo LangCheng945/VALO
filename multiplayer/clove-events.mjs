@@ -6,7 +6,7 @@ export const liveCloveEffects=(room,now)=>({smokes:(room.cloveEffects?.smokes||[
 const persist=room=>room.ctx.storage.put('cloveEffects',room.cloveEffects);
 export async function detonateMeddle(room,f,position,now){
  room.cloveEffects.flights=room.cloveEffects.flights.filter(t=>t.id!==f.id);
- for(const socket of room.sockets()){if(room.rounds.enabled&&room.meta.round.phase!=='playing')continue;const target=room.data(socket);if(!target?.joined||target.realm||target.hp<=0||!target.inRound&&room.rounds.enabled)continue;if(distance({...target,y:target.y-1},position)<=CLOVE.meddleRadius){applyDecay(target,now);room.save(socket,target);room.send(socket,{type:'damage',hp:target.hp,shield:target.shield,tempHealth:target.tempHealth||0,attacker:'減損',cause:'decay'});}}
+ for(const socket of room.sockets()){if(room.rounds.enabled&&room.meta.round.phase!=='playing')continue;const target=room.data(socket);if(!target?.joined||target.omen?.channel?.kind==='ultimate'||target.realm||target.hp<=0||!target.inRound&&room.rounds.enabled)continue;if(distance({...target,y:target.y-1},position)<=CLOVE.meddleRadius){applyDecay(target,now);room.save(socket,target);room.send(socket,{type:'damage',hp:target.hp,shield:target.shield,tempHealth:target.tempHealth||0,attacker:'減損',cause:'decay'});}}
  room.broadcast({type:'event',event:{type:'clove_meddle_burst',id:f.id,...position,createdAt:now}});await persist(room);room.snapshot();
 }
 export async function cloveEvent(room,ws,p,m,now){
@@ -34,7 +34,7 @@ export async function cloveEvent(room,ws,p,m,now){
  }else return true;
  room.save(ws,p);await persist(room);room.snapshot();await room.ctx.storage.setAlarm(now+100);return true;
 }
-export function recordCloveDeath(p,now){if(p.agent==='clove')cloveDeath(p,now);p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
+export function recordCloveDeath(p,now){p.nearsightUntil=0;p.deafenedUntil=0;if(p.agent==='clove')cloveDeath(p,now);p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
 export function awardCloveContributors(room,killer,victim,now){
  awardTakedown(killer,victim,now);
  for(const socket of room.sockets()){const contributor=room.data(socket);if(contributor?.uid===killer.uid||contributor?.team!==killer.team)continue;if(now-(victim.damageContributors?.[contributor.uid]||0)<=CLOVE.assistWindowMs){awardTakedown(contributor,victim,now);room.save(socket,contributor);}}

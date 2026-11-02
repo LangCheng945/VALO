@@ -245,7 +245,7 @@ const catalog={
   "name": "Omen",
   "model": "omen",
   "role": "控場者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,

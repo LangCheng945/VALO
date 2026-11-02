@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -517,3 +517,17 @@ Allies use a bounded trail of the player's grounded positions so turns do not im
 Defenders prioritize the planted Spike. A nearby defender with a clear interaction path stops to defuse for seven seconds; losing that actor preserves the 3.5-second checkpoint for another bot or the player. Visible threats interrupt nonurgent attempts; an expiring fuse can force a commitment. Attackers guard nearby positions. Bots in the main world continue acting while the player is in an Iso duel, while realm checks still prohibit cross-realm combat. The AI remains a lightweight local tactical simulation, not a full original-game bot system; multiplayer rooms still disable solo bots.
 
 Validation: `node --test tests/test_bot_tactics.mjs`, `node tests/test_bot_defuse_browser.cjs`, `MAPS=ascent node tests/test_bot_navigation_browser.cjs`. Browser checks cover a reachable route through actual map collision, ally follow/combat, walking to an actual Spike, interrupt-and-takeover defuse, round victory and safe training respawn.
+
+
+### Omen trainer ability kit
+
+- **C / Shrouded Step**: aim at supported ground with enough standing clearance, then left click. Two short-range casts per round; right click/C cancels before confirmation. The channel freezes the caster at the origin, disables weapons and leaves them vulnerable. Death interrupts it. A new Sage barrier can cancel a blocked destination. Ammunition and health are preserved.
+- **Q / Paranoia**: a wave travels through terrain, applying timed nearsight and quieter footsteps to other agents, including teammates, without direct damage. The player sees a short-range dark fog; AI uses the same short sight range. Blind fire remains possible.
+- **E / Dark Cover**: a map planner selects one smoke at a time. Two charges recharge; mouse wheel selects an elevation among supported surfaces. The dark, hollow sphere occludes vision and AI sight, but does not block bullets.
+- **X / From the Shadows**: select a supported map destination, then confirm. A separate camera previews the destination during a visible shade phase. X/right click cancels. An enemy's validated weapon hit on the shade also cancels; the origin body cannot take ordinary weapon hits during this phase. A successful channel relocates without refilling ammunition. Cancelling still consumes the ultimate. Bots can target the shade, and spectators can see the destination preview.
+
+The Worker advertises `omen-kit-1`, owns charges/recharge, channels, origin locks, shade hits, paranoia status and effect lifetimes, and replays live smoke/waves on join. Channels cancel on death, disconnect, round end or map reset. Iso cannot capture a channeling Omen. Omen actions remain suppressed inside an Iso duel. Sprite/mesh preview resources are removed when channels end.
+
+These are authored trainer approximations. The map planner replaces the original three-dimensional smoke interface; shade, icons, hands and sound processing are not the original cinematics/assets. Current patch values have not been reverified: tuning lives in `multiplayer/omen-rules.mjs`, and existing per-round utility/ultimate allocation remains. Client collision checks validate the static floor/standing capsule; the Worker only validates bounded coordinates/range and its own dynamic barriers, not the full static map mesh or original legal teleport volumes. Spike retains the existing guaranteed-lethal blast behavior.
+
+Validation: `node tests/test_omen_browser.cjs`, `node tests/test_omen_network_browser.cjs`, and `cd multiplayer && npm test`. Coverage includes aimed floor placement, smoke visibility without bullet collision, nearsight without damage, AI range restriction, destination-camera cancellation, a real two-browser scoped shade hit, fixed teleport origins, retained ammo and lethal interruption.
