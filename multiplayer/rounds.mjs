@@ -1,3 +1,4 @@
+import {resetBrim} from './brimstone-rules.mjs';
 import {resetOmen} from './omen-rules.mjs';
 import {cancelOmenChannel} from './omen-events.mjs';
 import {endIsoDuel} from './iso-events.mjs';
@@ -71,10 +72,10 @@ export class RoundRules {
     r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
-     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));resetClove(p);resetIso(p);resetOmen(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
+     Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));resetClove(p);resetIso(p);resetOmen(p);resetBrim(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);
      room.send(ws,{type:'spawn',player:room.players().find(x=>x.uid===p.uid)});
     }
-    room.omenEffects={smokes:[],flights:[]};await room.ctx.storage.delete('omenEffects');room.isoEffects={walls:[],flights:[],orbs:[],duel:null};await room.ctx.storage.delete('isoEffects');room.cloveEffects={smokes:[],flights:[]};await room.ctx.storage.delete('cloveEffects');room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
+    room.brimEffects={areas:[],flights:[]};await room.ctx.storage.delete('brimEffects');room.omenEffects={smokes:[],flights:[]};await room.ctx.storage.delete('omenEffects');room.isoEffects={walls:[],flights:[],orbs:[],duel:null};await room.ctx.storage.delete('isoEffects');room.cloveEffects={smokes:[],flights:[]};await room.ctx.storage.delete('cloveEffects');room.slowFlights=[];room.slowFields=[];await room.ctx.storage.delete('slow');room.sprays=[];room.barriers=[];await room.ctx.storage.delete('barriers');await room.ctx.storage.delete('sprays');
     room.meta.spike=null;await room.spike?.ensureCarrier();await this.publish();
    }
   }

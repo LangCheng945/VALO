@@ -1,5 +1,5 @@
 import {referencedAbilityIcon} from './ability-icons.mjs?v=original1';
-import {FirstPersonHands} from './first-person-view.js?v=omen1';
+import {FirstPersonHands} from './first-person-view.js?v=brim1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -12,6 +12,10 @@ export const abilityIcon=referencedAbilityIcon;
 export function makeCloudburst(){
  const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*5.+vec3(time*.22,0.,time*.17));float band=pow(max(0.,sin(p.y*18.+atan(p.z,p.x)*2.7+n*3.-time*2.)),18.);float wisps=noise(p*19.+vec3(time*.5,-time*.15,0.));vec3 col=mix(vec3(.38,.52,.61),vec3(.78,.87,.90),n*.7+band*.15);col+=band*.07+wisps*.045;gl_FragColor=vec4(col,fade);}`,{side:T.DoubleSide,depthWrite:true});
  const mesh=new T.Mesh(new T.SphereGeometry(3.8,48,32),material);mesh.name='cloudburst-wind-shell';return mesh;
+}
+export function makeBrimSmoke(){
+ const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*7.+vec3(time*.13,0.,time*.1));vec3 c=mix(vec3(.22,.19,.14),vec3(.53,.44,.30),n);gl_FragColor=vec4(c,fade);}`,{side:T.DoubleSide,depthWrite:true});
+ const mesh=new T.Mesh(new T.SphereGeometry(4.5,32,20),material);mesh.userData.smokeRadius=4.5;return mesh;
 }
 export function makeBarrier(){
  const mat=shader(`uniform float damage;uniform float fortified;void main(){float n=noise(vP*2.5);float vein=pow(1.-abs(sin(vP.x*8.+vP.y*3.+n*3.)),18.);float cracks=pow(1.-abs(sin(vP.x*17.-vP.y*8.+n*5.)),26.);float frost=noise(vP*18.);vec3 col=mix(vec3(.10,.46,.47),vec3(.47,.94,.79),smoothstep(-1.8,1.8,vP.y));col+=vein*vec3(.3,.35,.4)+frost*.09;col=mix(col,col*.25,cracks*damage*.85);col+=vec3(.05,.17,.14)*fortified;gl_FragColor=vec4(col,fade*.95);}`,{depthWrite:true});

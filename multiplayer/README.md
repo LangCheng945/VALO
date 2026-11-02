@@ -187,3 +187,9 @@ PUBLIC 初次建立只抽一次地圖，同場後續加入／重連都使用房�
 霰彈槍每次扣一顆彈藥，shot 帶 pellet {id,count,index}，伺服器驗證槍種、固定顆數、首發射速、序號、300 ms 批次期限，每個 hit 仍綁定最近已接受的 shot。重複、跳號、過期或換槍的彈丸遭拒。合法霰彈封包以 .4 訊息權重計量，同時每秒最多 180 個原始封包；其他訊息沿用 90 權重，避免正常 Judge 射擊觸發斷線。
 
 驗證：armory.test.mjs、armory-live.test.mjs、test_armory_browser.cjs、test_multiplayer_armory_browser.cjs；涵蓋 18 個實際模型、主副武器換購、護盾退款、受傷與回充、多人實際 Ghost 射擊、遠端模型、新版拒絕客戶端造假補盾，以及合法霰彈封包速率。
+
+Brimstone support advertises `brimstone-kit-1`. See the root README's Brimstone
+trainer ability kit for tuning and collision limitations. `brimstone-events.mjs`
+owns smoke/stim/fire/orbital effects, validates finite positions, range, remaining
+charges and bounded ballistic contacts, persists live effects, and integrates area
+damage with armor, Iso shields, death/kill credit, Spike drops and round elimination.

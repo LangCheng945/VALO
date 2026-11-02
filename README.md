@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove/Omen remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -531,3 +531,29 @@ The Worker advertises `omen-kit-1`, owns charges/recharge, channels, origin lock
 These are authored trainer approximations. The map planner replaces the original three-dimensional smoke interface; shade, icons, hands and sound processing are not the original cinematics/assets. Current patch values have not been reverified: tuning lives in `multiplayer/omen-rules.mjs`, and existing per-round utility/ultimate allocation remains. Client collision checks validate the static floor/standing capsule; the Worker only validates bounded coordinates/range and its own dynamic barriers, not the full static map mesh or original legal teleport volumes. Spike retains the existing guaranteed-lethal blast behavior.
 
 Validation: `node tests/test_omen_browser.cjs`, `node tests/test_omen_network_browser.cjs`, and `cd multiplayer && npm test`. Coverage includes aimed floor placement, smoke visibility without bullet collision, nearsight without damage, AI range restriction, destination-camera cancellation, a real two-browser scoped shade hit, fixed teleport origins, retained ammo and lethal interruption.
+
+### Brimstone trainer ability kit
+
+Brimstone now has C Stim Beacon, Q Incendiary, E Sky Smoke and X Orbital Strike,
+with original ability art and enabled role selection. C places one 12-second beacon:
+nearby teammates gain 15% movement/fire-rate and 10% reload speed, lingering up to
+4 seconds after leaving. E opens a floor-aware map planner for up to three smoke
+placements per round; the dense brown smoke lasts 19 seconds and blocks bot sight,
+not bullets. Q equips an authored launcher: left-click fires a gravity-driven grenade,
+wall contacts bounce up to three times, and ground contact creates an eight-second
+fire field. X marks a column on the tactical map, warns for two seconds, then deals
+continuous damage for three seconds. No large skill banner covers the crosshair.
+
+The Worker advertises `brimstone-kit-1`, owns charges, ballistic launch/bounce bounds,
+effect lifetimes, ally-only stim, area damage, armor/shield interactions, kill credit
+and round elimination. Active effects replay on join/reconnect and clear on round/map
+reset. Iso duel actors and invulnerable states are excluded from world area effects.
+Single-player bots take area damage and friendly bots receive the stim speed/fire buff.
+
+These are trainer values, not verified current official patch values. Utility/ultimate
+uses refresh each round without the original credit/ultimate-point economy. Static-map
+projectile contacts still come from the owner client and are checked against the
+server trajectory; the Worker does not contain a full static-map collision mesh.
+Area damage uses a simplified same-floor test (orbital strike is vertical through floors),
+and same-team damage is reduced to 33%. Launcher, fire and orbital visuals are authored
+approximations; no original skill audio/animations have been imported.

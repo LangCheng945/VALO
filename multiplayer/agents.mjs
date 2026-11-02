@@ -91,7 +91,7 @@ const catalog={
   "name": "Brimstone",
   "model": "brimstone",
   "role": "控場者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
