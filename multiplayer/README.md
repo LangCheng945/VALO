@@ -193,3 +193,9 @@ trainer ability kit for tuning and collision limitations. `brimstone-events.mjs`
 owns smoke/stim/fire/orbital effects, validates finite positions, range, remaining
 charges and bounded ballistic contacts, persists live effects, and integrates area
 damage with armor, Iso shields, death/kill credit, Spike drops and round elimination.
+
+Reyna support advertises `reyna-kit-1`. Server-owned eyes, private souls, shared
+Devour/Dismiss uses, timed healing, overheal expiry, phase immunity and Empress
+bonuses live in `reyna-events.mjs` and `reyna-rules.mjs`. Eye visibility and Devour
+static-map line of sight use bounded client heartbeats; see the root README for
+trainer tuning and remaining visual/authority limitations.

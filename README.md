@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -557,3 +557,40 @@ server trajectory; the Worker does not contain a full static-map collision mesh.
 Area damage uses a simplified same-floor test (orbital strike is vertical through floors),
 and same-team damage is reduced to 33%. Launcher, fire and orbital visuals are authored
 approximations; no original skill audio/animations have been imported.
+
+### Reyna trainer ability kit
+
+Reyna now has original C/Q/E/X art, an enabled selector entry, and a playable kit:
+
+- C Leer equips a violet eye; left-click projects it through terrain. It arms after
+  250 ms and lasts 2.5 seconds. Facing enemies with a clear view are nearsighted;
+  allies are unaffected. The 100-HP eye is a shootable object and can be destroyed.
+- Kills and damage assists within three seconds create private four-second soul
+  orbs. Q Devour and E Dismiss share two normal uses and consume one nearby visible
+  orb each. Q heals up to 100 life over three seconds, with a visible tether and a
+  25-unit range limit; excess healing provides up to 50 temporary life for 25 seconds.
+- E grants two seconds of intangible movement followed by 350 ms of weapon recovery.
+  Attacks, skills, buying, and Spike interactions are blocked; movement remains usable.
+  E/right-click can end the phase early. Dismiss also protects against Spike detonation.
+- X Empress lasts 30 seconds: +15% firearm rate, +25% reload speed, automatic Devour on
+  qualifying takedowns, and Dismiss without spending normal shared uses. Kills refresh
+  its duration. Dismiss is invisible to other players during Empress. Stim and Empress
+  use the strongest fire/reload bonus rather than multiplying both bonuses.
+
+The Worker advertises `reyna-kit-1`, verifies remaining charges, ownership, orb expiry,
+range, real shot evidence for eye damage, combat locks and health ticks. Eyes replay
+on late join; soul orbs replay only to their owner. Life/phase states clear on death,
+round/map reset and incompatible Iso duel transitions. Solo AI can be nearsighted and
+shoot enemy eyes; actual solo bot deaths create souls. No large skill banner appears.
+
+These are authored trainer effects and approximate tuning, not verified current-patch
+values or original animations/audio. Utility and ultimate still refresh each round
+without the original credit/ultimate-point economy. Static-map visibility is checked
+by the viewing/healing client; the server independently bounds facing, distance and
+heartbeat duration, but does not have the complete map collision mesh. Empress enemy
+highlighting and the original first-person hand animation have not been replicated.
+
+Validation: `node --test multiplayer/tests/reyna.test.mjs`, real WebSocket tests in
+`multiplayer/tests/reyna-live.test.mjs`, and `node tests/test_reyna_browser.cjs` cover
+soul privacy, real kill evidence, shared charges, gradual healing, eye destruction,
+phase movement/immunity/combat lock, Empress autoheal/invisibility and round cleanup.

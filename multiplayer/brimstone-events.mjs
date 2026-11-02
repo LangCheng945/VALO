@@ -1,3 +1,4 @@
+import {awardReynaSouls} from './reyna-events.mjs';
 import{BRIM,brimState,flightPoint,inBrimArea}from'./brimstone-rules.mjs';
 import{finite,applyDamage}from'./protocol.mjs';
 import{isoDamage}from'./iso-rules.mjs';
@@ -53,7 +54,7 @@ export async function tickBrim(room,now){
    if(!dt)continue;const raw=(e.kind==='strike'?BRIM.ultDps:BRIM.fireDps)*dt*(p.team===e.team?.33:1),damage=isoDamage(p,raw,now,e.id+':'+now);if(damage<=0){room.save(ws,p);continue;}
    Object.assign(p,applyDamage(p,damage));p.lastDamage=now;p.healRemaining=0;if(p.team!==e.team){p.damageContributors||={};p.damageContributors[e.ownerUid]=now;}markArmorDamage(p,now);
    if(p.hp<=0){recordCloveDeath(p,now);p.shieldReserve=0;p.deaths++;p.active=false;p.respawnAt=room.rounds.enabled?0:now+5000;died=true;
-    const owner=room.sockets().find(s=>room.data(s)?.uid===e.ownerUid),killer=owner&&room.data(owner);if(killer&&killer.uid!==p.uid&&killer.team!==p.team){killer.kills++;await awardIsoOrbs(room,killer,p,now);awardCloveContributors(room,killer,p,now);room.save(owner,killer);}room.broadcast({type:'event',event:{type:'kill',killerUid:e.ownerUid,killerName:e.ownerName||'Brimstone',victimUid:p.uid,victimName:p.name,weaponName:e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY',isHead:false}});
+    const owner=room.sockets().find(s=>room.data(s)?.uid===e.ownerUid),killer=owner&&room.data(owner);if(killer&&killer.uid!==p.uid&&killer.team!==p.team){killer.kills++;await awardReynaSouls(room,killer,p,now);await awardIsoOrbs(room,killer,p,now);awardCloveContributors(room,killer,p,now);room.save(owner,killer);}room.broadcast({type:'event',event:{type:'kill',killerUid:e.ownerUid,killerName:e.ownerName||'Brimstone',victimUid:p.uid,victimName:p.name,weaponName:e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY',isHead:false}});
    }
    room.save(ws,p);room.send(ws,{type:'damage',hp:p.hp,shield:p.shield,tempHealth:p.tempHealth||0,attacker:e.ownerName||'Brimstone',cause:e.kind});if(p.hp<=0)await room.spike.drop(p,now);
   }

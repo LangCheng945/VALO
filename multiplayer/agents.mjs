@@ -273,7 +273,7 @@ const catalog={
   "name": "Reyna",
   "model": "reyna",
   "role": "決鬥者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,

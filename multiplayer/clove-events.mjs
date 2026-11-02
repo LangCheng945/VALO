@@ -1,3 +1,4 @@
+import {reynaDeath} from './reyna-rules.mjs';
 import{finite,validPose}from'./protocol.mjs';
 import{CLOVE,cloveState,smokeCharges,smokeAnchor,canCloveRevive,cloveDeath,awardTakedown,applyDecay,tickCloveStatuses,meddlePosition}from'./clove-rules.mjs';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
@@ -34,7 +35,7 @@ export async function cloveEvent(room,ws,p,m,now){
  }else return true;
  room.save(ws,p);await persist(room);room.snapshot();await room.ctx.storage.setAlarm(now+100);return true;
 }
-export function recordCloveDeath(p,now){p.stimUntil=0;p.nearsightUntil=0;p.deafenedUntil=0;if(p.agent==='clove')cloveDeath(p,now);p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
+export function recordCloveDeath(p,now){reynaDeath(p);p.stimUntil=0;p.nearsightUntil=0;p.deafenedUntil=0;if(p.agent==='clove')cloveDeath(p,now);p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
 export function awardCloveContributors(room,killer,victim,now){
  awardTakedown(killer,victim,now);
  for(const socket of room.sockets()){const contributor=room.data(socket);if(contributor?.uid===killer.uid||contributor?.team!==killer.team)continue;if(now-(victim.damageContributors?.[contributor.uid]||0)<=CLOVE.assistWindowMs){awardTakedown(contributor,victim,now);room.save(socket,contributor);}}

@@ -1,5 +1,5 @@
 import {referencedAbilityIcon} from './ability-icons.mjs?v=original1';
-import {FirstPersonHands} from './first-person-view.js?v=brim1';
+import {FirstPersonHands} from './first-person-view.js?v=reyna1';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -56,7 +56,7 @@ export class AbilityCastView {
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
- setAgent(agent){this.handsRig.setAgent(agent);const purple=['clove','iso','omen'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
+ setAgent(agent){this.handsRig.setAgent(agent);const purple=['clove','iso','omen','reyna'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
  get active(){return this.held||this.remaining>0;}
  play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
  holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}
