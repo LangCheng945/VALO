@@ -1,5 +1,5 @@
 import{finite,validPose}from'./protocol.mjs';
-export const FEATURES=Object.freeze(['rounds','resurrection','guided-smoke','ally-heal','sprays','segmented-barrier','thrown-slow','blade-volley','map-change','match-rules','public-random-map','spike','armory','agent-models-4','agent-models-28','clove-kit-1','iso-kit-1','omen-kit-1','brimstone-kit-1','reyna-kit-1']);
+export const FEATURES=Object.freeze(['rounds','resurrection','guided-smoke','ally-heal','sprays','segmented-barrier','thrown-slow','blade-volley','map-change','match-rules','public-random-map','spike','armory','agent-models-4','agent-models-28','clove-kit-1','iso-kit-1','omen-kit-1','brimstone-kit-1','reyna-kit-1','sova-kit-1']);
 const unit=(m,keys)=>keys.every(k=>finite(m[k],-1.1,1.1))&&Math.abs(Math.hypot(...keys.map(k=>m[k]))-1)<.15;
 const point=m=>validPose({...m,yaw:0});
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);

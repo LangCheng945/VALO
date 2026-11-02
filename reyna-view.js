@@ -1,5 +1,5 @@
-import{REYNA,reynaState,resetReyna,reynaDeath,reynaBusy,reynaDismissed,empressActive,beginDevour,tickDevour,gazeAt}from'./multiplayer/reyna-rules.mjs?v=reyna1';
-import{disposeEffect}from'./ability-effects.js?v=reyna1';
+import{REYNA,reynaState,resetReyna,reynaDeath,reynaBusy,reynaDismissed,empressActive,beginDevour,tickDevour,gazeAt}from'./multiplayer/reyna-rules.mjs?v=sova1';
+import{disposeEffect}from'./ability-effects.js?v=sova1';
 const T=globalThis.THREE;
 export class ReynaKit{
  constructor(api){this.api=api;this.eyes=new Map();this.orbs=new Map();this.held=false;this.pendingUntil=0;this.scanAt=0;this.tetherAt=0;

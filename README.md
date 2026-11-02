@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -594,3 +594,50 @@ Validation: `node --test multiplayer/tests/reyna.test.mjs`, real WebSocket tests
 `multiplayer/tests/reyna-live.test.mjs`, and `node tests/test_reyna_browser.cjs` cover
 soul privacy, real kill evidence, shared charges, gradual healing, eye destruction,
 phase movement/immunity/combat lock, Empress autoheal/invisibility and round cleanup.
+
+### Sova trainer ability kit
+
+Sova now has a playable initiator kit, enabled selection and original C/Q/E/X art:
+
+- C Owl Drone opens a separate flying camera for eight seconds. WASD steers,
+  Space rises, Ctrl descends, left-click fires a tagging dart, and C/right-click exits.
+  The body stays fixed and vulnerable. The 100-HP drone is shootable, collides with
+  map geometry, and is bounded to 45 units from the body and 12 units vertically.
+- Q Shock Bolt and E Recon Bolt equip an authored bow. Hold left-click to charge,
+  release to fire, and right-click cycles zero/one/two bounces. Projectiles follow
+  gravity, reflect from map contacts and spend charges only on launch. Arrows already
+  in flight keep resolving when the owner starts drone control. Q has two
+  uses, up to 75 radial damage with falloff, and reduced same-team damage. E has one
+  rechargeable use (40 seconds), attaches a destructible bolt and pulses three times.
+  A pulse reveals enemies with map line of sight to the bolt; it does not reveal
+  through solid map walls. Friendly bots receive the resulting contact information.
+- X Hunter's Fury locks the body in place and permits three 80-damage piercing
+  beams within seven seconds. Each has a 700-ms warning before damage, reveals
+  enemies it hits, and can pass through map walls and multiple targets. X/right-click
+  cancels unused beams without refund. Death, timeout, disconnect and round/map
+  reset end control and cancel queued beam damage.
+
+The Worker advertises `sova-kit-1`, owns charges, drone HP/range/speed bounds,
+control/body locks, dart cooldown, reveal lifetimes, queued beam timing, damage,
+armor/Iso shields, kill credit and round elimination. Live flights/recon/queued
+warnings replay on join. Object damage requires a recent unused real shot ending
+near the drone/bolt. Recon visibility reports are bounded to pulse timing, enemy
+team, range, active state and realm. Drone tags require a direction/range hit test.
+Tactical and multiplayer radar enemies now require line of sight or active Sova
+intel; training targets remain visible. Reveals also draw lightweight cyan outlines.
+
+These are trainer mechanics/tuning, not verified latest-patch numbers. Bow, drone,
+beam and outline visuals are authored approximations; original first-person skill
+animations/audio are not included. Utility/ultimate economics remain simplified.
+Static-map projectile contacts and recon/dart visibility use client collision/rays,
+with server trajectory/range/timing checks (including bounded recent impact timestamps
+for network latency); the Worker does not have the complete
+map collision mesh. Shock damage uses spherical distance rather than an original
+explosion occlusion model. Multiplayer has no local bots; solo bots can shoot the
+drone, receive reconnaissance contact information and take Shock/Fury damage.
+
+Validation: `multiplayer/tests/sova.test.mjs`, real WebSocket tests in
+`multiplayer/tests/sova-live.test.mjs`, and `node tests/test_sova_browser.cjs` cover
+charge/bounce/landing, recon timing/destruction, reveal outlines, actual drone camera
+flight and vulnerable stationary body, real-map wall piercing, three-shot limit,
+kill credit, disconnect/resume and round resource cleanup.

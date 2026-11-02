@@ -1,4 +1,4 @@
-import{ISO,duelCovers}from'./multiplayer/iso-rules.mjs?v=reyna1';
+import{ISO,duelCovers}from'./multiplayer/iso-rules.mjs?v=sova1';
 const T=globalThis.THREE;
 function flower(ctx,x,y,r){ctx.beginPath();for(let i=0;i<24;i++){const a=(-90+i*15)*Math.PI/180,rr=(i%4===0||i%4===3)?r:r*.82;const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();ctx.stroke();}
 function pattern(cover=false){const canvas=document.createElement('canvas');canvas.width=canvas.height=512;const c=canvas.getContext('2d');c.fillStyle=cover?'#42216a':'#26338e';c.fillRect(0,0,512,512);c.strokeStyle=cover?'#bd8bff':'#5369d4';c.lineWidth=cover?5:3;c.shadowColor=cover?'#a751ff':'#617bff';c.shadowBlur=cover?10:2;for(let row=-1;row<7;row++)for(let col=-1;col<7;col++){const x=col*96+(row%2?48:0),y=row*83;flower(c,x,y,45);flower(c,x,y,35);}const texture=new T.CanvasTexture(canvas);texture.encoding=T.sRGBEncoding;texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(cover?1.3:2,cover?1.6:2);texture.anisotropy=2;return texture;}

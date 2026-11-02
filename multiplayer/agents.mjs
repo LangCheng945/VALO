@@ -301,7 +301,7 @@ const catalog={
   "name": "Sova",
   "model": "sova",
   "role": "先鋒",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,

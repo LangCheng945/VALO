@@ -199,3 +199,8 @@ Devour/Dismiss uses, timed healing, overheal expiry, phase immunity and Empress
 bonuses live in `reyna-events.mjs` and `reyna-rules.mjs`. Eye visibility and Devour
 static-map line of sight use bounded client heartbeats; see the root README for
 trainer tuning and remaining visual/authority limitations.
+
+Sova support advertises `sova-kit-1`. `sova-events.mjs` owns bounded ballistic
+flights, destructible recon bolts, pulse-validated intel, drone control/body locks
+and damage, dart tags and timed piercing beams. See the root README for tuning,
+client map-contact/visibility reporting and remaining visual limitations.
