@@ -14,13 +14,13 @@ const direction=m=>['dx','dy','dz'].every(k=>finite(m[k],-1,1))&&Math.abs(Math.h
 const playing=room=>!room.rounds.enabled||room.meta.round.phase==='playing';
 export function liveSovaEffects(room,now){const e=sovaEffects(room);return{flights:e.flights.filter(v=>v.createdAt+SOVA.flightMs>now),recons:e.recons.filter(v=>v.expiresAt>now),beams:e.beams.filter(v=>v.firesAt+500>now)};}
 export async function cancelSova(room,ws,p,now){if(!p.sova?.control)return;p.sova.control=null;sovaEffects(room).beams=sovaEffects(room).beams.filter(e=>e.ownerUid!==p.uid);room.save(ws,p);await persist(room);room.broadcast({type:'event',event:{type:'sova_control_end',ownerUid:p.uid}});}
-async function hurt(room,ws,p,raw,e,now){
+export async function abilityDamage(room,ws,p,raw,e,now){
  if(p.hp<=0||!p.active||p.realm||p.omen?.channel?.kind==='ultimate'||cloveInvulnerable(p,now))return;
  const damage=isoDamage(p,raw*(p.team===e.team?.33:1),now,e.id);if(!damage){room.save(ws,p);return;}
  Object.assign(p,applyDamage(p,damage));markArmorDamage(p,now);p.lastDamage=now;p.damageContributors||={};if(p.team!==e.team)p.damageContributors[e.ownerUid]=now;
  if(e.kind==='beam'&&p.team!==e.team)reveal(p,e.team,now,2000);
- if(p.hp<=0){const socket=room.sockets().find(s=>room.data(s)?.uid===e.ownerUid),killer=socket&&room.data(socket);if(killer&&killer.uid!==p.uid&&killer.team!==p.team){await awardReynaSouls(room,killer,p,now);await awardIsoOrbs(room,killer,p,now);awardCloveContributors(room,killer,p,now);killer.kills++;room.save(socket,killer);}recordCloveDeath(p,now);p.deaths++;p.shieldReserve=0;p.healRemaining=0;p.active=false;p.respawnAt=room.rounds.enabled?0:now+5000;room.broadcast({type:'event',event:{type:'kill',killerUid:e.ownerUid,killerName:e.ownerName,victimUid:p.uid,victimName:p.name,weaponName:e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT',isHead:false}});}
- room.save(ws,p);room.send(ws,{type:'damage',hp:p.hp,shield:p.shield,tempHealth:p.tempHealth||0,attacker:e.ownerName,cause:'sova'});if(p.hp<=0)await room.spike.drop(p,now);
+ if(p.hp<=0){const socket=room.sockets().find(s=>room.data(s)?.uid===e.ownerUid),killer=socket&&room.data(socket);if(killer&&killer.uid!==p.uid&&killer.team!==p.team){await awardReynaSouls(room,killer,p,now);await awardIsoOrbs(room,killer,p,now);awardCloveContributors(room,killer,p,now);killer.kills++;room.save(socket,killer);}recordCloveDeath(p,now);p.deaths++;p.shieldReserve=0;p.healRemaining=0;p.active=false;p.respawnAt=room.rounds.enabled?0:now+5000;room.broadcast({type:'event',event:{type:'kill',killerUid:e.ownerUid,killerName:e.ownerName,victimUid:p.uid,victimName:p.name,weaponName:e.weaponName||(e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT'),isHead:false}});}
+ room.save(ws,p);room.send(ws,{type:'damage',hp:p.hp,shield:p.shield,tempHealth:p.tempHealth||0,attacker:e.ownerName,cause:e.cause||'sova'});if(p.hp<=0)await room.spike.drop(p,now);
 }
 export async function sovaEvent(room,ws,p,m,now){
  if(!m.type.startsWith('sova_'))return false;
@@ -55,7 +55,7 @@ export async function sovaEvent(room,ws,p,m,now){
   if(f.bounces>0){const vy=f.vy-SOVA.gravity*(contactAt-f.segmentAt)/1000,dot=f.vx*m.nx+vy*m.ny+f.vz*m.nz;if(dot>=0)return true;Object.assign(f,{x:m.x,y:m.y,z:m.z,vx:(f.vx-2*dot*m.nx)*.85,vy:(vy-2*dot*m.ny)*.85,vz:(f.vz-2*dot*m.nz)*.85,bounces:f.bounces-1,segmentAt:contactAt});room.broadcast({type:'event',event:f});}
   else{effects.flights=effects.flights.filter(e=>e.id!==f.id);room.broadcast({type:'event',event:{type:'sova_flight_end',id:f.id}});
    if(f.kind==='recon'){const e={...f,type:'sova_recon',x:m.x,y:m.y,z:m.z,hp:SOVA.reconHp,createdAt:now,expiresAt:now+SOVA.reconArmMs+SOVA.pulseMs*SOVA.pulses};effects.recons.push(e);room.broadcast({type:'event',event:e});}
-   else{const e={...f,type:'sova_shock',x:m.x,y:m.y,z:m.z};room.broadcast({type:'event',event:e});for(const socket of room.sockets()){const v=room.data(socket);if(!v?.joined)continue;const distance=dist({...v,y:v.y-1},m);if(distance<SOVA.shockRadius)await hurt(room,socket,v,SOVA.shockDamage*(1-distance/SOVA.shockRadius),e,now);}await room.rounds.elimination();p=room.data(ws);}
+   else{const e={...f,type:'sova_shock',x:m.x,y:m.y,z:m.z};room.broadcast({type:'event',event:e});for(const socket of room.sockets()){const v=room.data(socket);if(!v?.joined)continue;const distance=dist({...v,y:v.y-1},m);if(distance<SOVA.shockRadius)await abilityDamage(room,socket,v,SOVA.shockDamage*(1-distance/SOVA.shockRadius),e,now);}await room.rounds.elimination();p=room.data(ws);}
   }
  }else if(m.type==='sova_drone'){
   if(sovaBusy(p)||s.cUsed)return fail('無人機已使用');s.cUsed=true;s.control={kind:'drone',origin:{x:p.x,y:p.y,z:p.z},x:p.x,y:p.y,z:p.z,hp:SOVA.droneHp,lastMoveAt:now,endsAt:now+SOVA.droneMs};p.shotUsed=true;await room.spike.cancel(p.uid,now);p.spikeEquipped=false;
@@ -71,7 +71,7 @@ export async function tickSova(room,now){const e=sovaEffects(room);let pending=f
  if(!playing(room)){e.flights=[];e.recons=[];e.beams=[];await persist(room);return pending;}
  for(const beam of [...e.beams]){if(now<beam.firesAt){pending=true;continue;}e.beams=e.beams.filter(v=>v.id!==beam.id);const owner=room.sockets().find(s=>room.data(s)?.uid===beam.ownerUid),p=owner&&room.data(owner);if(!p?.sova?.control||p.hp<=0)continue;
   const end={x:beam.x+beam.dx*SOVA.beamRange,y:beam.y+beam.dy*SOVA.beamRange,z:beam.z+beam.dz*SOVA.beamRange};room.broadcast({type:'event',event:{...beam,type:'sova_beam_fire'}});
-  for(const socket of room.sockets()){const v=room.data(socket);if(v?.joined&&v.uid!==beam.ownerUid&&pointSegmentDistance({...v,y:v.y-1},beam,end)<SOVA.beamRadius)await hurt(room,socket,v,SOVA.beamDamage,beam,now);}
+  for(const socket of room.sockets()){const v=room.data(socket);if(v?.joined&&v.uid!==beam.ownerUid&&pointSegmentDistance({...v,y:v.y-1},beam,end)<SOVA.beamRadius)await abilityDamage(room,socket,v,SOVA.beamDamage,beam,now);}
   const current=room.data(owner);if(current?.sova?.control?.remaining===0)await cancelSova(room,owner,current,now);await room.rounds.elimination();
  }
  e.flights=e.flights.filter(f=>f.createdAt+SOVA.flightMs>now);e.recons=e.recons.filter(r=>r.expiresAt>now);pending ||=e.flights.length>0||e.recons.length>0||e.beams.length>0;await persist(room);return pending;

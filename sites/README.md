@@ -31,9 +31,9 @@ Multiplayer uses the separately deployed WebSocket Worker in ../multiplayer.
 Set public/game/multiplayer-config.js to its public URL and add the actual Sites
 origin to the Worker ALLOWED_ORIGINS variable. Moving hosting alone does not
 provision that backend. Sage resurrection is unavailable without
-connected teammates. Skills are trainer approximations: Jett, Sage, Iso, Clove, Omen, Brimstone, Reyna and Sova have playable kits;
+connected teammates. Skills are trainer approximations: Jett, Sage, Iso, Clove, Omen, Brimstone, Reyna, Sova and Killjoy have playable kits;
 other imported agents remain appearance options. Sage's wall has four destructible
-segments. Clove/Iso/Omen/Brimstone/Reyna/Sova multiplayer requires the `clove-kit-1`/`iso-kit-1`/`omen-kit-1`/`brimstone-kit-1`/`reyna-kit-1`/`sova-kit-1` Worker features. Dynamic
+segments. Clove/Iso/Omen/Brimstone/Reyna/Sova/Killjoy multiplayer requires the `clove-kit-1`/`iso-kit-1`/`omen-kit-1`/`brimstone-kit-1`/`reyna-kit-1`/`sova-kit-1`/`killjoy-kit-1` Worker features. Dynamic
 door behavior is not reproduced. Ultimate/utility charges are preloaded on training reset.
 
 Game art attribution is in public/game/assets/ascent/provenance.json and

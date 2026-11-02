@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=sova1">
+    <link rel="stylesheet" href="./shop.css?v=killjoy1">
 </head>
 <body class="relative select-none">
 
@@ -693,23 +693,25 @@
         <div class="agent-picker-roster"><div class="agent-picker-tools"><div id="agent-role-filters" role="group" aria-label="角色定位篩選"></div><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
-        import {SovaKit} from './sova-view.js?v=sova1';
-        import {SOVA,sovaDeath} from './multiplayer/sova-rules.mjs?v=sova1';
-        import {ReynaKit} from './reyna-view.js?v=sova1';
-        import {REYNA,reynaBusy,reynaDismissed,empressActive,reynaDeath} from './multiplayer/reyna-rules.mjs?v=sova1';
-        import {BrimstoneKit} from './brimstone-view.js?v=sova1';
-        import {BRIM} from './multiplayer/brimstone-rules.mjs?v=sova1';
-        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=sova1';
+        import {KilljoyKit} from './killjoy-view.js?v=killjoy1';
+        import {KJ,detained,killjoyDeath} from './multiplayer/killjoy-rules.mjs?v=killjoy1';
+        import {SovaKit} from './sova-view.js?v=killjoy1';
+        import {SOVA,sovaDeath} from './multiplayer/sova-rules.mjs?v=killjoy1';
+        import {ReynaKit} from './reyna-view.js?v=killjoy1';
+        import {REYNA,reynaBusy,reynaDismissed,empressActive,reynaDeath} from './multiplayer/reyna-rules.mjs?v=killjoy1';
+        import {BrimstoneKit} from './brimstone-view.js?v=killjoy1';
+        import {BRIM} from './multiplayer/brimstone-rules.mjs?v=killjoy1';
+        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=killjoy1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=sova1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=killjoy1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
-        import {AgentPreview} from './agent-preview.js?v=sova1';
-        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=sova1';
-        import {SpectatorView} from './spectator-view.js?v=sova1';
+        import {AgentPreview} from './agent-preview.js?v=killjoy1';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=killjoy1';
+        import {SpectatorView} from './spectator-view.js?v=killjoy1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -718,13 +720,13 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {OmenKit,makeOmenSmoke} from './omen-view.js?v=sova1';
-        import {OMEN,omenShadow} from './multiplayer/omen-rules.mjs?v=sova1';
-        import {IsoKit} from './iso-view.js?v=sova1';
-        import {sameRealm} from './multiplayer/iso-rules.mjs?v=sova1';
-        import {CloveKit} from './clove-view.js?v=sova1';
-        import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=sova1';
-        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=sova1';
+        import {OmenKit,makeOmenSmoke} from './omen-view.js?v=killjoy1';
+        import {OMEN,omenShadow} from './multiplayer/omen-rules.mjs?v=killjoy1';
+        import {IsoKit} from './iso-view.js?v=killjoy1';
+        import {sameRealm} from './multiplayer/iso-rules.mjs?v=killjoy1';
+        import {CloveKit} from './clove-view.js?v=killjoy1';
+        import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=killjoy1';
+        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=killjoy1';
         import {FollowTrail,BotDefuseController} from './bot-tactics.mjs?v=tactics1';
         import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
@@ -737,8 +739,8 @@
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
         import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
         import {FIREARMS,FIREARM_KEYS,isSidearm,firearmDamage} from './multiplayer/firearms.mjs?v=armory1';
-        import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=armory1';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=sova1';
+        import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=killjoy1';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=killjoy1';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1932,13 +1934,13 @@
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.armorType=player.armorType||(player.shield===25?'light':player.shield>0?'heavy':'none');state.shieldReserve=player.shieldReserve||0;if(FIREARMS[player.primaryWeapon]?.slot==='primary')state.primaryWeaponKey=player.primaryWeapon;if(isSidearm(player.secondaryWeapon))state.secondaryWeaponKey=player.secondaryWeapon;state.kills=player.kills;state.deaths=player.deaths;
             yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent==='phoenix'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent==='phoenix'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
-            sovaKit.sync(player);reynaKit.sync(player);brimKit.sync(player);isoKit.sync(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
+            killjoyKit.sync(player);sovaKit.sync(player);reynaKit.sync(player);brimKit.sync(player);isoKit.sync(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;state.tempHealth=p.tempHealth||0;state.decayUntil=p.decayUntil||0;sovaKit.sync(p);reynaKit.sync(p);brimKit.sync(p);isoKit.sync(p);omenKit.sync(p);if(state.agent==='clove')cloveKit.sync(p);if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;state.tempHealth=p.tempHealth||0;state.decayUntil=p.decayUntil||0;killjoyKit.sync(p);sovaKit.sync(p);reynaKit.sync(p);brimKit.sync(p);isoKit.sync(p);omenKit.sync(p);if(state.agent==='clove')cloveKit.sync(p);if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2136,13 +2138,13 @@
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
                     if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(isAgent(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(isSidearm(message.player.weapon))state.secondaryWeaponKey=message.player.weapon;else if(FIREARMS[message.player.weapon]?.slot==='primary')state.primaryWeaponKey=message.player.weapon;}
-                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const ev of [...(message.sovaEffects?.flights||[]),...(message.sovaEffects?.recons||[]),...(message.sovaEffects?.beams||[])])sovaKit.receive(ev);for(const ev of [...(message.reynaEffects?.eyes||[]),...(message.reynaEffects?.orbs||[])])reynaKit.receive(ev);for(const ev of [...(message.brimEffects?.areas||[]),...(message.brimEffects?.flights||[])])brimKit.receive(ev);for(const ev of [...(message.omenEffects?.smokes||[]),...(message.omenEffects?.flights||[])])omenKit.receive(ev);for(const ev of [...(message.isoEffects?.walls||[]),...(message.isoEffects?.flights||[]),...(message.isoEffects?.orbs||[])])isoKit.receive(ev);for(const ev of [...(message.cloveEffects?.smokes||[]),...(message.cloveEffects?.flights||[])])cloveKit.receive(ev);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const ev of [...(message.killjoyEffects?.devices||[]),...(message.killjoyEffects?.flights||[])])killjoyKit.receive(ev);for(const ev of [...(message.sovaEffects?.flights||[]),...(message.sovaEffects?.recons||[]),...(message.sovaEffects?.beams||[])])sovaKit.receive(ev);for(const ev of [...(message.reynaEffects?.eyes||[]),...(message.reynaEffects?.orbs||[])])reynaKit.receive(ev);for(const ev of [...(message.brimEffects?.areas||[]),...(message.brimEffects?.flights||[])])brimKit.receive(ev);for(const ev of [...(message.omenEffects?.smokes||[]),...(message.omenEffects?.flights||[])])omenKit.receive(ev);for(const ev of [...(message.isoEffects?.walls||[]),...(message.isoEffects?.flights||[]),...(message.isoEffects?.orbs||[])])isoKit.receive(ev);for(const ev of [...(message.cloveEffects?.smokes||[]),...(message.cloveEffects?.flights||[])])cloveKit.receive(ev);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
-                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,omenRelocate:player=>{omenKit.sync(player);omenKit.api.relocate(player);pushMyNetworkState(true);},isoRelocate:player=>{state.armorType=player.armorType;state.shieldReserve=player.shieldReserve||0;state.tempHealth=player.tempHealth||0;isoKit.relocate(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);pushMyNetworkState(true);},spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{sovaKit.pendingUntil=0;reynaKit.pendingUntil=0;brimKit.pendingUntil=0;omenKit.pendingUntil=0;isoKit.pendingUntil=0;cloveKit.pendingUntil=0;state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e'&&state.agent==='phoenix')confirmHealing();},
+                players:receivePlayerSnapshot,event:handleNetworkCombatEvent,omenRelocate:player=>{omenKit.sync(player);omenKit.api.relocate(player);pushMyNetworkState(true);},isoRelocate:player=>{state.armorType=player.armorType;state.shieldReserve=player.shieldReserve||0;state.tempHealth=player.tempHealth||0;isoKit.relocate(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);pushMyNetworkState(true);},spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{killjoyKit.pendingUntil=0;sovaKit.pendingUntil=0;reynaKit.pendingUntil=0;brimKit.pendingUntil=0;omenKit.pendingUntil=0;isoKit.pendingUntil=0;cloveKit.pendingUntil=0;state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e'&&state.agent==='phoenix')confirmHealing();},
                 spikeError:reason=>{networkSpikeRetryAt=performance.now()+1000;cancelSpikeAction();abilityNotice(reason);},
                 armorResult:player=>{state.armorType=player.armorType;state.shield=player.shield;state.shieldReserve=player.shieldReserve||0;updateHealthHUD();updateShopUI();},armorError:reason=>shopFeedback(reason),
-                damage(message){state.hp=message.hp;state.shield=message.shield;state.tempHealth=message.tempHealth||0;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){sovaDeath(state);reynaDeath(state);state.nearsightUntil=state.deafenedUntil=0;resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
+                damage(message){state.hp=message.hp;state.shield=message.shield;state.tempHealth=message.tempHealth||0;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.nearsightUntil=state.deafenedUntil=0;resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
@@ -2157,7 +2159,7 @@
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
-            if(sovaKit.receive(ev)||reynaKit.receive(ev)||brimKit.receive(ev)||omenKit.receive(ev)||isoKit.receive(ev)||cloveKit.receive(ev))return;
+            if(killjoyKit.receive(ev)||sovaKit.receive(ev)||reynaKit.receive(ev)||brimKit.receive(ev)||omenKit.receive(ev)||isoKit.receive(ev)||cloveKit.receive(ev))return;
             if(ev.type==='revive'){
                 if(ev.phase==='complete'){removeCorpse(ev.targetUid);return;}
                 const actor=remotePlayers.get(ev.targetUid);if(!corpses.has(ev.targetUid)&&actor)markCorpse(ev.targetUid,new THREE.Vector3(ev.x,ev.y,ev.z),actor.data.team,actor);
@@ -2400,7 +2402,7 @@
         }
         let shotgunContext=null;
         function fireWeapon() {
-            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()) return;
+            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()||killjoyKit.blocked()) return;
             if(state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
@@ -2528,9 +2530,9 @@
                         }
                     }
                 } else {
-                    sovaKit.hitObject(hit.object,wpn.bodyDmg);reynaKit.hitObject(hit.object,wpn.bodyDmg);omenKit.hitObject(hit.object);isoKit.hitObject(hit.object);if(hit.object.userData.barrierId)damageBarrier(hit.object,wpn.bodyDmg);
+                    killjoyKit.hitObject(hit.object,wpn.bodyDmg);sovaKit.hitObject(hit.object,wpn.bodyDmg);reynaKit.hitObject(hit.object,wpn.bodyDmg);omenKit.hitObject(hit.object);isoKit.hitObject(hit.object);if(hit.object.userData.barrierId)damageBarrier(hit.object,wpn.bodyDmg);
                     // Hit wall/floor: spawn bullet hole decal + yellow sparks
-                    if (hit.face && !hit.object.userData.sovaRecon && !hit.object.userData.sovaDroneUid && !hit.object.userData.reynaEye && !hit.object.userData.barrierId) {
+                    if (hit.face && !hit.object.userData.killjoyDevice && !hit.object.userData.sovaRecon && !hit.object.userData.sovaDroneUid && !hit.object.userData.reynaEye && !hit.object.userData.barrierId) {
                         const worldNormal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
                         if(showPelletFX)spawnBulletDecal(hit.point, worldNormal);
                     }
@@ -2640,7 +2642,7 @@
             if (isTraining()) {
                 setTimeout(() => {
                     if(!bots.includes(bot)||state.roundEnding)return;removeCorpse('bot:'+bot.index);bot.hpBg.visible=bot.hpFill.visible=true;
-                    bot.hp = 100;bot.sovaRevealUntil=0;bot.leerUntil=0;bot.stimUntil=0;bot.nearsightUntil=bot.deafenedUntil=0;
+                    bot.hp = 100;bot.detainedUntil=0;bot.sovaRevealUntil=0;bot.leerUntil=0;bot.stimUntil=0;bot.nearsightUntil=bot.deafenedUntil=0;
                     bot.hpFill.scale.x = 1;
                     bot.group.rotation.x = 0;
                     const safe=realMap.ready?randomBotSpawn(realMap,{x:bot.baseX,y:bot.baseY||0,z:bot.baseZ},bots.filter(b=>b!==bot&&b.alive).map(b=>b.group.position)):{x:bot.baseX,y:bot.baseY||0,z:bot.baseZ};bot.group.position.set(safe.x,safe.y,safe.z);bot.lastSafePosition=bot.group.position.clone();bot.navPath=[];bot.navGoal=null;bot.directAt=0;bot.contact=null;
@@ -2894,6 +2896,8 @@
         const brimKit=new BrimstoneKit({state,camera,scene,map:realMap,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,obstacles:()=>[realMap.collisionMesh,...temporaryWalls],notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.55),smoke:e=>{e.mesh.position.set(e.x,e.y,e.z);scene.add(e.mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh:e.mesh,id:e.id,kind:'brimstone',life:BRIM.smokeMs/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});},hurt:(a,damage,e)=>{if(a.self){if(cloveInvulnerable(state,Date.now())||state.omen?.channel?.kind==='ultimate')return;applyDamageToPlayer(damage,'Brimstone',e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY');}else{a.bot.lastDamage=performance.now();if(a.bot.team!==state.team)a.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(a.bot,damage,'brim:'+e.id+':'+Date.now());a.bot.hpFill.scale.x=Math.max(.01,a.bot.hp/100);if(a.bot.hp<=0)handleBotKilled(a.bot,false,e.ownerUid==='self'&&a.bot.team!==state.team,e.ownerUid==='self'?state.playerName:'Brimstone',e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY');}}});
         const reynaKit=new ReynaKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,remotes:()=>remotePlayers,notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},clearLine:(a,b)=>{const origin=new THREE.Vector3(a.x,a.y,a.z),target=new THREE.Vector3(b.x,b.y,b.z),d=target.clone().sub(origin),length=d.length();if(length<.01)return true;const line=new THREE.Line3(origin,target);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<((s.mesh.userData.smokeRadius||3.8)*s.mesh.scale.x)**2))return false;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length-.35)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0xf087cf),prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.4),hold:()=>{beginAbilityCast('orb',.5);abilityCast.holdOrb();},cancelCast:()=>abilityCast.cancel()});
         const sovaKit=new SovaKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},obstacles:()=>[realMap.collisionMesh,...temporaryWalls],clearLine:(a,b,padding=0)=>{const origin=new THREE.Vector3(a.x,a.y,a.z),target=new THREE.Vector3(b.x,b.y,b.z),d=target.clone().sub(origin),length=d.length();if(length<.001)return true;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length+(padding||-.12))).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.3),targets:()=>[...bots.filter(b=>b.alive&&b.team!==state.team&&!b.realm).map(b=>({uid:'bot:'+b.index,actor:b,position:{x:b.group.position.x,y:b.group.position.y+1.8,z:b.group.position.z},meshes:[b.headMesh,b.bodyMesh,b.leftLeg,b.rightLeg]})),...[...remotePlayers.values()].filter(rp=>rp.data.hp>0&&rp.data.team!==state.team&&!rp.data.realm).map(rp=>({uid:rp.uid,actor:rp.data,position:{x:rp.data.x,y:rp.data.y-.4,z:rp.data.z},meshes:[rp.headMesh,rp.bodyMesh,rp.leftLeg,rp.rightLeg]}))],damageTargets:()=>[{self:true,actor:state,position:{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z}},...bots.filter(b=>b.alive&&!b.realm).map(b=>({actor:b,bot:b,position:{x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z}}))],hurt:(t,damage,e)=>{if(t.self){if(omenShadow(state))return;applyDamageToPlayer(damage,e.ownerName,e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT');}else{t.bot.lastDamage=performance.now();if(t.bot.team!==state.team)t.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(t.bot,damage,e.id);t.bot.hpFill.scale.x=Math.max(.01,t.bot.hp/100);if(t.bot.hp<=0)handleBotKilled(t.bot,false,t.bot.team!==state.team,state.playerName,e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT');}},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0x77eaff),contact:t=>{for(const ally of bots)if(ally.alive&&ally.team===state.team&&!ally.realm)ally.contact={pos:new THREE.Vector3(t.position.x,t.position.y-1.8,t.position.z),at:performance.now()};}});
+        const killjoyKit=new KilljoyKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},obstacles:()=>[realMap.collisionMesh,...temporaryWalls],canPlace:p=>!checkPlayerCollision(new THREE.Vector3(p.x,p.y+2.2,p.z),0),ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+3,p.z)),clearLine:(a,b,padding=0)=>{const origin=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(origin),length=d.length();if(length<.001)return true;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length+(padding||-.12))).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},hold:()=>{beginAbilityCast('orb',.5);abilityCast.holdOrb();},cast:()=>beginAbilityCast('wind',.3),disarm:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();if(state.sova)state.sova.control=null;state.healingEquipped=false;state.holdingSpike=false;moveState.holdPlant=false;cancelSpikeAction();},targets:()=>[{uid:currentUser?.uid||'self',self:true,actor:state,position:{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z}},...bots.filter(b=>b.alive&&!b.realm).map(b=>({uid:'bot:'+b.index,bot:b,actor:b,position:{x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z}})),...[...remotePlayers.values()].filter(rp=>rp.data.hp>0&&!rp.data.realm).map(rp=>({uid:rp.uid,actor:rp.data,position:{x:rp.data.x,y:rp.data.y-1,z:rp.data.z}}))],hurt:(t,damage,e)=>{if(t.self){if(omenShadow(state))return;applyDamageToPlayer(damage,e.ownerName||'Killjoy',e.weaponName);}else if(t.bot){t.bot.lastDamage=performance.now();if(t.bot.team!==e.team)t.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(t.bot,damage,e.id);t.bot.hpFill.scale.x=Math.max(.01,t.bot.hp/100);if(t.bot.hp<=0)handleBotKilled(t.bot,false,e.ownerUid===(currentUser?.uid||'self')&&t.bot.team!==state.team,e.ownerName||'Killjoy',e.weaponName);}},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0xffd66b)});
+
 
 
 
@@ -2908,7 +2912,7 @@
             beginAbilityCast('wind',.25);const p=camera.getWorldPosition(new THREE.Vector3()),d=camera.getWorldDirection(new THREE.Vector3());p.addScaledVector(d,.4);
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
-        function clearFieldObjects(){sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        function clearFieldObjects(){killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -2964,12 +2968,12 @@
         function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
-            const names=state.agent==='sova'?{c:'Owl Drone · 偵察機',q:'Shock Bolt · 電擊箭',e:'Recon Bolt · 偵察箭',x:"Hunter’s Fury · 獵人之怒"}:state.agent==='reyna'?{c:'Leer · 致盲眼',q:'Devour · 吞噬',e:'Dismiss · 消散',x:'Empress · 女皇'}:state.agent==='brimstone'?{c:'Stim Beacon · 振奮信標',q:'Incendiary · 燃燒彈',e:'Sky Smoke · 煙幕',x:'Orbital Strike · 軌道轟炸'}:state.agent==='omen'?{c:'Shrouded Step · 短距離傳送',q:'Paranoia · 致盲',e:'Dark Cover · 煙霧',x:'From the Shadows · 全圖傳送'}:state.agent==='iso'?{c:'Contingency · 移動擋彈牆',q:'Undercut · 穿牆易傷',e:'Double Tap · 單次傷害護盾',x:'Kill Contract · 獨立決鬥'}:state.agent==='clove'?{c:'Pick-me-up · 暫時生命與加速',q:'Meddle · 減損靈球',e:'Ruse · 死亡後仍可放煙',x:'Not Dead Yet · 限時復活'}:{c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
+            const names=state.agent==='killjoy'?{c:'Nanoswarm · 奈米蟲群',q:'Alarmbot · 警報機器人／Q 召回',e:'Turret · 砲塔／E 召回',x:'Lockdown · 全面封鎖'}:state.agent==='sova'?{c:'Owl Drone · 偵察機',q:'Shock Bolt · 電擊箭',e:'Recon Bolt · 偵察箭',x:"Hunter’s Fury · 獵人之怒"}:state.agent==='reyna'?{c:'Leer · 致盲眼',q:'Devour · 吞噬',e:'Dismiss · 消散',x:'Empress · 女皇'}:state.agent==='brimstone'?{c:'Stim Beacon · 振奮信標',q:'Incendiary · 燃燒彈',e:'Sky Smoke · 煙幕',x:'Orbital Strike · 軌道轟炸'}:state.agent==='omen'?{c:'Shrouded Step · 短距離傳送',q:'Paranoia · 致盲',e:'Dark Cover · 煙霧',x:'From the Shadows · 全圖傳送'}:state.agent==='iso'?{c:'Contingency · 移動擋彈牆',q:'Undercut · 穿牆易傷',e:'Double Tap · 單次傷害護盾',x:'Kill Contract · 獨立決鬥'}:state.agent==='clove'?{c:'Pick-me-up · 暫時生命與加速',q:'Meddle · 減損靈球',e:'Ruse · 死亡後仍可放煙',x:'Not Dead Yet · 限時復活'}:{c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
             if(abilityIconAgent!==state.agent){
                 abilityIconAgent=state.agent;
                 for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);if(!enabled)names[k]='技能尚未加入';const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
             }
-            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(!enabled||!!state.realm||state.hp<=0&&!(state.agent==='clove'&&['e','x'].includes(k))?false:k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now());}
+            for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(!enabled||!!state.realm||state.hp<=0&&!(state.agent==='clove'&&['e','x'].includes(k))?false:state.agent==='killjoy'&&['q','e'].includes(k)&&!!killjoyKit.own(k==='q'?'alarm':'turret')?true:k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(k==='e'&&state.dashReadyUntil>performance.now()||state.agent==='killjoy'&&['q','e'].includes(k)&&!!killjoyKit.own(k==='q'?'alarm':'turret'));}
             if(['clove','omen','brimstone','reyna'].includes(state.agent))document.getElementById('skill-e-name').textContent='E · '+state.eCharges;
             const chargeSignature=state.agent+state.qCharges;if(abilityChargeSignature!==chargeSignature){abilityChargeSignature=chargeSignature;document.getElementById('skill-q-charges').innerHTML=Array.from({length:enabled?(sage||['iso','reyna','sova'].includes(state.agent)?2:1):0},(_,i)=>`<i class="ability-charge ${state.qCharges>i?'ready':''}"></i>`).join('');}
             for(const k of ['c','q','e']) {
@@ -2983,13 +2987,15 @@
         }
         function resetAbilities() {
             cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.healRemaining=0;state.slowPendingUntil=0;state.barrierPendingUntil=0;
-            state.ultUsed=false;sovaKit.reset();reynaKit.reset();brimKit.reset();omenKit.reset();isoKit.reset();cloveKit.reset();state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
+            state.ultUsed=false;killjoyKit.reset();sovaKit.reset();reynaKit.reset();brimKit.reset();omenKit.reset();isoKit.reset();cloveKit.reset();state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
             clearTimeout(bladeEmptyTimer);state.bladeStormActive=false;state.bladeKnives=0;state.weaponAmmo={};
             if(!AGENTS[state.agent].abilities)state.cCharges=state.qCharges=0;
             state.eCharges=AGENTS[state.agent].abilities?1:0;state.xCharges=state.eCharges;state.cCooldown=state.qCooldown=state.eCooldown=0;
-            state.dashReadyUntil=0;state.dashArmedAt=0;if(state.agent==='sova')sovaKit.refresh();if(state.agent==='reyna')reynaKit.refresh();if(state.agent==='brimstone')brimKit.refresh();if(state.agent==='omen')omenKit.refresh();if(state.agent==='iso')isoKit.refresh();if(state.agent==='clove')cloveKit.refresh();updateAbilityHUD();
+            state.dashReadyUntil=0;state.dashArmedAt=0;if(state.agent==='killjoy')killjoyKit.refresh();if(state.agent==='sova')sovaKit.refresh();if(state.agent==='reyna')reynaKit.refresh();if(state.agent==='brimstone')brimKit.refresh();if(state.agent==='omen')omenKit.refresh();if(state.agent==='iso')isoKit.refresh();if(state.agent==='clove')cloveKit.refresh();updateAbilityHUD();
         }
         function triggerAbilityC() {
+            if(killjoyKit.detained())return;
+            if(killjoyKit.key('KeyC'))return;
             if(sovaKit.key('KeyC'))return;
             if(reynaKit.key('KeyC'))return;
             if(brimKit.key('KeyC'))return;
@@ -3005,6 +3011,8 @@
             state.cCharges--;sfx.playAbilitySound('smoke');updateAbilityHUD();
         }
         function triggerAbilityQ() {
+            if(killjoyKit.detained())return;
+            if(killjoyKit.key('KeyQ'))return;
             if(sovaKit.key('KeyQ'))return;
             if(reynaKit.key('KeyQ'))return;
             if(brimKit.key('KeyQ'))return;
@@ -3017,6 +3025,8 @@
             state.qCharges--;updateAbilityHUD();
         }
         function triggerAbilityE() {
+            if(killjoyKit.detained())return;
+            if(killjoyKit.key('KeyE'))return;
             if(sovaKit.key('KeyE'))return;
             if(reynaKit.key('KeyE'))return;
             if(brimKit.key('KeyE'))return;
@@ -3046,6 +3056,8 @@
             updateAbilityHUD();
         }
         function triggerUltimateX() {
+            if(killjoyKit.detained())return;
+            if(killjoyKit.key('KeyX'))return;
             if(sovaKit.key('KeyX'))return;
             if(reynaKit.key('KeyX'))return;
             if(brimKit.key('KeyX'))return;
@@ -3064,7 +3076,7 @@
          ********************************************************************/
         function equipWeaponSlot(slotKey,{fresh=false}={}) {
             if(slotKey==='bladestorm'&&(!state.bladeStormActive||state.bladeKnives<=0))return;
-            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();clearTimeout(bladeEmptyTimer);
+            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();clearTimeout(bladeEmptyTimer);
             if(state.weaponKey!=='bladestorm')state.weaponAmmo[state.weaponKey]={mag:state.mag,reserve:state.reserve};
             cancelSlowEquip();
             cancelBarrierPlacement();abilityCast.cancel();
@@ -3090,7 +3102,7 @@
         window.selectAgent = function(agentKey) {
             if(!isAgent(agentKey)||state.realm||omenKit.busy())return false;
             if(currentRoomId&&!agentSupported(agentKey,roomSocket?.serverFeatures)){const message='連線伺服器正在更新這個角色，請稍後重新加入房間';shopFeedback(message);document.getElementById('agent-picker-feedback').textContent=message;return false;}
-            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
+            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             for(const key of AGENT_KEYS){const card=document.getElementById('agent-card-'+key);card.classList.toggle('active',agentKey===key);card.setAttribute('aria-pressed',String(agentKey===key));}
             document.getElementById('agent-picker').close();
@@ -3173,7 +3185,7 @@
         let previewAgent=state.agent,selectedAgentRole='all',selectedEntryScope=null,agentPickerStartsGame=false;
         const agentEntryScope=()=>selectedMap+'::'+(currentRoomId||'solo');
         const roleDescriptions={'決鬥者':'在交戰中創造突破口，協助隊伍取得進攻空間。','守衛者':'守住關鍵位置，保護隊伍並限制敵方推進。','先鋒':'探查威脅，協助隊伍打開進攻路線。','控場者':'掌握視野與節奏，協助隊伍進出據點。','特務':'選擇角色外型，投入訓練與對戰。'};
-        const pickerSkills={sova:[['c','Owl Drone','操作可被擊毀的偵察機；本體停留原地並可受攻擊。'],['q','Shock Bolt','按住左鍵蓄力、放開發射；右鍵設定 0／1／2 次彈跳。'],['e','Recon Bolt','可破壞的偵察箭，脈衝依視線標記敵人，冷卻後補充。'],['x','Hunter’s Fury','短暫蓄力後發射最多三道穿牆光束，命中造成傷害並標記。']],reyna:[['c','Leer','裝備並投出可破壞的眼球，限制看見它的敵人的遠距視野。'],['q','Devour','消耗靈魂球持續治療；需要保持連線。'],['e','Dismiss','消耗靈魂球短暫虛化，期間不能攻擊；女皇期間隱形。'],['x','Empress','強化射擊與換彈，擊殺／助攻自動治療，擊殺刷新持續時間。']],brimstone:[['c','Stim Beacon','部署信標，使附近隊友短暫加速並加快射擊和換彈。'],['q','Incendiary','裝備燃燒彈，左鍵發射；接觸地面形成持續傷害區。'],['e','Sky Smoke','地圖標記後確認部署，整回合共三顆煙幕。'],['x','Orbital Strike','在地圖標記轟炸範圍，警示後造成持續傷害。']],omen:[['c','Shrouded Step','瞄準可站立地面，確認後短距離傳送。'],['q','Paranoia','穿過地形的能量波，限制命中者遠距視野並壓低腳步聲。'],['e','Dark Cover','在地圖選擇煙霧位置；滾輪可調整樓層。'],['x','From the Shadows','選擇全圖落點，暗影成形後傳送；可自行取消，敵人射中暗影也會取消。']],iso:[['c','Contingency','向前移動的擋彈牆，不阻擋人物通行。'],['q','Undercut','穿過地形的能量波，使命中角色暫時易傷。'],['e','Double Tap','準備後獲得抵擋一次傷害的護盾；擊殺後射擊能量球可恢復護盾。'],['x','Kill Contract','捕捉前方敵人，進入隔離空間決鬥；勝者返回原位置。']],clove:[['c','Pick-me-up','近期擊殺或傷害助攻後取得暫時生命與加速。'],['q','Meddle','裝備並投擲靈球，使範圍內角色暫時減損生命。'],['e','Ruse','開啟地圖標記煙霧，死亡後仍可從倒地位置放煙。'],['x','Not Dead Yet','倒地後限時復活；需擊殺或傷害助攻才能存活。']],jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
+        const pickerSkills={killjoy:[['c','Nanoswarm','投擲奈米蟲群，落地後瞄準裝置按 F 遙控啟動。'],['q','Alarmbot','部署追蹤敵人的警報機器人，爆炸施加易傷；再次按 Q 召回。'],['e','Turret','部署前方半圓視野內自動射擊的砲塔；再次按 E 召回。'],['x','Lockdown','部署可破壞的封鎖裝置，倒數結束後拘束範圍內敵人。']],sova:[['c','Owl Drone','操作可被擊毀的偵察機；本體停留原地並可受攻擊。'],['q','Shock Bolt','按住左鍵蓄力、放開發射；右鍵設定 0／1／2 次彈跳。'],['e','Recon Bolt','可破壞的偵察箭，脈衝依視線標記敵人，冷卻後補充。'],['x','Hunter’s Fury','短暫蓄力後發射最多三道穿牆光束，命中造成傷害並標記。']],reyna:[['c','Leer','裝備並投出可破壞的眼球，限制看見它的敵人的遠距視野。'],['q','Devour','消耗靈魂球持續治療；需要保持連線。'],['e','Dismiss','消耗靈魂球短暫虛化，期間不能攻擊；女皇期間隱形。'],['x','Empress','強化射擊與換彈，擊殺／助攻自動治療，擊殺刷新持續時間。']],brimstone:[['c','Stim Beacon','部署信標，使附近隊友短暫加速並加快射擊和換彈。'],['q','Incendiary','裝備燃燒彈，左鍵發射；接觸地面形成持續傷害區。'],['e','Sky Smoke','地圖標記後確認部署，整回合共三顆煙幕。'],['x','Orbital Strike','在地圖標記轟炸範圍，警示後造成持續傷害。']],omen:[['c','Shrouded Step','瞄準可站立地面，確認後短距離傳送。'],['q','Paranoia','穿過地形的能量波，限制命中者遠距視野並壓低腳步聲。'],['e','Dark Cover','在地圖選擇煙霧位置；滾輪可調整樓層。'],['x','From the Shadows','選擇全圖落點，暗影成形後傳送；可自行取消，敵人射中暗影也會取消。']],iso:[['c','Contingency','向前移動的擋彈牆，不阻擋人物通行。'],['q','Undercut','穿過地形的能量波，使命中角色暫時易傷。'],['e','Double Tap','準備後獲得抵擋一次傷害的護盾；擊殺後射擊能量球可恢復護盾。'],['x','Kill Contract','捕捉前方敵人，進入隔離空間決鬥；勝者返回原位置。']],clove:[['c','Pick-me-up','近期擊殺或傷害助攻後取得暫時生命與加速。'],['q','Meddle','裝備並投擲靈球，使範圍內角色暫時減損生命。'],['e','Ruse','開啟地圖標記煙霧，死亡後仍可從倒地位置放煙。'],['x','Not Dead Yet','倒地後限時復活；需擊殺或傷害助攻才能存活。']],jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
         function previewAgentChoice(key){
             previewAgent=key;const agent=AGENTS[key];
             document.getElementById('agent-preview-role').textContent=agent.role;document.getElementById('agent-preview-name').textContent=agent.short;document.getElementById('agent-preview-name').style.setProperty('--name-chars',agent.short.length);document.getElementById('agent-preview-description').textContent=roleDescriptions[agent.role]||roleDescriptions['特務'];document.getElementById('agent-preview-art').src='./assets/ui/'+agent.model+'.webp';
@@ -3249,7 +3261,7 @@
                 ['c',sage?'▥':'☁',sage?'屏障靈球':'雲爆煙霧',state.cCharges],
                 ['q',sage?'◉':'▲',sage?'緩速靈球':'氣流竄升',state.qCharges],
                 ['e',sage?'✚':'➤',sage?'治癒靈球':'逐風衝刺',state.eCharges]
-            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?(state.agent==='sova'?{c:'Owl Drone',q:'Shock Bolt',e:'Recon Bolt'}[key]:state.agent==='reyna'?{c:'Leer',q:'Devour',e:'Dismiss'}[key]:state.agent==='brimstone'?{c:'Stim Beacon',q:'Incendiary',e:'Sky Smoke'}[key]:state.agent==='omen'?{c:'Shrouded Step',q:'Paranoia',e:'Dark Cover'}[key]:state.agent==='iso'?{c:'Contingency',q:'Undercut',e:'Double Tap'}[key]:state.agent==='clove'?{c:'Pick-me-up',q:'Meddle',e:'Ruse'}[key]:name):key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
+            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?(state.agent==='killjoy'?{c:'Nanoswarm',q:'Alarmbot',e:'Turret'}[key]:state.agent==='sova'?{c:'Owl Drone',q:'Shock Bolt',e:'Recon Bolt'}[key]:state.agent==='reyna'?{c:'Leer',q:'Devour',e:'Dismiss'}[key]:state.agent==='brimstone'?{c:'Stim Beacon',q:'Incendiary',e:'Sky Smoke'}[key]:state.agent==='omen'?{c:'Shrouded Step',q:'Paranoia',e:'Dark Cover'}[key]:state.agent==='iso'?{c:'Contingency',q:'Undercut',e:'Double Tap'}[key]:state.agent==='clove'?{c:'Pick-me-up',q:'Meddle',e:'Ruse'}[key]:name):key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
         }
 
         function setHudText(id,value){const el=document.getElementById(id),text=String(value);if(el.textContent!==text)el.textContent=text;}
@@ -3513,6 +3525,7 @@
                 safeRequestPointerLock();
             }
             if(omenKit.mouseDown(e)){e.preventDefault();return;}
+            if(killjoyKit.mouseDown(e)){e.preventDefault();return;}
             if(sovaKit.mouseDown(e)){e.preventDefault();return;}
             if(reynaKit.mouseDown(e)){e.preventDefault();return;}
             if(brimKit.mouseDown(e)){e.preventDefault();return;}
@@ -3592,6 +3605,7 @@
             }
 
             if(reynaKit.blocked()&&code==='KeyB'){abilityNotice('請先結束技能再購買');return;}
+            if(killjoyKit.detained()&&code==='KeyB'){abilityNotice('拘束結束後才能購買');return;}
             if(sovaKit.busy()&&code==='KeyB'){abilityNotice('先退出偵察機或獵人之怒');return;}
             if(omenKit.busy()&&code==='KeyB'){abilityNotice('傳送期間無法購買');return;}
             if(state.realm&&code==='KeyB'){abilityNotice('獨立決鬥中無法購買');return;}
@@ -3604,6 +3618,7 @@
                 return;
             }
             if (state.inBuyMenu || !state.isLocked) return;
+            if(killjoyKit.detained()&&!['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','ControlLeft','ControlRight','Space'].includes(code)){e.preventDefault();return;}
             if(sovaKit.keyDown(code)){e.preventDefault();return;}
             if (['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(code)) e.preventDefault();
             if(omenKit.busy()&&['Digit1','Digit2','Digit3','Digit4','KeyF','KeyG','KeyT','KeyR','KeyY'].includes(code))return;
@@ -3611,6 +3626,7 @@
             if(state.realm&&['KeyC','KeyQ','KeyE','KeyX','Digit4','KeyF','KeyT','KeyG'].includes(code))return;
             if(state.agent==='clove'&&['KeyC','KeyQ','KeyE','KeyX'].includes(code)){cloveKit.key(code);return;}
             if(state.hp<=0){if(code==='ArrowLeft'||code==='ArrowRight'){e.preventDefault();spectatorView.cycle(code==='ArrowLeft'?-1:1);}return;}
+            if(code==='KeyF'&&killjoyKit.activateTarget()){e.preventDefault();return;}
             if(code==='KeyF'&&toggleRope()){e.preventDefault();return;}
             if(code==='Space'&&state.climbingRope){state.climbingRope=null;playerVelocity.y=6;canJump=false;moveState.glide=true;e.preventDefault();return;}
             if (code === 'KeyW') moveState.forward = true;
@@ -3872,7 +3888,7 @@
 
         function updateBotsAndVFX(dt) {
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
@@ -3943,7 +3959,7 @@
                             else if(state.spikePlanted){const angle=b.index*2.3,guard=spikeGroup.position.clone().add(new THREE.Vector3(Math.cos(angle)*7,0,Math.sin(angle)*7));guard.y=realMap.getGroundHeight(guard.clone().add(new THREE.Vector3(0,2.2,0)));b.orderGoal=guard.y> -80?guard:spikeGroup.position.clone();}
                             else{const sites=realMap.getBotSpawns(true);const p=sites[b.index%sites.length];b.orderGoal=new THREE.Vector3(p.x,p.y,p.z);}
                         }
-                        if(b.orderGoal&&!b.defusing&&(!b.combatVisible||b.team===state.team&&!state.realm&&b.group.position.distanceTo(yawObject.position)>16))moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)));
+                        if(b.orderGoal&&!b.defusing&&(!b.combatVisible||b.team===state.team&&!state.realm&&b.group.position.distanceTo(yawObject.position)>16))moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)));
                     }else if(botNavigation){
                         b.roamTime=(b.roamTime||0)-dt;
                         if(b.roamTime<=0||!b.orderGoal||b.group.position.distanceTo(b.orderGoal)<1.8){
@@ -3951,8 +3967,8 @@
                             const p=randomBotSpawn(realMap,{x:b.group.position.x,y:b.group.position.y,z:b.group.position.z},bots.filter(t=>t!==b&&t.alive).map(t=>t.group.position));
                             b.orderGoal=new THREE.Vector3(p.x,p.y,p.z);
                         }
-                        moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)));
-                    }else moved=moveRoamingBot(b,dt,realMap,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)));
+                        moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)));
+                    }else moved=moveRoamingBot(b,dt,realMap,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)));
                     b.moving=moved;if(moved)b.lastSafePosition=b.group.position.clone();
                     if(moved){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;if(b.roamDirection)b.group.rotation.y=Math.atan2(b.roamDirection.x,b.roamDirection.z);}
                     else b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;
@@ -3961,8 +3977,8 @@
                 b.poseTime=(b.poseTime||0)+dt;if(b.poseTime>=.05){b.appearance?.update(b.poseTime,{moving:!!b.moving,crouching:!!b.defusing});b.poseTime=0;}
                 b.footsteps ||= new FootstepTracker();
                 const footfall=b.footsteps.update(b.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:true,quiet:false});
-                if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);const pan=delta.normalize().dot(right),volume=.35*(1-distance/36)**2;sfx.playFootstep(false,volume,pan);if((slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1))<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
-                if (state.gameMode==='tactical'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
+                if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);const pan=delta.normalize().dot(right),volume=.35*(1-distance/36)**2;sfx.playFootstep(false,volume,pan);if((slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b))<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
+                if (!detained(b,Date.now())&&state.gameMode==='tactical'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
                     b.sightTime=(b.sightTime||0)-dt;let visible=b.visibleTarget;
                     if(b.sightTime<=0){b.sightTime=.18+Math.random()*.06;
                     const targets=bots.filter(t=>t.alive&&t.team!==b.team&&sameRealm(b,t)).map(t=>({pos:t.group.position.clone().add(new THREE.Vector3(0,2,0)),bot:t}));
@@ -4039,7 +4055,7 @@
             }, 240);
 
             if (state.hp <= 0) {
-                state.hp = 0;sovaDeath(state);reynaDeath(state);state.stimUntil=0;state.nearsightUntil=state.deafenedUntil=0;
+                state.hp = 0;killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.stimUntil=0;state.nearsightUntil=state.deafenedUntil=0;
                 state.deaths++;
                 updateHealthHUD();
                 updateAliveHUD();
@@ -4050,7 +4066,7 @@
         }
 
         function updateTimersAndSpike(dt) {
-            sovaKit.update(dt);reynaKit.update(dt);brimKit.update(dt);omenKit.update(dt);isoKit.update(dt);cloveKit.update(dt);
+            killjoyKit.update(dt);sovaKit.update(dt);reynaKit.update(dt);brimKit.update(dt);omenKit.update(dt);isoKit.update(dt);cloveKit.update(dt);
             if(!currentRoomId&&state.armorType==='regen'){tickArmor(state,performance.now());updateHealthHUD();}
             if(state.isLocked&&!state.inBuyMenu) {
                 if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.tempHealth=Math.min(state.tempHealth||0,Math.max(0,150-state.hp));state.healRemaining-=heal;updateHealthHUD();}
@@ -4077,9 +4093,9 @@
             if(!state.isLocked||state.inBuyMenu){botDefuse.reset(state.defuseCheckpoint);for(const b of bots)b.defusing=false;cancelSpikeAction();if(state.spikePlanted)advanceSpikeFuse(dt);return;}
 
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
-            const canPlant = state.hp>0 && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
-            const canDefuse = state.hp>0 && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
-            const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical',planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots,spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
+            const canPlant = state.hp>0 && !killjoyKit.detained() && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
+            const canDefuse = state.hp>0 && !killjoyKit.detained() && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
+            const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical',planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
             for(const b of bots)b.defusing=b.alive&&b.index===aiDefuse.index;state.defuseCheckpoint=Math.max(state.defuseCheckpoint,aiDefuse.checkpoint);
             if(aiDefuse.complete){const defuser=bots.find(b=>b.index===aiDefuse.index);state.spikePlanted=false;spikeGroup.visible=false;cancelSpikeAction();document.getElementById('spike-hud-badge').classList.add('hidden');endRound(state.team==='defend',`${defuser?.name||'防守方'} 成功拆除 SPIKE`);return;}
             if(aiDefuse.index!==null){cancelSpikeAction();if(bots.find(b=>b.index===aiDefuse.index)?.team===state.team){document.getElementById('spike-progress-box').classList.remove('hidden');document.getElementById('spike-action-label').textContent='隊友正在拆除 SPIKE · 7 秒';document.getElementById('spike-progress-bar').style.width=`${aiDefuse.progress*100}%`;}advanceSpikeFuse(dt);return;}
@@ -4252,7 +4268,7 @@
             updateRope(dt);
             // Player Movement Physics
             if (state.isLocked && state.hp > 0 && !state.roundEnding && !state.climbingRope && !omenKit.busy()&&!sovaKit.busy()) {
-                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position)*(state.realm?1:cloveKit.movement())*isoKit.movement()*omenKit.movement()*(brimKit.buff()?BRIM.moveRate:1)*reynaKit.movement()*sovaKit.movement();
+                const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position)*(state.realm?1:cloveKit.movement())*isoKit.movement()*omenKit.movement()*(brimKit.buff()?BRIM.moveRate:1)*reynaKit.movement()*sovaKit.movement()*killjoyKit.movement();
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
 

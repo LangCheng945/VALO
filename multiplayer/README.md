@@ -204,3 +204,9 @@ Sova support advertises `sova-kit-1`. `sova-events.mjs` owns bounded ballistic
 flights, destructible recon bolts, pulse-validated intel, drone control/body locks
 and damage, dart tags and timed piercing beams. See the root README for tuning,
 client map-contact/visibility reporting and remaining visual limitations.
+
+Killjoy support advertises `killjoy-kit-1`. Devices/flights persist and replay on
+join, with server charge/HP/leash/cooldown bounds, fresh sight leases, bounded chase,
+autonomous damage and Lockdown detention/action locks. The shared ability damage
+path preserves armor, vulnerability, Iso shields and kill/death credit. Map rays and
+path contact remain client-reported; see the root README for trainer limitations.

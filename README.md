@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova/Killjoy remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -641,3 +641,58 @@ Validation: `multiplayer/tests/sova.test.mjs`, real WebSocket tests in
 charge/bounce/landing, recon timing/destruction, reveal outlines, actual drone camera
 flight and vulnerable stationary body, real-map wall piercing, three-shot limit,
 kill credit, disconnect/resume and round resource cleanup.
+
+### Killjoy trainer ability kit
+
+Killjoy now has original ability art, an enabled sentinel selector entry and four
+playable abilities:
+
+- C Nanoswarm: left-click throws, right-click lobs. Two grenades per round follow
+  gravity, bounce off walls and arm after landing. Aim at an owned grenade and press
+  F to remotely activate its 4.5-second, 45-DPS swarm. Inactive grenades can be shot;
+  activated swarms cannot. Enemy inactive grenades/Alarmbots are hidden outside a
+  four-unit proximity window; the owner can see deployed devices.
+- Q Alarmbot: aim at valid ground and click to deploy. It needs owner proximity and
+  line of sight to acquire an enemy, pursues over supported map ground, then applies
+  four seconds of vulnerability to nearby enemies. Q recalls an untriggered bot with
+  a 20-second cooldown. Triggered/destroyed bots do not return until a new round.
+- E Turret: ground preview supports right-click rotation. It targets enemies within
+  its front half-circle and range, with lock-on, fresh sight reports and three-shot
+  bursts. Damage decreases with distance. E recalls it with a 20-second cooldown;
+  destruction gives a 45-second rebuild timer. Turret/Alarmbot go offline when their
+  living owner is farther than 40 units away, leaves play or enters an isolated duel.
+- X Lockdown: a destructible 200-HP device warns for 13 seconds, then detains enemies
+  within a 32-unit horizontal radius through walls for eight seconds. Detention
+  blocks attacks, utility, purchases and Spike actions while allowing slow movement.
+  Allies, isolated duel actors and invulnerable actors are excluded. It interrupts
+  vulnerable remote-control/teleport channels. Destroying it prevents detonation,
+  and the ultimate is never refunded. An already placed Lockdown can finish after
+  its owner dies.
+
+The Worker advertises `killjoy-kit-1`, owns placement/charge limits, recalls, device
+HP, active range, sight leases, bounded chase movement, damage/vulnerability, Lockdown
+clock and detention/action locks. Device damage must be backed by an unused recent
+real shot near the device. Live devices/flights replay on join and clear on round/map
+reset. Solo bots take turret/swarm damage, can become vulnerable/detained, slow down,
+and stop shooting/defusing while detained. Small bottom HUD hints replace large
+ability banners; deployed Q/E icons stay available as recall controls.
+
+As with the other kits, tuning and procedural models/effects are trainer
+approximations, not verified latest-patch values, original animations or original
+audio. Utility and ultimate economics remain simplified. Static-map placement,
+visibility and grenade contacts use client rays with server distance/trajectory/
+time checks. Alarmbot navigation is a bounded short pursuit with collision/floor
+checks, not full original pathfinding. The server owns detention duration/action
+locks; client movement applies its speed reduction. Swarm damage uses a same-floor
+radius test and reduced friendly damage. Recall uses a key tap rather than a hold.
+
+Fractional continuous damage also now caps armor absorption to incoming damage,
+including bot armor, so a tiny swarm tick cannot increase health through rounding.
+Integer firearm absorption behavior is preserved.
+
+Validation: `multiplayer/tests/killjoy.test.mjs`, real WebSocket tests in
+`multiplayer/tests/killjoy-live.test.mjs`, and `node tests/test_killjoy_browser.cjs`
+cover actual-map previews/rotation, thrown grenade contact/arming/activation,
+autonomous damage, chase/vulnerability, leash/recall/rebuild, destructible Lockdown,
+real countdown/detention locks, ally/invulnerability/realm exclusions, movement,
+fractional armor, live replay and round cleanup.

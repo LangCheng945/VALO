@@ -8,4 +8,4 @@ export function tickArmor(p,now){
  const start=Math.max(p.regenTickAt||now,p.regenReadyAt||now);p.regenTickAt=now;if(now<start)return true;
  const amount=Math.min(25-p.shield,p.shieldReserve,Math.max(0,(now-start)/1000)*REGEN_RATE);p.shield+=amount;p.shieldReserve-=amount;if(Math.abs(p.shield-25)<1e-8)p.shield=25;if(p.shieldReserve<1e-8)p.shieldReserve=0;return p.shield<25&&p.shieldReserve>0;
 }
-export function armorAbsorb(p,damage){return Math.min(p.shield||0,Math.ceil(damage*(ARMORS[p.armorType]?.absorb??.66)));}
+export function armorAbsorb(p,damage){return Math.min(Math.max(0,damage),p.shield||0,Math.ceil(damage*(ARMORS[p.armorType]?.absorb??.66)));}
