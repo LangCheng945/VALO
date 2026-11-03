@@ -558,7 +558,7 @@
                     <section id="trainer-settings" class="trainer-section">
                         <div class="section-heading"><h2><span>02</span> 調整手感</h2><small>MAKE IT YOURS</small></div>
                         <div class="trainer-settings-grid">
-                            <label>滑鼠靈敏度 <output id="sensitivity-value">0.35</output><input id="sensitivity-input" type="range" min="0.1" max="1" step="0.01" value="0.35" oninput="setTrainerSensitivity(this.value)"><small>固定 DPI，找到適合自己的手感。</small></label>
+                            <label>滑鼠靈敏度 <output id="sensitivity-value">0.35</output><input id="sensitivity-input" type="range" min="0.001" max="10" step="0.001" value="0.35" oninput="setTrainerSensitivity(this.value)"><small>固定 DPI，找到適合自己的手感。</small></label>
                             <label>畫面品質<select id="render-quality" onchange="setRenderQuality(this.value)"><option value="auto">自動 · 依效能調整</option><option value="performance">流暢 · 較低解析度</option><option value="quality">高畫質 · 較高解析度</option></select><small>卡頓時選流暢；不影響準星、介面清晰度與碰撞。</small></label>
                             <label>噴漆 · [T]<select id="spray-design" onchange="setSprayDesign(this.value)"><option value="agent">隨角色</option><option value="jett">JETT · 比心</option><option value="sage">SAGE · 讚</option><option value="gg">GG · 好局</option></select><small>近距離貼牆／地面；冷卻 3 秒，保留 30 秒。</small></label>
                             <label>遊戲時間<select id="trainer-duration" onchange="setTrainerDuration(this.value)"><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">2 分鐘</option><option value="180">3 分鐘</option><option value="300">5 分鐘 · 預設</option><option value="600">10 分鐘</option><option value="0">自由練習 · 不限時</option></select><small>單人訓練與戰術回合共用；開啟購買頁時暫停。</small></label>
@@ -716,7 +716,7 @@
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
-        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=original2';
+        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=gaia1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=phoenix1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=hands3';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=hands3';
@@ -732,6 +732,9 @@
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
+        import {loadGaiaMagazine} from './gaia-magazine.js?v=gaia1';
+        import {installSettingsImporter} from './settings-import.js?v=import1';
+        import {headshotRenderer} from './headshot-effect.js?v=head1';
         import {impactMaps,impactFlash} from './impact-assets.js?v=impact1';
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
@@ -1105,7 +1108,7 @@
         };
 
         for(const [key,data] of Object.entries(FIREARMS)){
-            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:'原版'+data.name};
+            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:(key==='vandal'?'Gaia 紅色 ':'原版')+data.name};
             if(key==='odin')Object.assign(WEAPONS[key],{fireRate:83,fullAutoFireRate:64});
         }
         Object.values(WEAPONS).forEach(weapon => {
@@ -1234,8 +1237,8 @@
         }
         window.setTrainerSensitivity=function(value) {
             const parsed=Number(value);if(!Number.isFinite(parsed))return;
-            state.sensitivity=Math.max(.1,Math.min(1,parsed));
-            document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);saveTrainingData();
+            state.sensitivity=Math.max(.001,Math.min(10,parsed));
+            document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(3);saveTrainingData();
         };
         window.setTrainerDuration=function(value) {
             if(currentRoomId){networkFeedback('請先離開好友房間，再設定單人訓練');return;}
@@ -1689,7 +1692,7 @@
                 if(!mesh || state.weaponKey!==wpnKey || !gunGroup.children.includes(rig))return;
                 for(const child of placeholder){rig.remove(child);child.geometry?.dispose();if(child.material&&![darkMetal,gunSteel,skinAccent,glowMat].includes(child.material))child.material.dispose();}
                 const originalBox=styleWeaponMesh(mesh,wpnKey,{paint:darkMetal,steel:gunSteel,rubber:rubberMat});
-                if(mesh.geometry.userData.originalSkin){skinAccent.map=darkMetal.map;skinAccent.emissiveMap=null;skinAccent.emissive.setHex(0);skinAccent.needsUpdate=true;}rig.add(mesh);gunMagazineMesh=originalBox||createMagazine(wpnKey,skinAccent,gunSteel);rig.add(gunMagazineMesh);
+                if(mesh.geometry.userData.originalSkin){skinAccent.map=darkMetal.map;skinAccent.emissiveMap=null;skinAccent.emissive.setHex(0);skinAccent.needsUpdate=true;}rig.add(mesh);gunMagazineMesh=originalBox||createMagazine(wpnKey,skinAccent,gunSteel);rig.add(gunMagazineMesh);if(wpnKey==='vandal'){const fallback=gunMagazineMesh;loadGaiaMagazine(darkMetal).then(part=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig)||gunMagazineMesh!==fallback){disposeViewmodel(part);return;}rig.remove(fallback);disposeViewmodel(fallback);gunMagazineMesh=part;rig.add(part);}).catch(error=>console.warn('Gaia magazine fallback',error));}
                 muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
             }).catch(error=>console.warn('Weapon model fallback',error));
         }
@@ -2328,6 +2331,7 @@
         /********************************************************************
          * 8. VFX POOLS: WALL DECALS, SHELL EJECTION, BLOOD/SPARKS, SMOKES
          ********************************************************************/
+        const sourceHeadshots=headshotRenderer(scene,camera);
         const activeTracers = [];
         const wallDecals = [];
         const ejectedShells = [];
@@ -2368,8 +2372,9 @@
         }
 
         function createImpactBurst(pos, isHeadshot, isBlood) {
+            if(isHeadshot)sourceHeadshots.spawn(pos,'head',performance.now());
             const burst=impactFlash(pos,isHeadshot?0xc8fff0:isBlood?0xff8e80:0xffd696,camera);scene.add(burst);ejectedShells.push({mesh:burst,vel:new THREE.Vector3(),life:.14,maxLife:.14});
-            const count = isHeadshot ? 12 : 5;
+            const count = isHeadshot ? 0 : 5;
             const color = isHeadshot ? 0x00F5D4 : (isBlood ? 0xFF4655 : 0xffbe0b);
             for (let i = 0; i < count; i++) {
                 const p = new THREE.Mesh(
@@ -2941,7 +2946,7 @@
         const reconApi={...killjoyKit.api,ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z)),clearMotion:(a,b)=>{const o=new THREE.Vector3(a.x,a.y+.6,a.z),d=new THREE.Vector3(b.x,b.y+.6,b.z).sub(o),len=d.length();return len<.001||!new THREE.Raycaster(o,d.normalize(),0,len+.25).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,dartTargets:()=>sovaKit.api.targets(),health:updateHealthHUD,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);setScope(false);},tether:p=>{const next=yawObject.position.clone();next.x=p.x;next.z=p.z;if(!checkPlayerCollision(next)){yawObject.position.x=p.x;yawObject.position.z=p.z;}},tetherBot:(b,p)=>{const next=b.group.position.clone();next.x=p.x;next.z=p.z;if(botNavigation?.step(b.group.position,next,v=>checkPlayerCollision(v,0,true)))b.group.position.copy(next);},clearLine:(a,b)=>{if(neonKit.blocksLine(a,b)||viperKit.blocksLine(a,b)||astraKit.audioScale(a,b)<1)return false;const origin=new THREE.Vector3(a.x,a.y,a.z),end=new THREE.Vector3(b.x,b.y,b.z),delta=end.clone().sub(origin),len=delta.length(),line=new THREE.Line3(origin,end);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceTo(s.mesh.position)<(s.mesh.userData.smokeRadius||4.2)*s.mesh.scale.x))return false;return len<.001||!new THREE.Raycaster(origin,delta.normalize(),0,Math.max(0,len-.3)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}};
         const fadeKit=new ReconKit('fade',reconApi),skyeKit=new ReconKit('skye',reconApi);
         function cancelReconInput(){fadeKit.cancel();skyeKit.cancel();if(skyeKit.busy())skyeKit.endControl();}
-        function clearFieldObjects(){fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        function clearFieldObjects(){sourceHeadshots.clear();fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -3578,16 +3583,19 @@
         document.addEventListener('pointerlockerror',()=>{if(!immersiveEntryPending){showBuyMenu();abilityNotice('請再次點擊「進入戰場」鎖定滑鼠');}});
 
         document.addEventListener('mousemove', (e) => {
+            if(state.settingsImportOpen)return;
             if(!state.isLocked||state.inBuyMenu)return;if(skyeKit.mouseMove(e))return;if(astraKit.mouseMove(e))return;if(cypherKit.mouseMove(e))return;if(sovaKit.mouseMove(e))return;if(brimKit.mouseMove(e))return;if(omenKit.mouseMove(e))return;if(cloveKit.mouseMove(e))return;
             if(state.hp<=0)return;
             const zoom = WEAPONS[state.weaponKey].zoomLevels?.[state.scopeLevel - 1] || 1;
-            const sens = 0.006 * state.sensitivity / zoom;
+            const multiplier=state.isScoped?(FIREARMS[state.weaponKey]?.category==='sniper'?(state.scopedSensitivity||1):(state.adsSensitivity||1)):1;
+            const sens = (state.importedSensitivity?Math.PI/180*.07:.006) * state.sensitivity * multiplier / zoom;
             yawObject.rotation.y -= e.movementX * sens;
             pitchObject.rotation.x -= e.movementY * sens;
             pitchObject.rotation.x = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, pitchObject.rotation.x));
         });
 
         document.addEventListener('mousedown', (e) => {
+            if(state.settingsImportOpen)return;
             if (state.inBuyMenu || !state.isLocked) return;
             if (document.pointerLockElement !== renderer.domElement && e.target === renderer.domElement) {
                 safeRequestPointerLock();
@@ -3636,6 +3644,7 @@
         const chatInput = document.getElementById('chat-input');
 
         document.addEventListener('keydown', (e) => {
+            if(state.settingsImportOpen)return;
             const code = e.code;
             if(e.repeat&&['KeyB','KeyC','KeyQ','KeyE','KeyX','KeyY','KeyF','KeyT','KeyG'].includes(code))return;
 
@@ -3971,6 +3980,7 @@
         }
 
         function updateBotsAndVFX(dt) {
+            sourceHeadshots.update(performance.now());
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
             abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
@@ -4439,10 +4449,11 @@
         window.onload = async function () {
             document.body.classList.toggle('is-training',state.gameMode!=='tactical');
             document.getElementById('sensitivity-input').value=state.sensitivity;
-            document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(2);
+            document.getElementById('sensitivity-value').textContent=state.sensitivity.toFixed(3);
             document.getElementById('trainer-duration').value=state.trainingDuration;
             renderTrainingStats();
             updateShopUI();
+            installSettingsImporter({state,setSensitivity:window.setTrainerSensitivity});
             animate();
             await loadActualMap();
             const room=new URLSearchParams(location.search).get('room');

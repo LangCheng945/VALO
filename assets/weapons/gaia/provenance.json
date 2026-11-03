@@ -1,0 +1,12 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourcePath": "app/mods/aim-viewmodel",
+  "files": [
+    "viewmodel.json",
+    "viewmodel.bin",
+    "gaia-vandal-red.png"
+  ],
+  "processing": "Static gun and detachable magazine positions/normals/indices and original UV/albedo retained. Existing local reload control and finger pose adaptation remain.",
+  "credit": "Gaia Vandal game design/assets belong to Riot Games; community-packed source open-aim."
+}

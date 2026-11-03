@@ -1,0 +1,11 @@
+# Gaia Vandal, settings import and headshot effects
+
+Vandal is fixed to the red Gaia variant from the pinned open-aim `app/mods/aim-viewmodel` package. Static gun geometry (3,856 vertices / 4,068 triangles), source UV/albedo and the matching detachable magazine are retained. Existing ammunition, reload controls and firearm damage remain in use; complete source rig clips and a Gaia kill finisher are not implemented. Provenance is recorded in `assets/weapons/gaia/provenance.json`.
+
+The local `RiotUserSettings.ini` importer adapts the pinned `app/valorant-import.js` parser, retained under `vendor/open-aim` with its MIT license. Files are size/name checked, decoded as UTF-8 or BOM-marked UTF-16, parsed in the browser and never submitted to the server. Previewing changes does not apply them. Users can select a saved crosshair profile, apply supported values and undo the last apply in the current dialog session. Supported values persist in browser localStorage and restore at startup.
+
+Supported values are mouse sensitivity, ADS/scoped multipliers, and primary crosshair color/dot/static inner/outer line parameters. Imported sensitivity uses 0.07 degrees per mouse count times the saved sensitivity and local zoom/multiplier adaptation. This does not guarantee identical physical movement across DPI/browser acceleration/FOV. Dynamic crosshair error, independent ADS/sniper crosshair styles, keybinds, video, audio and other settings are not applied. Missing saved values preserve the current setting.
+
+The headshot renderer is adapted from the repository author's `app/headshot-effects.js` under the same MIT license. Its contact star, ten-frame red plume and sparks are authored effects, not verified original Riot effects. World camera pose is supplied to the renderer; live particles are capped at 96, expire, dispose private materials/textures, and clear on field reset.
+
+Validation: parser tests reject unrelated/oversized/duplicate files and invalid numeric values; Chrome checks Gaia geometry/materials and matching magazine, import preview/apply/undo/persistence, static crosshair mapping and headshot rendering/expiry. Existing first-person regression verifies timed reload/ammunition and switching.
