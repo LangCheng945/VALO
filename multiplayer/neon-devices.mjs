@@ -1,3 +1,4 @@
+import{damageRazeDevice}from'./raze-events.mjs';
 import{damageCypherDevice}from'./cypher-events.mjs';
 import{damageKilljoyDevice}from'./killjoy-events.mjs';
 import{damageSovaObject}from'./sova-events.mjs';
@@ -8,6 +9,9 @@ import{REYNA}from'./reyna-rules.mjs';
 // A beam pulse has one target. Device selection never supplies damage or HP.
 export function beamDevice(room,selection,origin,direction,range,now){
  if(!selection||typeof selection.id!=='string')return null;
+ if(selection.kind==='raze'){
+  const e=room.razeEffects?.devices.find(e=>e.id===selection.id&&e.hp>0&&e.expiresAt>now);if(!e)return null;const point={x:e.x,y:e.y+(e.kind==='bot'?.3:.08),z:e.z},dx=point.x-origin.x,dy=point.y-origin.y,dz=point.z-origin.z,along=dx*direction.dx+dy*direction.dy+dz*direction.dz;if(along<0||along>range||Math.hypot(dx-along*direction.dx,dy-along*direction.dy,dz-along*direction.dz)>(e.kind==='bot'?.55:.3))return null;return{id:e.id,kind:'raze',point};
+ }
  if(selection.kind==='barrier'){
   const w=liveBarriers(room,now).find(e=>e.id===selection.id),i=selection.segment;if(!w||!Number.isInteger(i)||i<0||i>=4)return null;advanceBarrier(w,now);if(!w.hp[i])return null;
   const c=segmentPosition(w,i),cos=Math.cos(w.yaw),sin=Math.sin(w.yaw),dx=origin.x-c.x,dz=origin.z-c.z;
@@ -35,6 +39,7 @@ export function beamDevice(room,selection,origin,direction,range,now){
  return best?{id:e.id,kind:selection.kind,point:best.point}:null;
 }
 export async function damageBeamDevice(room,target,damage,now){
+ if(target.kind==='raze')return damageRazeDevice(room,target.id,damage,now);
  if(target.kind==='barrier')return damageBarrierSegment(room,target.id,target.segment,damage,now);
  if(target.kind==='reyna')return damageReynaEye(room,target.id,damage,now);
  if(target.kind==='sova-recon'||target.kind==='sova-drone')return damageSovaObject(room,target,damage,now);

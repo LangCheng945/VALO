@@ -63,7 +63,7 @@ const catalog={
   "name": "Astra",
   "model": "astra",
   "role": "控場者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -259,7 +259,7 @@ const catalog={
   "name": "Raze",
   "model": "raze",
   "role": "決鬥者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
