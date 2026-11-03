@@ -5,7 +5,7 @@ let manifestPromise;
 export async function loadWeaponModel(key,material) {
  if(!/^[a-z]+$/.test(key))return null;
  if(!cache.has(key))cache.set(key,(async()=>{
-  const manifest=await (manifestPromise ||= fetch('./assets/weapons/manifest.json?v=armory1').then(r=>{if(!r.ok)throw Error('Weapon manifest');return r.json()}));
+  const manifest=await (manifestPromise ||= fetch('./assets/weapons/manifest.json?v=original2').then(r=>{if(!r.ok)throw Error('Weapon manifest');return r.json()}));
   const m=manifest[key];if(!m)throw Error('Unknown weapon');const response=await fetch(`./assets/weapons/${key}.bin`);if(!response.ok)throw Error(`Weapon ${key}`);
   const b=await response.arrayBuffer();if(b.byteLength!==m.vertices*24+m.indices*4)throw Error('Invalid weapon geometry');
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b,0,m.vertices*3),3));
@@ -13,7 +13,7 @@ export async function loadWeaponModel(key,material) {
   g.setIndex(new THREE.BufferAttribute(new Uint32Array(b,m.vertices*24,m.indices),1));
   const uv=new Float32Array(m.vertices*2),pos=g.attributes.position.array;
   for(let i=0;i<m.vertices;i++){uv[i*2]=(pos[i*3]-m.bounds[0][0])/(m.bounds[0][1]-m.bounds[0][0]);uv[i*2+1]=(pos[i*3+2]-m.bounds[2][0])/(m.bounds[2][1]-m.bounds[2][0]);}
-  if(['vandal','phantom','classic','operator'].includes(key)){const r=await fetch(`./assets/weapons/${key}.uv.bin`);if(!r.ok)throw Error('Original UV '+key);const bytes=await r.arrayBuffer();if(bytes.byteLength!==m.vertices*8)throw Error('Invalid original UV');uv.set(new Float32Array(bytes));g.userData.originalSkin=true;}
+  if(m.originalSkin){const r=await fetch(`./assets/weapons/${key}.uv.bin`);if(!r.ok)throw Error('Original UV '+key);const bytes=await r.arrayBuffer();if(bytes.byteLength!==m.vertices*8)throw Error('Invalid original UV');uv.set(new Float32Array(bytes));g.userData.originalSkin=true;}
   g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.computeBoundingSphere();g.userData.sharedWeaponGeometry=true;return g;
  })().catch(e=>{cache.delete(key);throw e}));
  const geometry=await cache.get(key);if(geometry.userData.originalSkin){let texture=originalTextures.get(key);if(!texture){texture=await new THREE.TextureLoader().loadAsync(`./assets/weapons/${key}.original.png`);texture.encoding=THREE.sRGBEncoding;texture.flipY=false;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;originalTextures.set(key,texture);}material.map=texture;material.emissiveMap=null;material.emissive?.setHex(0);material.color?.setHex(0xffffff);material.roughness=.65;material.metalness=.25;material.needsUpdate=true;}const mesh=new THREE.Mesh(geometry,material);mesh.name=`detailed-${key}`;

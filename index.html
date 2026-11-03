@@ -716,7 +716,7 @@
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
-        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=original1';
+        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=original2';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=jett1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=hands3';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=hands3';
@@ -1104,7 +1104,7 @@
         };
 
         for(const [key,data] of Object.entries(FIREARMS)){
-            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:(['vandal','phantom','classic','operator'].includes(key)?'原版':'神罰')+data.name};
+            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:'原版'+data.name};
             if(key==='odin')Object.assign(WEAPONS[key],{fireRate:83,fullAutoFireRate:64});
         }
         Object.values(WEAPONS).forEach(weapon => {

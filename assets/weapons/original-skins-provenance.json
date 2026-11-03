@@ -1,0 +1,130 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourcePaths": [
+    "site/aim-weapons",
+    "site/aim-viewmodel"
+  ],
+  "processing": "Original UVs retained; multi-texture weapons use repeated source tiles packed into slots. Atlas tiles resized to 512px. Null-texture lens parts receive a neutral dark swatch. Geometry unchanged.",
+  "weapons": {
+    "odin": {
+      "sourceMesh": "odin.bin",
+      "textures": [
+        "odin.gun.png",
+        "odin.bullets.png"
+      ],
+      "sourceSha256": "36a136235965021268fc0d794f4d13f311ef1f78d250ac3c3728b3231056d1a7",
+      "slots": 2
+    },
+    "shorty": {
+      "sourceMesh": "shorty.bin",
+      "textures": [
+        "shorty.gun.png"
+      ],
+      "sourceSha256": "188512f4a86cc517415cbcbe663c8a2cc2067b8e8c7e3dfef91a51a2e39bb448",
+      "slots": 1
+    },
+    "frenzy": {
+      "sourceMesh": "frenzy.bin",
+      "textures": [
+        "frenzy.gun.png"
+      ],
+      "sourceSha256": "022a890e8c58e5f1ebf1b67a43e647d4d4f0e6cdbfd401cafdc752eee66d1829",
+      "slots": 1
+    },
+    "ghost": {
+      "sourceMesh": "ghost.bin",
+      "textures": [
+        "ghost.gun.png",
+        "ghost.silencer.png"
+      ],
+      "sourceSha256": "8d210babbd1565e0e9aaaed5f302f82f542acce2063b8dcf8ac75e9f375afb18",
+      "slots": 2
+    },
+    "sheriff": {
+      "sourceMesh": "sheriff.bin",
+      "textures": [
+        "sheriff.gun.png"
+      ],
+      "sourceSha256": "c4c06d51bb99a88dcb669f0daf927d5b281646e661aa84b79e50da688ac04ccd",
+      "slots": 1
+    },
+    "stinger": {
+      "sourceMesh": "stinger.bin",
+      "textures": [
+        "stinger.gun.png"
+      ],
+      "sourceSha256": "af677c278dceac4a74ea51f76ee7da725825c6ba85874d5dc90ede65f5c95fa3",
+      "slots": 1
+    },
+    "spectre": {
+      "sourceMesh": "spectre.bin",
+      "textures": [
+        "spectre.gun.png"
+      ],
+      "sourceSha256": "ca708f5c74cd8c0e040262b1d19735d807100ea8bea28bcb85a6f844e67c9733",
+      "slots": 1
+    },
+    "bucky": {
+      "sourceMesh": "bucky.bin",
+      "textures": [
+        "bucky.gun.png"
+      ],
+      "sourceSha256": "58f7fbcc57dd752ca5fe99641ee69857d82464ba45d5b08fbeb95bb4d2216eeb",
+      "slots": 1
+    },
+    "judge": {
+      "sourceMesh": "judge.bin",
+      "textures": [
+        "judge.gun.png"
+      ],
+      "sourceSha256": "2a4a2b8d47a898402536552587690cf89453b3f6fa43b20e41daf91d4a9a88af",
+      "slots": 1
+    },
+    "bulldog": {
+      "sourceMesh": "bulldog.bin",
+      "textures": [
+        "bulldog.gun.png"
+      ],
+      "sourceSha256": "d1651a819678cb7a55cecdef3557cebaf7fded235330fde509a2dee8f1104ddf",
+      "slots": 1
+    },
+    "guardian": {
+      "sourceMesh": "guardian.bin",
+      "textures": [
+        "guardian.gun.png"
+      ],
+      "sourceSha256": "a59755c0e0951aad15454e4e6ac1ba4467f9f63489a601d5336f3b52cf3862f9",
+      "slots": 1
+    },
+    "marshal": {
+      "sourceMesh": "marshal.bin",
+      "textures": [
+        "marshal.gun.png",
+        "marshal.scope.png",
+        null
+      ],
+      "sourceSha256": "28e14d24fb5c54ced9faa3f994227981b5d84f9d1b0a970ac16a1a535d4a737c",
+      "slots": 3
+    },
+    "outlaw": {
+      "sourceMesh": "outlaw.bin",
+      "textures": [
+        "outlaw.gun.png",
+        "outlaw.scope.png",
+        null,
+        "outlaw.bullets.png"
+      ],
+      "sourceSha256": "59bd85c195b7f85261b13ca8534ea4f997fd90a39b3a77d4295e529186cd4d90",
+      "slots": 4
+    },
+    "ares": {
+      "sourceMesh": "ares.bin",
+      "textures": [
+        "ares.gun.png"
+      ],
+      "sourceSha256": "8a4351096e4988f31d792a6dd15dfac4038dcf6009885e198e7bf578a42b3e5d",
+      "slots": 1
+    }
+  }
+}
