@@ -1,3 +1,4 @@
+import {neonDeath} from './neon-rules.mjs';
 import {cypherDeath} from './cypher-rules.mjs';
 import {killjoyDeath} from './killjoy-rules.mjs';
 import {sovaDeath} from './sova-rules.mjs';
@@ -38,7 +39,7 @@ export async function cloveEvent(room,ws,p,m,now){
  }else return true;
  room.save(ws,p);await persist(room);room.snapshot();await room.ctx.storage.setAlarm(now+100);return true;
 }
-export function recordCloveDeath(p,now){p.lastDeathAt=now;cypherDeath(p);killjoyDeath(p);sovaDeath(p);reynaDeath(p);p.stimUntil=0;p.nearsightUntil=0;p.deafenedUntil=0;if(p.agent==='clove')cloveDeath(p,now);p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
+export function recordCloveDeath(p,now){p.lastDeathAt=now;neonDeath(p);cypherDeath(p);killjoyDeath(p);sovaDeath(p);reynaDeath(p);p.stimUntil=0;p.nearsightUntil=0;p.deafenedUntil=0;if(p.agent==='clove')cloveDeath(p,now);p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
 export function awardCloveContributors(room,killer,victim,now){
  awardTakedown(killer,victim,now);
  for(const socket of room.sockets()){const contributor=room.data(socket);if(contributor?.uid===killer.uid||contributor?.team!==killer.team)continue;if(now-(victim.damageContributors?.[contributor.uid]||0)<=CLOVE.assistWindowMs){awardTakedown(contributor,victim,now);room.save(socket,contributor);}}

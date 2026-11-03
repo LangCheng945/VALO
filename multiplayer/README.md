@@ -210,3 +210,14 @@ join, with server charge/HP/leash/cooldown bounds, fresh sight leases, bounded c
 autonomous damage and Lockdown detention/action locks. The shared ability damage
 path preserves armor, vulnerability, Iso shields and kill/death credit. Map rays and
 path contact remain client-reported; see the root README for trainer limitations.
+
+## Neon trainer kit
+
+`neon-kit-1` adds synchronized Fast Lane paths, a bouncing Relay Bolt with delayed
+concussions, energy-based High Gear/slide charges and Overdrive beam/battery/kill
+refresh. The Worker rejects firearm and Spike actions while electric equipment
+or sprint/slide is active. Lifecycle reset interrupts these actions. Numeric
+values are trainer tuning, and full static map collision remains on the client.
+See `../docs/neon-abilities.md` for controls, research and remaining limits.
+
+Checks: `VALO_TEST_SERVER=http://127.0.0.1:8790 node --test tests/neon*.test.mjs`.

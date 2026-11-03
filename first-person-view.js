@@ -1,4 +1,4 @@
-import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=cypher1';
+import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=neon1';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
@@ -31,9 +31,9 @@ function makeHand(side,materials,open=false){
  root.add(ellipsoid(new T.Vector3(0,.014,.012),[.043,.011,.049],materials.glove));
  const lengths=[.069,.079,.073,.057];
  for(let i=0;i<4;i++){
-  const x=(i-1.5)*.023,z=-.042+Math.abs(i-1.4)*.006,l=lengths[i],curl=open?.12:1;
+  const x=(i-1.5)*.023,z=-.042+Math.abs(i-1.4)*.006,l=lengths[i],extended=open===true||open==='point'&&i===0,curl=extended?.12:1;
   const points=[new T.Vector3(x,0,z),new T.Vector3(x, -.010*curl,z-l*.47),new T.Vector3(x,-.035*curl,z-l*.72),new T.Vector3(x,-.053*curl,z-l*.47)];
-  if(open){points[2].z=z-l*.78;points[3].z=z-l;points.forEach((p,j)=>p.x+=side*(i-1.5)*j*.002);}
+  if(extended){points[2].z=z-l*.78;points[3].z=z-l;points.forEach((p,j)=>p.x+=side*(i-1.5)*j*.002);}
   root.add(ellipsoid(points[0],[.011,.012,.012],materials.glove));
   for(let j=0;j<3;j++){const radius=.0105-j*.0012;root.add(beam(points[j],points[j+1],radius,radius*.93,j===0?materials.glove:materials.skin));root.add(ellipsoid(points[j+1],[radius*.93,radius*.93,radius*.93],materials.skin));}
  }
@@ -49,6 +49,7 @@ const profiles={
  operator:{right:[.285,-.365,-.34],left:[.202,-.270,-.79],mag:[.25,-.300,-.55]},
  odin:{right:[.315,-.365,-.34],left:[.16,-.285,-.78],mag:[.25,-.45,-.51]},
  melee:{right:[.31,-.24,-.63],left:[-.17,-.39,-.50],mag:[0,0,0]},
+ overdrive:{right:[.18,-.22,-.70],left:[-.32,-.35,-.50],mag:[0,0,0]},
  orb:{right:[.29,-.26,-.68],left:[-.10,-.26,-.68],mag:[0,0,0]},
  bladestorm:{right:[.30,-.30,-.55],left:[-.30,-.30,-.55],mag:[0,0,0]}
 };
@@ -73,7 +74,7 @@ export class FirstPersonHands{
   const sleeve=new T.MeshStandardMaterial({color:sage?0x546761:0x08171b,roughness:.94});const cuff=new T.MeshStandardMaterial({color:sage?0x0e7566:0x21616a,roughness:.65,metalness:.12});
   this.materials={skin,glove,sleeve,cuff};for(const m of Object.values(this.materials))m.color.convertSRGBToLinear();this.arms=[];
   for(const side of [-1,1]){
-   const hand=makeHand(side,this.materials,key==='orb'||key==='bladestorm'||key==='melee'&&side<0);hand.userData.side=side;this.root.add(hand);
+   const hand=makeHand(side,this.materials,key==='overdrive'&&side>0?'point':key==='orb'||key==='bladestorm'||key==='melee'&&side<0);hand.userData.side=side;this.root.add(hand);
    const arm=new T.Group();arm.name=side<0?'left-tailored-sleeve':'right-tailored-sleeve';
    const sleeveMesh=new T.Mesh(forearmGeometry(),sleeve);arm.add(sleeveMesh);
    const end=new T.Mesh(new T.CylinderGeometry(.036,.037,.035,12),cuff);arm.add(end);

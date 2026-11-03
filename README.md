@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova/Killjoy/Cypher remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova/Killjoy/Cypher/Neon remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -713,3 +713,15 @@ approximations. [Sources, controls and limits](docs/cypher-abilities.md),
 
 Validation: `multiplayer/tests/cypher.test.mjs`, `cypher-live.test.mjs` against
 Wrangler, and `node tests/test_cypher_browser.cjs` against the actual Ascent mesh.
+
+### Neon trainer kit
+
+Neon now has Fast Lane (twin vision-blocking electric walls), Relay Bolt
+(one bounce, two delayed concussions), High Gear (energy-based sprint/right-click
+slide) and Overdrive (pointing-hand electric attacks, kill refresh and weapon
+switch/re-equip). The Worker advertises `neon-kit-1`. Existing Neon icons/model
+are reused; skill effects and the hand pose are authored locally.
+
+[Controls, research, tuning and remaining limits](docs/neon-abilities.md).
+Validation: `multiplayer/tests/neon.test.mjs`, real peers in `neon-live.test.mjs`,
+and actual Ascent inputs in `node tests/test_neon_browser.cjs`.

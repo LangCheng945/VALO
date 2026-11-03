@@ -231,12 +231,12 @@ const catalog={
   "name": "Neon",
   "model": "neon",
   "role": "決鬥者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
-   "skin": 11636085,
-   "glove": 2502970,
-   "sleeve": 5135467,
-   "cuff": 7509647
+   "skin": 11827288,
+   "glove": 1586011,
+   "sleeve": 1980784,
+   "cuff": 6678517
   }
  },
  "omen": {
