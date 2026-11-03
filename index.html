@@ -174,7 +174,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=neon1">
+    <link rel="stylesheet" href="./shop.css?v=neon2">
 </head>
 <body class="relative select-none">
 
@@ -693,29 +693,29 @@
         <div class="agent-picker-roster"><div class="agent-picker-tools"><div id="agent-role-filters" role="group" aria-label="角色定位篩選"></div><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
-        import {NeonKit} from './neon-view.js?v=neon1';
-        import {NEON,neonDeath} from './multiplayer/neon-rules.mjs?v=neon1';
-        import {CypherKit} from './cypher-view.js?v=neon1';
-        import {cypherDeath} from './multiplayer/cypher-rules.mjs?v=neon1';
-        import {KilljoyKit} from './killjoy-view.js?v=neon1';
-        import {KJ,detained,killjoyDeath} from './multiplayer/killjoy-rules.mjs?v=neon1';
-        import {SovaKit} from './sova-view.js?v=neon1';
-        import {SOVA,sovaDeath} from './multiplayer/sova-rules.mjs?v=neon1';
-        import {ReynaKit} from './reyna-view.js?v=neon1';
-        import {REYNA,reynaBusy,reynaDismissed,empressActive,reynaDeath} from './multiplayer/reyna-rules.mjs?v=neon1';
-        import {BrimstoneKit} from './brimstone-view.js?v=neon1';
-        import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon1';
-        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=neon1';
+        import {NeonKit} from './neon-view.js?v=neon2';
+        import {NEON,neonDeath} from './multiplayer/neon-rules.mjs?v=neon2';
+        import {CypherKit} from './cypher-view.js?v=neon2';
+        import {cypherDeath} from './multiplayer/cypher-rules.mjs?v=neon2';
+        import {KilljoyKit} from './killjoy-view.js?v=neon2';
+        import {KJ,detained,killjoyDeath} from './multiplayer/killjoy-rules.mjs?v=neon2';
+        import {SovaKit} from './sova-view.js?v=neon2';
+        import {SOVA,sovaDeath} from './multiplayer/sova-rules.mjs?v=neon2';
+        import {ReynaKit} from './reyna-view.js?v=neon2';
+        import {REYNA,reynaBusy,reynaDismissed,empressActive,reynaDeath} from './multiplayer/reyna-rules.mjs?v=neon2';
+        import {BrimstoneKit} from './brimstone-view.js?v=neon2';
+        import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
+        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=neon2';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=neon1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=neon2';
         import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
-        import {AgentPreview} from './agent-preview.js?v=neon1';
-        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon1';
-        import {SpectatorView} from './spectator-view.js?v=neon1';
+        import {AgentPreview} from './agent-preview.js?v=neon2';
+        import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon2';
+        import {SpectatorView} from './spectator-view.js?v=neon2';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
@@ -724,13 +724,13 @@
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
-        import {OmenKit,makeOmenSmoke} from './omen-view.js?v=neon1';
-        import {OMEN,omenShadow} from './multiplayer/omen-rules.mjs?v=neon1';
-        import {IsoKit} from './iso-view.js?v=neon1';
-        import {sameRealm} from './multiplayer/iso-rules.mjs?v=neon1';
-        import {CloveKit} from './clove-view.js?v=neon1';
-        import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=neon1';
-        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=neon1';
+        import {OmenKit,makeOmenSmoke} from './omen-view.js?v=neon2';
+        import {OMEN,omenShadow} from './multiplayer/omen-rules.mjs?v=neon2';
+        import {IsoKit} from './iso-view.js?v=neon2';
+        import {sameRealm} from './multiplayer/iso-rules.mjs?v=neon2';
+        import {CloveKit} from './clove-view.js?v=neon2';
+        import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=neon2';
+        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=neon2';
         import {FollowTrail,BotDefuseController} from './bot-tactics.mjs?v=tactics1';
         import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
@@ -743,8 +743,8 @@
         import {selectMultiplayerServer} from './server-discovery.mjs?v=domain1';
         import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
         import {FIREARMS,FIREARM_KEYS,isSidearm,firearmDamage} from './multiplayer/firearms.mjs?v=armory1';
-        import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=neon1';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=neon1';
+        import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=neon2';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=neon2';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -2917,7 +2917,7 @@
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
         const cypherKit=new CypherKit({...killjoyKit.api,corpses:()=>corpses,dartTargets:()=>sovaKit.api.targets(),stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},tether:p=>{yawObject.position.x=p.x;yawObject.position.z=p.z;},smoke:(e,mesh)=>{if(smokeSpheres.some(s=>s.id===e.id)){disposeEffect(mesh);return;}mesh.position.set(e.x,e.y+2.3,e.z);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'cypher',life:7.25,createdAt:e.activeUntil-7250-offset,expiresAt:e.activeUntil-offset});}});
-        const neonKit=new NeonKit({...killjoyKit.api,ammo:updateAmmoHUD,dartTargets:()=>sovaKit.api.targets(),grounded:()=>canJump&&!state.climbingRope,moveDirection:()=>{const x=Number(moveState.right)-Number(moveState.left),z=Number(moveState.backward)-Number(moveState.forward),d=new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);if(d.length()<.01)return null;return d.normalize();},clearStatic:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),length=d.length();return length<.001||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,length-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
+        const neonKit=new NeonKit({...killjoyKit.api,hitDevice:(mesh,damage)=>cypherKit.hitObject(mesh,damage)||killjoyKit.hitObject(mesh,damage),ammo:updateAmmoHUD,dartTargets:()=>sovaKit.api.targets(),grounded:()=>canJump&&!state.climbingRope,moveDirection:()=>{const x=Number(moveState.right)-Number(moveState.left),z=Number(moveState.backward)-Number(moveState.forward),d=new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);if(d.length()<.01)return null;return d.normalize();},clearStatic:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),length=d.length();return length<.001||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,length-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
         function clearFieldObjects(){neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});

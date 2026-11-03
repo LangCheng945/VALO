@@ -1,5 +1,5 @@
-import{BRIM,brimState,resetBrim,flightPoint,inBrimArea,stimActive}from'./multiplayer/brimstone-rules.mjs?v=neon1';
-import{makeBrimSmoke,disposeEffect}from'./ability-effects.js?v=neon1';
+import{BRIM,brimState,resetBrim,flightPoint,inBrimArea,stimActive}from'./multiplayer/brimstone-rules.mjs?v=neon2';
+import{makeBrimSmoke,disposeEffect}from'./ability-effects.js?v=neon2';
 const T=globalThis.THREE;
 export class BrimstoneKit{
  constructor(api){this.api=api;this.areas=new Map();this.flights=new Map();this.mode=null;this.points=[];this.cursor={x:260,y:260};this.pendingUntil=0;

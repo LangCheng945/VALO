@@ -21,8 +21,21 @@ The Worker advertises `neon-kit-1`, restores active walls/bolts/stun warnings to
 
 ## Limits
 
-There is no complete server map collider; existing client-owned movement and static line-of-sight reports remain bounded rather than fully authoritative. The electric beam currently damages actors; unlike firearm shots, it does not yet damage placed cameras, tripwires, turrets or other ability props. Third-person gun visibility follows sprint/slide/Overdrive, but its avatar pose still uses the existing character animation set. Spectator weapon models do not recreate Neon's local electric hand pose. Numeric values and timing are trainer adaptations, not latest competitive balancing claims.
+There is no complete server map collider; existing client-owned movement and static line-of-sight reports remain bounded rather than fully authoritative. The electric beam now damages actors plus Cypher cameras/wire endpoints and Killjoy turret/alarm/nanoswarm/lockdown devices. Device hits use one fixed-damage pulse, share existing destruction/cooldown logic and cannot also damage an actor behind the prop. Active Nanoswarm is not destructible. Other prop families (such as Sova/Leer/barrier sections) are not yet supported by the electric beam. Third-person gun visibility and lightweight hand/ankle electric rings follow sprint/slide/Overdrive; effects are removed on unequip, death, realm isolation and disconnect. The avatar pose still uses the existing character animation set. Spectator weapon models do not recreate Neon's local electric hand pose. Numeric values and timing are trainer adaptations, not latest competitive balancing claims.
 
 ## Checks
 
 `multiplayer/tests/neon.test.mjs` checks energy/regen, finite wall intersection, charge limits, two contacts, delayed concussion, beam aim/rate/battery/damage, kill refresh and reset. `neon-live.test.mjs` checks real WebSocket synchronization and overlapping firearm rejection. `tests/test_neon_browser.cjs` uses actual Ascent geometry and keyboard/mouse input for slide/collision, wall vision, bouncing stuns, electric hands, actor ray hits, kill refresh, HUD, switching and expiry.
+
+## Device-hit extension
+
+`neon-props-1` advertises beam damage to supported props. The client reports the
+first actual collider struck; the Worker resolves a known device ID, bounds the
+ray/range, and applies the fixed pulse once. Unknown, expired, off-ray or active
+Nanoswarm targets cannot take damage. Client static-world occlusion remains a
+limitation; the Worker does not have the complete map mesh.
+
+`neon-devices.mjs` resolves target geometry. Destruction uses the same Cypher and
+Killjoy helpers as firearm hits, so camera control, wire release and rebuild
+cooldowns remain consistent. Tests include foreground-prop interception, no
+double actor damage, camera cancellation and turret rebuild via real peers.

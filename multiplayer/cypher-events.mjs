@@ -16,13 +16,15 @@ const publish=(r,e)=>emit(r,{...e,type:'cypher_device'});
 export const liveCypherEffects=(r,n)=>{const e=cypherEffects(r);return{devices:e.devices.filter(d=>!d.expiresAt||d.expiresAt>n),flights:e.flights.filter(f=>f.createdAt+C.flightMs>n),hats:e.hats.filter(h=>h.expiresAt>n)};};
 export async function cancelCypher(r,w,p){const s=cypherState(p);s.control=null;s.removeUntil=0;r.save(w,p);}
 async function remove(r,e,n,recall=false){const fx=cypherEffects(r);fx.devices=fx.devices.filter(v=>v.id!==e.id);emit(r,{type:'cypher_remove',id:e.id});for(const w of r.sockets()){const p=r.data(w);if(!p)continue;if(p.cypherAnchor?.id===e.id){p.cypherAnchor=null;p.cypherSnaredUntil=0;}if(p.uid===e.ownerUid){const s=cypherState(p);if(e.kind==='camera'){s.control=null;s.eUsed=false;s.eReadyAt=n+(recall?C.recallMs:C.rebuildMs);}if(e.kind==='wire'&&recall)s.cUsed=Math.max(0,(s.cUsed||0)-1);}r.save(w,p);}}
+// Shared by firearm hits and the fixed-damage Neon beam; lifecycle stays in one place.
+export async function damageCypherDevice(r,id,damage,n){const e=cypherEffects(r).devices.find(e=>e.id===id&&['wire','camera'].includes(e.kind));if(!e||!Number.isFinite(damage)||damage<=0)return false;e.hp-=damage;if(e.hp<=0)await remove(r,e,n);else publish(r,e);await persist(r);return true;}
 export async function cypherEvent(r,w,p,m,n){
  if(!m.type.startsWith('cypher_'))return false;const fx=cypherEffects(r),s=cypherState(p),fail=reason=>{r.send(w,{type:'ability_error',reason});return true;};
  if(m.type==='cypher_cancel'||m.type==='cypher_untag_cancel'){await cancelCypher(r,w,p);r.snapshot();return true;}
  if(!playing(r))return fail('回合結束後無法使用技能');
  if(m.type==='cypher_object_hit'){
   const e=fx.devices.find(e=>e.id===m.id&&['wire','camera'].includes(e.kind));if(!e||p.hp<=0||!p.active||p.realm||detained(p,n)||cypherBusy(p,n)||cloveInvulnerable(p,n)||p.shotUsed||n-p.lastShot>400||!p.shotEnd)return true;
-  const hits=e.kind==='wire'?[e.a,e.b]:[e];if(!hits.some(at=>dist(p.shotEnd,at)<.85)||p.weapon==='melee'&&!hits.some(at=>dist(p,at)<4.5))return true;p.shotUsed=true;r.save(w,p);e.hp-=WEAPONS[p.shotWeapon||p.weapon]?.body||0;if(e.hp<=0)await remove(r,e,n);else publish(r,e);
+  const hits=e.kind==='wire'?[e.a,e.b]:[e];if(!hits.some(at=>dist(p.shotEnd,at)<.85)||p.weapon==='melee'&&!hits.some(at=>dist(p,at)<4.5))return true;p.shotUsed=true;r.save(w,p);await damageCypherDevice(r,e.id,WEAPONS[p.shotWeapon||p.weapon]?.body||0,n);
  }else if(m.type==='cypher_untag'){
   if(p.hp<=0||!p.active||p.realm||!p.cypherTag||detained(p,n)||s.control)return true;if(!(s.removeUntil>n))s.removeUntil=n+C.untagMs;r.save(w,p);
  }else if(m.type==='cypher_contact'){

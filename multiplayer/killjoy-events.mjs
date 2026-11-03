@@ -21,13 +21,14 @@ async function remove(room,e,now,reason='destroyed'){
  if(e.kind==='turret'){s.eUsed=false;s.eReadyAt=now+(reason==='recall'?KJ.recallMs:KJ.turretRebuildMs);}
  if(e.kind==='alarm'&&reason==='recall'){s.qUsed=false;s.qReadyAt=now+KJ.recallMs;}room.save(ws,p);
 }
+export async function damageKilljoyDevice(room,id,damage,now){const e=killjoyEffects(room).devices.find(e=>e.id===id);if(!e||e.activeUntil>now||!Number.isFinite(damage)||damage<=0)return false;e.hp-=damage;if(e.hp<=0)await remove(room,e,now);else publish(room,e);await persist(room);return true;}
 export async function killjoyEvent(room,ws,p,m,now){
  if(!m.type.startsWith('killjoy_'))return false;
  const effects=killjoyEffects(room),fail=reason=>{room.send(ws,{type:'ability_error',reason});return true;};
  if(!playing(room))return fail('回合結束後無法使用裝置');
  if(m.type==='killjoy_object_hit'){
   const e=effects.devices.find(v=>v.id===m.id);if(!e||e.activeUntil>now||p.hp<=0||!p.active||p.realm||detained(p,now)||cloveInvulnerable(p,now)||p.shotUsed||now-p.lastShot>400||!p.shotEnd||distance(p.shotEnd,{...e,y:e.y+(e.kind==='nano'?.1:.5)})>1.2||p.weapon==='melee'&&distance(p,e)>4.5)return true;
-  p.shotUsed=true;room.save(ws,p);e.hp-=WEAPONS[p.shotWeapon||p.weapon]?.body||0;if(e.hp<=0)await remove(room,e,now);else publish(room,e);await persist(room);room.snapshot();return true;
+  p.shotUsed=true;room.save(ws,p);await damageKilljoyDevice(room,e.id,WEAPONS[p.shotWeapon||p.weapon]?.body||0,now);await persist(room);room.snapshot();return true;
  }
  const passive=['killjoy_seen','killjoy_move','killjoy_contact'].includes(m.type);
  if(!passive&&(p.agent!=='killjoy'||p.hp<=0||!p.active||p.realm||detained(p,now)))return fail('目前無法施放 Killjoy 技能');

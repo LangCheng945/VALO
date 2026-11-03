@@ -221,3 +221,7 @@ values are trainer tuning, and full static map collision remains on the client.
 See `../docs/neon-abilities.md` for controls, research and remaining limits.
 
 Checks: `VALO_TEST_SERVER=http://127.0.0.1:8790 node --test tests/neon*.test.mjs`.
+
+`neon-props-1` adds bounded Overdrive device-hit validation for Cypher and Killjoy
+props, using their shared firearm destruction/cooldown helpers. One pulse can
+damage either a device or an actor, and device HP/damage values are server-owned.

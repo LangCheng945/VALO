@@ -1,5 +1,5 @@
-import{SOVA,sovaState,sovaBusy,resetSova,sovaFlight,reconPulse,reveal}from'./multiplayer/sova-rules.mjs?v=neon1';
-import{disposeEffect}from'./ability-effects.js?v=neon1';
+import{SOVA,sovaState,sovaBusy,resetSova,sovaFlight,reconPulse,reveal}from'./multiplayer/sova-rules.mjs?v=neon2';
+import{disposeEffect}from'./ability-effects.js?v=neon2';
 const T=globalThis.THREE;
 export class SovaKit{
  constructor(api){this.api=api;this.flights=new Map();this.recons=new Map();this.drones=new Map();this.beams=new Map();this.bursts=[];this.marks=new Map();this.mode=null;this.chargingAt=0;this.bounces=0;this.pendingUntil=0;this.scanAt=0;this.lastDroneSend=0;this.dronePos=null;this.droneYaw=0;this.dronePitch=0;this.keys=new Set();

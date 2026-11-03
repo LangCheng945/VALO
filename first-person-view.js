@@ -1,4 +1,4 @@
-import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=neon1';
+import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=neon2';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.

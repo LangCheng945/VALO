@@ -1,5 +1,5 @@
 import {referencedAbilityIcon} from './ability-icons.mjs?v=original1';
-import {FirstPersonHands} from './first-person-view.js?v=neon1';
+import {FirstPersonHands} from './first-person-view.js?v=neon2';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;

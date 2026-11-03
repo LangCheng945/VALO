@@ -725,3 +725,8 @@ are reused; skill effects and the hand pose are authored locally.
 [Controls, research, tuning and remaining limits](docs/neon-abilities.md).
 Validation: `multiplayer/tests/neon.test.mjs`, real peers in `neon-live.test.mjs`,
 and actual Ascent inputs in `node tests/test_neon_browser.cjs`.
+
+Neon's `neon-props-1` update lets Overdrive destroy Cypher cameras/trap endpoints
+and Killjoy devices using normal lifecycle/cooldown rules. Multiplayer observers
+also see electric rings while Neon sprints, slides or equips Overdrive. These
+visuals clear on death, realm changes and disconnect.
