@@ -1,5 +1,4 @@
-import {installJettHands,poseJettHand} from './jett-hands.js?v=jett1';
-import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=neon2';
+import {installPhoenixHands,posePhoenixHand} from './phoenix-hands.js?v=phoenix1';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs?v=hands3';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
@@ -92,9 +91,9 @@ export class FirstPersonHands{
    const seam=new T.Mesh(new T.TorusGeometry(.035,.0014,4,16),cuff);seam.rotation.x=Math.PI/2;arm.add(seam);this.root.add(arm);
    this.arms.push({side,hand,arm,sleeveMesh,cuff:end,seam,target:new T.Vector3(),wrist:new T.Vector3(),direction:new T.Vector3(),grasp:new T.Vector3(),receiver:new T.Vector3(),elbow:new T.Vector3(side<0?-.18:.50,-.63,.06)});
   }
-  this.agent=agent;this.setAgent(agent);this.update({});this.ready=installJettHands(this).catch(()=>false);
+  this.agent=agent;this.setAgent(agent);this.update({});this.ready=installPhoenixHands(this).catch(()=>false);
  }
- setAgent(agent){const previous=this.agent;this.agent=agent;if(previous!==agent&&this.arms){for(const a of this.arms)if(a.rig){a.rig.skeleton.dispose();a.rig.mesh.geometry.dispose();a.rig.mesh.material.dispose();a.hand.clear();const rest=this.key==='overdrive'&&a.side>0?'point':this.key==='orb'||this.key==='bladestorm'||this.key==='melee'&&a.side<0;const replacement=animatedHand(a.side,this.materials,rest,this.key==='melee'&&a.side>0);for(const child of [...replacement.children])a.hand.add(child);a.rig=null;}this.skeletalReady=false;if(agent==='jett')this.ready=installJettHands(this).catch(()=>false);}const colors=AGENTS[normalizeAgent(agent)].hands;for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
+ setAgent(agent){this.agent=agent;const colors={skin:0x966549,glove:0x2d241e,sleeve:0xe5e1d8,cuff:0xd5a044};for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
  update({reload=0,magazine=null,inspect=0,meleeGrip=null,dt=0}={}){
   this.elapsed+=dt;const p=this.profile;inspect=Math.max(0,Math.min(1,inspect));
   for(const a of this.arms){
@@ -115,7 +114,8 @@ export class FirstPersonHands{
    if(a.side<0&&reload>0){opening=track(reload,[[0,0],[.08,.7],[.18,0],[.43,0],[.50,.8],[.60,0],[.79,0],[.87,.6],[1,0]])[0];}
    if(a.side<0&&inspect>0&&this.key!=='melee'){const release=Math.sin(inspect*Math.PI)**2;opening=Math.max(opening,release*.8);target.x-=release*.07;target.y-=release*.035;}
    if(this.key==='melee'&&a.side>0)opening=(meleeGrip?.fingerRelease||0);
-   for(const mesh of a.hand.children)if(mesh.morphTargetInfluences)mesh.morphTargetInfluences[0]=opening;poseJettHand(a,opening,this.key);
+   for(const mesh of a.hand.children)if(mesh.morphTargetInfluences)mesh.morphTargetInfluences[0]=opening;posePhoenixHand(a,opening,this.key);
+   if(this.key==='melee'&&a.side>0&&a.rig){target.x-=.025;target.y-=.04;}
    a.hand.position.copy(target);
    const wrist=a.wrist.set(0,0,a.rig?.03:.095).applyEuler(a.hand.rotation).add(target);
    const elbow=a.elbow,direction=a.direction.copy(wrist).sub(elbow),length=direction.length();
