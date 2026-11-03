@@ -732,6 +732,7 @@
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
+        import {impactMaps,impactFlash} from './impact-assets.js?v=impact1';
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
@@ -1670,7 +1671,7 @@
             // 3D Star-Cross Muzzle Flash Mesh
             muzzleFlashGroup = new THREE.Group();
             const flashMat = new THREE.MeshBasicMaterial({
-                color: SMITE_SKIN.energy,
+                color: 0xffe3a9,map:impactMaps.flash,blending:THREE.AdditiveBlending,depthWrite:false,
                 transparent: true,
                 opacity: 0,
                 side: THREE.DoubleSide
@@ -2333,9 +2334,9 @@
         const smokeSpheres = [];
 
         function spawnBulletDecal(point, normal) {
-            const decalGeo = new THREE.CircleGeometry(0.085, 8);
+            const decalGeo = new THREE.PlaneGeometry(.21,.21);
             const decalMat = new THREE.MeshBasicMaterial({
-                color: 0x090d12,
+                color: 0x090d12, map:impactMaps.hole,transparent:true,alphaTest:.02,depthWrite:false,
                 polygonOffset: true,
                 polygonOffsetFactor: -1
             });
@@ -2346,7 +2347,7 @@
             wallDecals.push(decal);
             if (wallDecals.length > 45) {
                 const old = wallDecals.shift();
-                scene.remove(old);
+                scene.remove(old);old.geometry.dispose();old.material.dispose();
             }
         }
 
@@ -2367,6 +2368,7 @@
         }
 
         function createImpactBurst(pos, isHeadshot, isBlood) {
+            const burst=impactFlash(pos,isHeadshot?0xc8fff0:isBlood?0xff8e80:0xffd696,camera);scene.add(burst);ejectedShells.push({mesh:burst,vel:new THREE.Vector3(),life:.14,maxLife:.14});
             const count = isHeadshot ? 12 : 5;
             const color = isHeadshot ? 0x00F5D4 : (isBlood ? 0xFF4655 : 0xffbe0b);
             for (let i = 0; i < count; i++) {
@@ -3991,12 +3993,11 @@
             for (let i = ejectedShells.length - 1; i >= 0; i--) {
                 const sh = ejectedShells[i];
                 sh.life -= dt;
-                sh.vel.y -= 14 * dt;
+                if(!sh.mesh.userData.impact)sh.vel.y -= 14 * dt;else sh.mesh.material.opacity=Math.max(0,sh.life/sh.maxLife);
                 sh.mesh.position.addScaledVector(sh.vel, dt);
-                sh.mesh.rotation.x += 12 * dt;
-                sh.mesh.rotation.z += 9 * dt;
+                if(!sh.mesh.userData.impact){sh.mesh.rotation.x += 12 * dt;sh.mesh.rotation.z += 9 * dt;}
                 if (sh.life <= 0) {
-                    scene.remove(sh.mesh);
+                    scene.remove(sh.mesh);sh.mesh.geometry.dispose();sh.mesh.material.dispose();
                     ejectedShells.splice(i, 1);
                 }
             }

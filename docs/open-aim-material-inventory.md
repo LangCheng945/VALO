@@ -15,3 +15,11 @@ Pinned source: [unkwsr/open-aim](https://github.com/unkwsr/open-aim/tree/e1e81cf
 | `muzzle.5073054cbb.json` | Weapon-specific ADS/hip muzzle-system selection and error thresholds | Useful for replacing generic muzzle planes; corresponding material/particle systems need implementation. |
 
 All underlying game assets/designs remain Riot Games property. Repository MIT licensing does not establish an asset redistribution license. No upstream executable JavaScript is executed by this inventory workflow.
+
+## Subsequent verified integration
+
+`site/aim-impact/{bullet-hole.png,hit-burst.png,flash-glow.png}` is now used for wall marks, a four-tile additive impact flash and additive muzzle glow. Original images are retained. Decals remain capped at 45; expired particles and evicted decal geometries/materials are disposed, while shared source textures remain cached. Browser checks cover loaded images, alpha/additive materials, the cap, expiry and shaders.
+
+A separate hand-source check confirmed `jett.json/bin/jett.arms.png` and Phoenix arms embedded in multiple weapon packages. No Sage-specific first-person hand package was found in the inspected `aim-viewmodel` directory. Full-body agent meshes are a different asset category and are not a drop-in first-person replacement.
+
+Map lightmap descriptors, SH irradiance textures, PVS and triangle material classifications are present but remain unintegrated. Their instance/triangle identifiers must be matched before changing lighting, culling or penetration. Current batching/collision construction changes those groupings; copying sidecars alone would not validate the mapping.
