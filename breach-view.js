@@ -2,7 +2,7 @@ import{BREACH as B,breachState,resetBreach,inBreachLane,flashDuration}from'./mul
 import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
 import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';
 import{disposeEffect}from'./ability-effects.js?v=neon2';
-import{FirstPersonHands}from'./first-person-view.js?v=neon2';
+import{FirstPersonHands}from'./first-person-view.js?v=hands3';
 const T=globalThis.THREE;
 export class BreachKit{
  constructor(api){this.api=api;this.mode=null;this.chargeAt=0;this.pendingUntil=0;this.waves=new Map();this.lifts=new Set();this.root=new T.Group();this.root.name='breach-arm-launcher';this.hands=new FirstPersonHands('breach','overdrive',null);this.root.add(this.hands.root);const metal=new T.MeshStandardMaterial({color:0x77796c,metalness:.6,roughness:.45});for(let i=0;i<3;i++){const ring=new T.Mesh(new T.CylinderGeometry(.065,.065,.07,8),metal);ring.rotation.x=Math.PI/2;ring.position.set(.19,-.23,-.57-i*.08);this.root.add(ring);}const core=new T.Mesh(new T.SphereGeometry(.045,8,6),new T.MeshBasicMaterial({color:0xffaa44}));core.position.set(.19,-.23,-.81);this.root.add(core);api.camera.add(this.root);this.root.visible=false;this.status=document.createElement('div');this.status.id='breach-status';this.status.style='position:fixed;bottom:196px;left:50%;transform:translateX(-50%);color:#ffcf86;font:600 12px sans-serif;pointer-events:none;z-index:28;text-shadow:0 1px 4px #000';document.body.append(this.status);this.flash=document.createElement('div');this.flash.id='breach-flash';this.flash.style='position:fixed;inset:0;background:#fff2d9;pointer-events:none;z-index:25;opacity:0';document.body.append(this.flash);}

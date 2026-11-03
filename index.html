@@ -717,9 +717,9 @@
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=neon2';
-        import {makeKarambit,updateKarambit} from './karambit.js?v=prime2shape1';
-        import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=hands3';
+        import {makeKarambit,updateKarambit} from './karambit.js?v=hands3';
+        import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=hands3';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
         import {AgentPreview} from './agent-preview.js?v=neon2';
@@ -3939,7 +3939,7 @@
                 state.inspectTimer += dt;
                 if (!knifeSpinGroup) {
                     const p = Math.sin((state.inspectTimer / 2.2) * Math.PI);
-                    gunGroup.rotation.x=-p*.08;gunGroup.rotation.z=p*.20;gunGroup.rotation.y=p*.48;gunGroup.position.x-=p*.04;gunGroup.position.y+=p*.025;
+                    gunGroup.rotation.x=-p*.08;gunGroup.rotation.z=p*.20;gunGroup.rotation.y=p*.48;gunGroup.position.x=(state.isScoped?-.25:0)-p*.04;gunGroup.position.y=(state.isScoped?.095:0)+p*.025;
                 }
                 if (state.inspectTimer >= 2.2) {
                     state.isInspecting = false;
@@ -3952,7 +3952,7 @@
             }
 
             const meleeGrip=knifeSpinGroup?updateKarambit(knifeSpinGroup,{draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration('melee')),inspect:state.isInspecting?state.inspectTimer/KARAMBIT_INSPECT_SECONDS:0}):null;
-            firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,dt});
+            firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Floating Blade Storm Daggers hover animation
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
         }

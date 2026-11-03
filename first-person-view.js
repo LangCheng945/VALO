@@ -1,6 +1,6 @@
 import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=neon2';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
-import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs';
+import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs?v=hands3';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
 const T=globalThis.THREE;
 const up=new T.Vector3(0,1,0),smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
@@ -29,18 +29,28 @@ function makeHand(side,materials,open=false){
  const root=new T.Group();root.name=side<0?'left-articulated-hand':'right-articulated-hand';
  root.add(ellipsoid(new T.Vector3(0,0,.005),[.046,.022,.062],materials.skin));
  root.add(ellipsoid(new T.Vector3(0,.014,.012),[.043,.011,.049],materials.glove));
+ // Palm pads soften the wrist-to-finger transition without additional materials.
+ root.add(ellipsoid(new T.Vector3(-side*.025,-.013,.008),[.022,.014,.035],materials.skin));
  const lengths=[.069,.079,.073,.057];
  for(let i=0;i<4;i++){
-  const x=(i-1.5)*.023,z=-.042+Math.abs(i-1.4)*.006,l=lengths[i],extended=open===true||open==='point'&&i===0,curl=extended?.12:1;
+  const x=(i-1.5)*.023,z=-.042+Math.abs(i-1.4)*.006,l=lengths[i],extended=open===true||open==='point'&&i===0||open==='fan'&&i>0,curl=extended?.12:1;
   const points=[new T.Vector3(x,0,z),new T.Vector3(x, -.010*curl,z-l*.47),new T.Vector3(x,-.035*curl,z-l*.72),new T.Vector3(x,-.053*curl,z-l*.47)];
   if(extended){points[2].z=z-l*.78;points[3].z=z-l;points.forEach((p,j)=>p.x+=side*(i-1.5)*j*.002);}
   root.add(ellipsoid(points[0],[.011,.012,.012],materials.glove));
+  const nail=ellipsoid(points[3].clone().add(new T.Vector3(0,.006,0)),[.0065,.002,.009],materials.skin);root.add(nail);
   for(let j=0;j<3;j++){const radius=.0105-j*.0012;root.add(beam(points[j],points[j+1],radius,radius*.93,j===0?materials.glove:materials.skin));root.add(ellipsoid(points[j+1],[radius*.93,radius*.93,radius*.93],materials.skin));}
  }
  const thumb=[new T.Vector3(-side*.038,-.002,.025),new T.Vector3(-side*.058,-.017,-.005),new T.Vector3(-side*(open?.067:.040),-.041,-.033)];
  for(let i=0;i<2;i++){root.add(beam(thumb[i],thumb[i+1],.014-i*.002,.012-i*.002,i===0?materials.glove:materials.skin));root.add(ellipsoid(thumb[i+1],[.012,.012,.012],materials.skin));}
  root.add(beam(new T.Vector3(0,0,.045),new T.Vector3(0,0,.105),.032,.031,materials.skin));
  bakeHand(root);return root;
+}
+// Two poses share topology and material batches. GPU morphing articulates fingers
+// without adding a draw call for each finger segment.
+function animatedHand(side,materials,rest,fan=false){
+ const base=makeHand(side,materials,rest),opened=makeHand(side,materials,fan?'fan':rest==='point'?'point':rest===true?false:true);
+ base.children.forEach((mesh,i)=>{const other=opened.children[i];mesh.material.morphTargets=true;mesh.material.morphNormals=true;mesh.geometry.morphAttributes.position=[other.geometry.attributes.position.clone()];mesh.geometry.morphAttributes.normal=[other.geometry.attributes.normal.clone()];mesh.updateMorphTargets();});
+ opened.traverse(m=>m.geometry?.dispose());return base;
 }
 const profiles={
  vandal:{right:[.285,-.365,-.34],left:[.203,-.280,-.70],mag:[.25,-.298,-.51]},
@@ -74,35 +84,40 @@ export class FirstPersonHands{
   const sleeve=new T.MeshStandardMaterial({color:sage?0x546761:0x08171b,roughness:.94});const cuff=new T.MeshStandardMaterial({color:sage?0x0e7566:0x21616a,roughness:.65,metalness:.12});
   this.materials={skin,glove,sleeve,cuff};for(const m of Object.values(this.materials))m.color.convertSRGBToLinear();this.arms=[];
   for(const side of [-1,1]){
-   const hand=makeHand(side,this.materials,key==='overdrive'&&side>0?'point':key==='orb'||key==='bladestorm'||key==='melee'&&side<0);hand.userData.side=side;this.root.add(hand);
+   const rest=key==='overdrive'&&side>0?'point':key==='orb'||key==='bladestorm'||key==='melee'&&side<0;const hand=animatedHand(side,this.materials,rest,key==='melee'&&side>0);hand.userData.openRest=rest===true;hand.userData.side=side;this.root.add(hand);
    const arm=new T.Group();arm.name=side<0?'left-tailored-sleeve':'right-tailored-sleeve';
    const sleeveMesh=new T.Mesh(forearmGeometry(),sleeve);arm.add(sleeveMesh);
    const end=new T.Mesh(new T.CylinderGeometry(.036,.037,.035,12),cuff);arm.add(end);
    const seam=new T.Mesh(new T.TorusGeometry(.035,.0014,4,16),cuff);seam.rotation.x=Math.PI/2;arm.add(seam);this.root.add(arm);
-   this.arms.push({side,hand,arm,sleeveMesh,cuff:end,seam});
+   this.arms.push({side,hand,arm,sleeveMesh,cuff:end,seam,target:new T.Vector3(),wrist:new T.Vector3(),direction:new T.Vector3(),grasp:new T.Vector3(),receiver:new T.Vector3(),elbow:new T.Vector3(side<0?-.18:.50,-.63,.06)});
   }
   this.setAgent(agent);this.update({});
  }
  setAgent(agent){const colors=AGENTS[normalizeAgent(agent)].hands;for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
  update({reload=0,magazine=null,inspect=0,meleeGrip=null,dt=0}={}){
-  this.elapsed+=dt;const p=this.profile;
+  this.elapsed+=dt;const p=this.profile;inspect=Math.max(0,Math.min(1,inspect));
   for(const a of this.arms){
-   let target=new T.Vector3(...(a.side<0?p.left:p.right));let roll=a.side<0?1.12:-1.15;
+   let target=a.target.fromArray(a.side<0?p.left:p.right);let roll=a.side<0?1.12:-1.15;
    if(a.side<0&&reload>0&&magazine){
-    const grasp=new T.Vector3(-.045,-.04,.01).applyEuler(magazine.rotation).add(magazine.position);
+    const grasp=a.grasp.set(-.045,-.04,.01).applyEuler(magazine.rotation).add(magazine.position);
     const blend=reload<.16?smooth(reload/.16):reload>.78?1-smooth((reload-.78)/.20):1;
     target.lerp(grasp,blend);roll=T.MathUtils.lerp(roll,.65+magazine.rotation.z,blend);
     // After seating, briefly tap the receiver before returning to the support grip.
     const tap=reload>.79&&reload<.96?Math.sin((reload-.79)/.17*Math.PI)**2:0;
-    const receiver=new T.Vector3(...p.mag).add(new T.Vector3(-.045,.115,.02));
+    const receiver=a.receiver.set(p.mag[0]-.045,p.mag[1]+.115,p.mag[2]+.02);
     target.lerp(receiver,tap*.72);roll=T.MathUtils.lerp(roll,.25,tap*.6);
    }
    if(this.key==='melee'&&a.side>0){if(meleeGrip){target.fromArray(meleeGrip.handPosition);a.hand.rotation.set(...meleeGrip.handRotation);}else a.hand.rotation.set(.35,0,-1.15);}else a.hand.rotation.set(-.08,a.side*.08,roll);
    if(this.key==='orb')a.hand.rotation.set(-.15,a.side*-.15,a.side*-.18);
    if(this.key==='bladestorm')a.hand.rotation.set(-.1,a.side*-.25,a.side*.3);
+   let opening=0;
+   if(a.side<0&&reload>0){opening=track(reload,[[0,0],[.08,.7],[.18,0],[.43,0],[.50,.8],[.60,0],[.79,0],[.87,.6],[1,0]])[0];}
+   if(a.side<0&&inspect>0&&this.key!=='melee'){const release=Math.sin(inspect*Math.PI)**2;opening=Math.max(opening,release*.8);target.x-=release*.07;target.y-=release*.035;}
+   if(this.key==='melee'&&a.side>0)opening=(meleeGrip?.fingerRelease||0);
+   for(const mesh of a.hand.children)mesh.morphTargetInfluences[0]=opening;
    a.hand.position.copy(target);
-   const wrist=new T.Vector3(0,0,.095).applyEuler(a.hand.rotation).add(target);
-   const elbow=new T.Vector3(a.side<0?-.18:.50,-.63,.06),direction=wrist.clone().sub(elbow),length=direction.length();
+   const wrist=a.wrist.set(0,0,.095).applyEuler(a.hand.rotation).add(target);
+   const elbow=a.elbow,direction=a.direction.copy(wrist).sub(elbow),length=direction.length();
    a.arm.position.copy(elbow).add(wrist).multiplyScalar(.5);a.arm.quaternion.setFromUnitVectors(up,direction.normalize());a.sleeveMesh.scale.y=Math.max(.01,length);a.cuff.position.y=length*.5-.018;a.seam.position.y=length*.5-.037;
   }
  }

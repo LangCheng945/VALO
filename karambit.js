@@ -1,4 +1,4 @@
-import {karambitPose} from './karambit-rules.mjs';
+import {karambitPose} from './karambit-rules.mjs?v=hands3';
 const T=globalThis.THREE;
 // Landmarks traced from the user's 512 × 280 Prime//2.0 reference, centered on the ring.
 const point=([x,y])=>[(x-448)*.00062,(54-y)*.00062];
