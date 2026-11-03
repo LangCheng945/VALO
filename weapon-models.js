@@ -1,6 +1,6 @@
 // Local geometry adapter. Asset provenance: assets/weapons/README.md.
 const THREE=window.THREE;
-const cache=new Map();
+const cache=new Map(),originalTextures=new Map();
 let manifestPromise;
 export async function loadWeaponModel(key,material) {
  if(!/^[a-z]+$/.test(key))return null;
@@ -13,15 +13,17 @@ export async function loadWeaponModel(key,material) {
   g.setIndex(new THREE.BufferAttribute(new Uint32Array(b,m.vertices*24,m.indices),1));
   const uv=new Float32Array(m.vertices*2),pos=g.attributes.position.array;
   for(let i=0;i<m.vertices;i++){uv[i*2]=(pos[i*3]-m.bounds[0][0])/(m.bounds[0][1]-m.bounds[0][0]);uv[i*2+1]=(pos[i*3+2]-m.bounds[2][0])/(m.bounds[2][1]-m.bounds[2][0]);}
+  if(['vandal','phantom','classic','operator'].includes(key)){const r=await fetch(`./assets/weapons/${key}.uv.bin`);if(!r.ok)throw Error('Original UV '+key);const bytes=await r.arrayBuffer();if(bytes.byteLength!==m.vertices*8)throw Error('Invalid original UV');uv.set(new Float32Array(bytes));g.userData.originalSkin=true;}
   g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.computeBoundingSphere();g.userData.sharedWeaponGeometry=true;return g;
  })().catch(e=>{cache.delete(key);throw e}));
- const mesh=new THREE.Mesh(await cache.get(key),material);mesh.name=`detailed-${key}`;
+ const geometry=await cache.get(key);if(geometry.userData.originalSkin){let texture=originalTextures.get(key);if(!texture){texture=await new THREE.TextureLoader().loadAsync(`./assets/weapons/${key}.original.png`);texture.encoding=THREE.sRGBEncoding;texture.flipY=false;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;originalTextures.set(key,texture);}material.map=texture;material.emissiveMap=null;material.emissive?.setHex(0);material.color?.setHex(0xffffff);material.roughness=.65;material.metalness=.25;material.needsUpdate=true;}const mesh=new THREE.Mesh(geometry,material);mesh.name=`detailed-${key}`;
  mesh.quaternion.set(-.5,.5,.5,.5);mesh.scale.setScalar(.009);
  mesh.position.set(.25,-.29,-.35);return mesh;
 }
 
 // Preserve the pinned source geometry; presentation groups own their cloned buffers.
 export function styleWeaponMesh(mesh,key,materials){
+ if(mesh.geometry.userData.originalSkin){for(const m of [materials.steel,materials.rubber]){m.map=materials.paint.map;m.color.setHex(0xffffff);m.roughness=.65;m.metalness=.25;m.needsUpdate=true;}}
  const original=mesh.geometry,p=original.attributes.position,index=original.index,paint=[],steel=[],rubber=[],box=[];original.computeBoundingBox();const bounds=original.boundingBox,length=bounds.max.x-bounds.min.x;
  for(let i=0;i<index.count;i+=3){const ids=[index.getX(i),index.getX(i+1),index.getX(i+2)],x=ids.reduce((s,v)=>s+p.getX(v),0)/3,y=ids.reduce((s,v)=>s+p.getY(v),0)/3,z=ids.reduce((s,v)=>s+p.getZ(v),0)/3;
   if(key==='odin'&&x>5.4&&x<32&&Math.abs(y)<15.5&&z<-6.6){box.push(...ids);continue;}

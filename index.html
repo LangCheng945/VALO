@@ -636,7 +636,7 @@
                 <aside class="trainer-loadout" id="loadout-panel">
                     <div class="section-heading"><h2>購買階段</h2><small>左鍵購買 · 右鍵退還本次購買</small></div>
                     <div class="loadout-credits"><div class="shop-agent-emblem" aria-hidden="true">J</div><b id="shop-agent-name">JETT</b><small>單人訓練</small><hr><span>可用信用點</span><strong>¤ <span id="shop-creds">9000</span></strong><p id="shop-owned-label"></p><p id="shop-refund-label"></p><button id="shop-sell-weapon" onclick="sellShopItem('weapon')" disabled>退還武器</button><button id="shop-sell-shield" onclick="sellShopItem('shield')" disabled>退還護盾</button></div>
-                    <p class="skin-badge"><i></i> SMITE COLLECTION <span>神罰</span></p>
+                    <p class="skin-badge"><i></i> WEAPON COLLECTION <span>原版外觀</span></p>
                     <div class="loadout-weapons">
                         <section class="weapon-column" id="shop-sidearms"><h3>隨身武器</h3></section>
                         <section class="weapon-column" id="shop-smgs"><h3>衝鋒槍</h3><div id="shop-smgs-list"></div><h3>霰彈槍</h3><div id="shop-shotguns-list"></div></section>
@@ -716,7 +716,7 @@
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
-        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
+        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=original1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=hands3';
         import {makeKarambit,updateKarambit} from './karambit.js?v=hands3';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=hands3';
@@ -730,6 +730,7 @@
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
+        import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
         import {stepSlowProjectile} from './slow-projectile.js?v=slow1';
         import {playIce} from './ice-audio.js?v=slow1';
         import {BARRIER,segmentPosition,insideSegment,advanceBarrier,distanceToSegmentXZ} from './multiplayer/barrier-rules.mjs?v=barrier1';
@@ -1102,7 +1103,7 @@
         };
 
         for(const [key,data] of Object.entries(FIREARMS)){
-            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:'神罰'+data.name};
+            const old=WEAPONS[key];WEAPONS[key]={recoilPitch:.016,spreadBase:data.pellets>1?.065:.003,spreadMove:.06,color:0xffffff,glowColor:0xb9f5ff,...old,...data,name:(['vandal','phantom','classic','operator'].includes(key)?'原版':'神罰')+data.name};
             if(key==='odin')Object.assign(WEAPONS[key],{fireRate:83,fullAutoFireRate:64});
         }
         Object.values(WEAPONS).forEach(weapon => {
@@ -1685,7 +1686,7 @@
                 if(!mesh || state.weaponKey!==wpnKey || !gunGroup.children.includes(rig))return;
                 for(const child of placeholder){rig.remove(child);child.geometry?.dispose();if(child.material&&![darkMetal,gunSteel,skinAccent,glowMat].includes(child.material))child.material.dispose();}
                 const originalBox=styleWeaponMesh(mesh,wpnKey,{paint:darkMetal,steel:gunSteel,rubber:rubberMat});
-                rig.add(mesh);gunMagazineMesh=originalBox||createMagazine(wpnKey,skinAccent,gunSteel);rig.add(gunMagazineMesh);
+                if(mesh.geometry.userData.originalSkin){skinAccent.map=darkMetal.map;skinAccent.emissiveMap=null;skinAccent.emissive.setHex(0);skinAccent.needsUpdate=true;}rig.add(mesh);gunMagazineMesh=originalBox||createMagazine(wpnKey,skinAccent,gunSteel);rig.add(gunMagazineMesh);
                 muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
             }).catch(error=>console.warn('Weapon model fallback',error));
         }
@@ -2902,7 +2903,7 @@
                 }
                 if(!f.remote&&currentRoomId&&(f.bounces>before||now-f.lastNet>=120)){f.lastNet=now;const p=f.mesh.position,v=f.velocity;broadcastRoomEvent({type:'slow_step',id,x:p.x,y:p.y,z:p.z,vx:v.x,vy:v.y,vz:v.z});}
             }
-            for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life=(f.expiresAt-now)/1000;f.age=Math.max(0,(now-f.createdAt)/1000);if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);continue;}f.mesh.scale.setScalar(Math.max(.01,fieldRadius(f,now)/SLOW.fieldRadius));updateEffect(f.mesh,f.age,Math.min(1,f.life*2));}
+            for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life=(f.expiresAt-now)/1000;f.age=Math.max(0,(now-f.createdAt)/1000);if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);continue;}const growth=Math.max(.01,fieldRadius(f,now)/SLOW.fieldRadius);f.mesh.scale.setScalar(growth);if(!f.draped||f.lastGrowth<1&&now-(f.drapedAt||0)>70){drapeSlowField(f.mesh,f,growth,[realMap.collisionMesh,...temporaryWalls]);f.draped=true;f.lastGrowth=growth;f.drapedAt=now;}updateEffect(f.mesh,f.age,Math.min(1,f.life*2));}
         }
         const cloudFlights=new Map(),cloudIds=new Set(),sprays=new Map();let lastSpray=0;
         const isoKit=new IsoKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>yawObject.position.clone(),yaw:()=>yawObject.rotation.y,bots:()=>bots,remotes:()=>remotePlayers,hiddenActor:()=>spectatorView.hidden,notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},cast:()=>beginAbilityCast('orb',.55),relocate:p=>{yawObject.position.set(p.x,p.y,p.z);yawObject.rotation.y=p.yaw||0;pitchObject.rotation.x=p.pitch||0;playerVelocity.set(0,0,0);state.climbingRope=null;resetMovementInput();setScope(false);state.hp=p.hp;state.shield=p.shield;updateHealthHUD();},enterInventory:weapon=>{const saved={weaponKey:state.weaponKey,mag:state.mag,reserve:state.reserve,weaponAmmo:structuredClone(state.weaponAmmo),bladeStormActive:state.bladeStormActive,bladeKnives:state.bladeKnives};state.bladeStormActive=false;state.healingEquipped=false;cancelSlowEquip();cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();equipWeaponSlot(weapon==='bladestorm'?state.primaryWeaponKey:weapon,{fresh:true});return saved;},restoreInventory:saved=>{Object.assign(state,saved);buildFirstPersonViewmodel();updateAmmoHUD();},fatal:reason=>applyDamageToPlayer(10000,reason,'ISO'),killBot:bot=>handleBotKilled(bot,false,false,'決鬥時間結束','ISO'),botShot:bot=>{const origin=bot.group.position.clone().add(new THREE.Vector3(0,2,0));createBulletTracer(origin,yawObject.position,0xc39bf5);applyDamageToPlayer(26,bot.name,'VANDAL',false);}});
@@ -4181,7 +4182,7 @@
             if(!state.isLocked||state.inBuyMenu){botDefuse.reset(state.defuseCheckpoint);for(const b of bots)b.defusing=false;cancelSpikeAction();if(state.spikePlanted)advanceSpikeFuse(dt);return;}
 
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right||Math.hypot(playerVelocity.x,playerVelocity.z)>.25||state.astraPull?.until>astraKit.now()||state.razeImpulse?.until>performance.now();
-            const canPlant = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
+            const canPlant = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && spikeGrounded(yawObject.position,playerVelocity.y,[realMap.collisionMesh,...temporaryWalls]) && !state.spikePlanted && state.team==='attack' && !moving;
             const canDefuse = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
             const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical'||state.spikePlanted,planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
             for(const b of bots)b.defusing=b.alive&&b.index===aiDefuse.index;state.defuseCheckpoint=Math.max(state.defuseCheckpoint,aiDefuse.checkpoint);
@@ -4252,7 +4253,7 @@
             badge.classList.toggle('hidden',!['carried','dropped','planted'].includes(s.phase));setHudText('spike-hud-badge',s.phase==='planted'?'SPIKE 已安裝':s.phase==='dropped'?'SPIKE 已掉落':s.carrierUid===currentUser?.uid?'攜帶 SPIKE · [4] 裝備 · [G] 丟下':state.team==='attack'?'SPIKE · '+(remotePlayers.get(s.carrierUid)?.data.name||'隊友')+' 攜帶中':'SPIKE 未安裝');
             const active=live&&state.hp>0&&state.isLocked&&!state.inBuyMenu;
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right||Math.hypot(playerVelocity.x,playerVelocity.z)>.25||state.astraPull?.until>astraKit.now()||state.razeImpulse?.until>performance.now();
-            const plant=active&&s.phase==='carried'&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25&&canJump&&!moving;
+            const plant=active&&s.phase==='carried'&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&spikeGrounded(yawObject.position,playerVelocity.y,[realMap.collisionMesh,...temporaryWalls])&&!moving;
             const defuse=active&&state.team==='defend'&&s.phase==='planted'&&networkSpikeDistance()<3.3&&!moving;
             const pickup=state.hp>0&&state.isLocked&&!state.inBuyMenu&&state.team==='attack'&&s.phase==='dropped'&&networkSpikeDistance()<3.3;
             prompt.classList.toggle('hidden',!(plant||defuse||pickup));setHudText('site-prompt',pickup?'[F] 撿取 SPIKE':defuse?'按住 [4] 或 [F] 拆除 Spike · 半程保存':'按住 [4] 或 [F] 安裝 Spike · 4 秒');

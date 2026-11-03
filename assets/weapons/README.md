@@ -12,3 +12,7 @@ cover Riot assets. This is an unofficial fan project, not endorsed by Riot Games
 No claim of ownership or a redistribution license is made.
 
 All 18 available firearm meshes are now playable. Remaining aim-weapons geometry is unchanged; previewOnly flags were removed. Gunfire samples for these weapons are copied from site/media at the same pinned commit. The default authored Smite presentation remains; these are original static gun shapes, not the original full first-person rigs, textures or animations. Reference ammunition, rate, reload and damage bands are extracted from BiMsX6Xn.js by tools/export-weapon-catalog.py without executing upstream code. Prices and local controls are configuration. BANDIT/WARDEN are not present in this asset source and remain disabled pending verified models and statistics.
+
+## Original base skins
+
+Vandal (`viewmodel.bin` / `gun.png`), Phantom, Classic and Operator now retain their original gun UVs from the same pinned `site/aim-viewmodel` source. The matching source albedo PNGs are retained as `*.original.png`; UVs are float32 pairs in `*.uv.bin`. Source positions/normals were byte-compared with the existing geometry before extracting UVs. The locally generated Smite mapping is retained for other weapons. This restores base appearance; original skinned reload animation is not yet imported.
