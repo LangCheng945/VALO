@@ -22,7 +22,7 @@ export class RoomSpike {
  async cancel(uid,now=Date.now()){
   const s=this.state(),c=s?.action;if(!c||c.uid!==uid)return;
   if(c.kind==='defuse'&&now>=c.startedAt+SPIKE.halfMs&&c.base===0&&Math.min(now,c.heartbeatAt+SPIKE.heartbeatMs)>=c.startedAt+SPIKE.halfMs)s.checkpoint=.5;
-  s.action=null;await this.publish();
+  s.action=null;if(c.kind==='plant'){const actor=this.actor(uid);if(actor){actor.p.spikeEquipped=false;this.room.save(actor.ws,actor.p);}}await this.publish();
  }
  async claim(p,s){Object.assign(s,{phase:'carried',carrierUid:p.uid,action:null});await this.publish();}
  async onState(p,now){const s=this.state();if(!s)return;const c=s.action;if(c?.uid===p.uid&&(!p.active||p.hp<=0||moved(p,c.anchor)||p.team!==(c.kind==='plant'?'attack':'defend')||(c.kind==='plant'?spikeSite(this.room.meta.map,p)!==c.site:distance(p,s)>SPIKE.reach)))await this.cancel(p.uid,now);if(s.carrierUid===p.uid&&(p.hp<=0||p.team!=='attack'))await this.drop(p,now);if(s.phase==='dropped'&&p.active&&this.valid(p)&&p.team==='attack'&&p.uid!==s.droppedBy&&distance(p,s)<=1.6)await this.claim(p,s);}
@@ -57,9 +57,9 @@ export class RoomSpike {
    if(valid&&c.kind==='defuse'&&c.base===0&&Math.min(now,c.heartbeatAt+SPIKE.heartbeatMs)>=c.startedAt+SPIKE.halfMs){s.checkpoint=.5;changed=true;}
    if(valid&&finished&&(c.kind==='plant'?(!r.meta.round.endsAt||c.endsAt<=r.meta.round.endsAt):c.endsAt<s.explodesAt)){
     if(c.kind==='plant'){
-     Object.assign(s,{phase:'planted',carrierUid:null,x:c.anchor.x,y:c.anchor.y-2.2,z:c.anchor.z,site:c.site,plantedAt:c.endsAt,explodesAt:c.endsAt+SPIKE.fuseMs,action:null,checkpoint:0});r.meta.round.endsAt=0;changed=true;
+     Object.assign(s,{phase:'planted',carrierUid:null,x:c.anchor.x,y:c.anchor.y-2.2,z:c.anchor.z,site:c.site,plantedAt:c.endsAt,explodesAt:c.endsAt+SPIKE.fuseMs,action:null,checkpoint:0});r.meta.round.endsAt=0;actor.p.spikeEquipped=false;r.save(actor.ws,actor.p);changed=true;
     }else{Object.assign(s,{phase:'defused',action:null,defusedAt:c.endsAt,checkpoint:1});await this.publish();await r.rounds.finish('defend','Spike 已拆除');return false;}
-   }else if(!valid||now>c.heartbeatAt+SPIKE.heartbeatMs){s.action=null;changed=true;}
+   }else if(!valid||now>c.heartbeatAt+SPIKE.heartbeatMs){s.action=null;if(c.kind==='plant'&&actor){actor.p.spikeEquipped=false;r.save(actor.ws,actor.p);}changed=true;}
   }
   if(s.phase==='planted'&&now>=s.explodesAt){
    Object.assign(s,{phase:'detonated',action:null,detonatedAt:s.explodesAt});

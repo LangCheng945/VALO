@@ -1,0 +1,11 @@
+# Spike weapon release, distant fire and defender retakes
+
+Plant cancellation previously cleared the progress bar while leaving the carried-Spike flag set, so firearm/reload input remained blocked until another weapon was selected. Both local cancellation and the Worker’s cancellation, timeout and successful completion now release the Spike equipment flag. This preserves the equipped gun and ammunition. Manual Spike equipment before a channel still uses its ordinary weapon-switch controls.
+
+Normal weapon raycasts previously stopped at 200 world units and the camera clipped at 260. Both bounds now cover 1500 world units; aim/world matrices refresh before firing and the ray’s near bound resets. Melee reach, isolated-arena reach, recoil/spread, terrain interception and distance damage bands retain their existing rules. The browser test hits a real bot body collider at 300 units; a server test verifies the same distance applies damage.
+
+An installed Spike creates a shared defender objective in local bot matches. All living defenders outside an isolated duel rotate to its site; one is assigned to defuse and the others approach nearby supported cover positions. This overrides stale pursuit orders and the old visible-enemy movement stop. The designated defuser can commit while enemies are visible; other actors retain their cover behavior. A dead defuser is replaced, and the existing half-defuse checkpoint is preserved. Planting also clears stale paths/contacts so bots do not continue to the previous site.
+
+Retake planning is refreshed at most twice per second except immediate plant/defuser-loss changes. Navigation can explore up to 80 nodes per frame under the existing 2.5 ms shared time budget. Floor, dynamic-wall and movement collision checks still apply. This adds local bot behavior; it does not take control of other human players or introduce server-hosted bots.
+
+Validation: unit tests for retake assignments, interrupted/finished/timed-out plant weapon release and 300-unit damage; existing dynamic-wall navigation regression; Chrome tests of real Ascent B retakes, half-defuse handoff and long-range shooting; two real browser clients testing cancelled/completed network planting without switching weapons; full multiplayer suite and Sites build/lint.

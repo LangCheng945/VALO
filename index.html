@@ -732,8 +732,8 @@
         import {CloveKit} from './clove-view.js?v=neon2';
         import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=neon2';
         import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=neon2';
-        import {FollowTrail,BotDefuseController} from './bot-tactics.mjs?v=tactics1';
-        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=bots1';
+        import {FollowTrail,BotDefuseController,retakeOrders} from './bot-tactics.mjs?v=retake1';
+        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=retake1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -1252,7 +1252,7 @@
         const scene = new THREE.Scene();
         scene.fog = new THREE.FogExp2(0xcbd7da, 0.0035);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 260);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1500);
         const yawObject = new THREE.Object3D();
         yawObject.position.set(0, 2.2, 58);
         const pitchObject = new THREE.Object3D();
@@ -1762,7 +1762,7 @@
             if(roomRound.phase==='finished'){setHudText('match-result-text',`${roomRound.matchWinner===state.team?'勝利':'戰敗'} · ${roomRound.scoreAttack} : ${roomRound.scoreDefend}`);setHudText('match-result-help',currentRoomId==='PUBLIC'?`約 ${Math.max(0,Math.ceil((roomRound.nextAt-now)/1000))} 秒後隨機選下一張地圖`:'整場結束，由房主重新開局或選擇新地圖。');document.getElementById('btn-rematch').classList.toggle('hidden',currentRoomId==='PUBLIC'||roomHostUid!==currentUser?.uid);}
         }
 
-        const bots = [];const followTrail=new FollowTrail(),botDefuse=new BotDefuseController();
+        const bots = [];const followTrail=new FollowTrail(),botDefuse=new BotDefuseController();let retakeNextAt=0,retakeKey='';
         let botNavigation=null;
         const BOT_SPAWNS = [
             { x: 34, z: -18, patrol: 2 },
@@ -2454,13 +2454,15 @@
                 scoped: state.isScoped, recoil: state.recoilAccum
             });
 
+            scene.updateMatrixWorld(true);
             const pelletCount=wpn.pellets||1,pelletId=pelletCount>1?crypto.randomUUID():null;
             for(let pelletIndex=0;pelletIndex<pelletCount;pelletIndex++){const showPelletFX=pelletIndex<3;shotgunContext=pelletId?{id:pelletId,count:pelletCount,index:pelletIndex}:null;
             const spreadX=volley?volley.offset[0]:(Math.random()-.5)*totalSpread;
             const spreadY=volley?volley.offset[1]:(Math.random()-.5)*totalSpread+state.recoilAccum*.4;
 
             raycaster.setFromCamera(new THREE.Vector2(spreadX, spreadY), camera);
-            raycaster.far = wpn.isMelee ? 4.2 : state.realm?100:200;
+            raycaster.near=0;
+            raycaster.far = wpn.isMelee ? 4.2 : state.realm?100:1500;
 
             const targets = state.realm?isoKit.arenaTargets():shootableMeshes.filter(m=>(!wpn.isMelee||!m.userData.isoWall)&&(!m.userData.isoOrb||state.agent==='iso'));
             bots.forEach(b => {
@@ -2545,7 +2547,7 @@
                 }
             } else if (!wpn.isMelee) {
                 const farPoint = new THREE.Vector3();
-                raycaster.ray.at(90, farPoint);
+                raycaster.ray.at(200, farPoint);
                 if(showPelletFX)createBulletTracer(muzzleWorld, farPoint, wpn.glowColor);
                 broadcastRoomEvent({
                     type: 'shot',
@@ -3954,6 +3956,13 @@
             // Navigation jobs share a small per-frame CPU budget.
             if(state.isLocked&&!state.inBuyMenu&&!state.roundEnding){botNavigation?.tick(dt);if(!currentRoomId&&state.gameMode==='tactical'&&state.hp>0&&!state.realm&&realMap.ready){const feet=yawObject.position.clone();feet.y-=2.2;if(Math.abs(realMap.getGroundHeight(yawObject.position)-feet.y)<.6)followTrail.record(feet);}}
             // Update Bots
+            if(state.spikePlanted&&!currentRoomId){
+              const key=state.spikeSite+':'+spikeGroup.position.x+':'+spikeGroup.position.z;
+              if(key!==retakeKey||!bots.some(b=>b.alive&&b.retakeRole==='defuse')||performance.now()>=retakeNextAt){retakeKey=key;retakeNextAt=performance.now()+500;
+                const orders=retakeOrders(bots,spikeGroup.position,{defuserIndex:botDefuse.index,canStand:p=>Math.abs(realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z))-p.y)<.5&&!checkPlayerCollision(new THREE.Vector3(p.x,p.y+2.2,p.z),0,true)});
+                for(const order of orders){const b=bots[order.index];b.retakeRole=order.role;b.retakeGoal=new THREE.Vector3(order.goal.x,order.goal.y,order.goal.z);}
+              }
+            }else {retakeKey='';retakeNextAt=0;for(const b of bots){b.retakeRole=null;b.retakeGoal=null;}}
             bots.forEach(b => {
                 if(b.realm&&b.realm!==state.realm)return;if(isoKit.tickDuelBot(b,dt))return;
                 if(b.nameSprite)b.nameSprite.visible=b.alive;if(!Number.isFinite(b.group.position.y)||b.group.position.y< -80){b.group.position.copy(b.lastSafePosition||new THREE.Vector3(b.baseX,b.baseY||0,b.baseZ));b.navPath=[];b.navGoal=null;b.directAt=0;}
@@ -3976,14 +3985,14 @@
                     return;
                 }
 
-                if (state.gameMode !== 'stationary'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
+                if ((state.gameMode !== 'stationary'||b.retakeGoal)&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
                     let moved=false;
-                    if(botNavigation&&state.gameMode==='tactical'){
+                    if(botNavigation&&(state.gameMode==='tactical'||b.retakeGoal)){
                         b.orderTime=(b.orderTime||0)-dt;
                         if(b.orderTime<=0){
                             b.orderTime=.7+Math.random()*.4;
                             const playerFeet=yawObject.position.clone().add(new THREE.Vector3(0,-2.2,0)),farFromLeader=b.group.position.distanceTo(playerFeet)>14;
-                            if(state.spikePlanted&&b.team==='defend')b.orderGoal=spikeGroup.position.clone();
+                            if(b.retakeGoal)b.orderGoal=b.retakeGoal.clone();
                             else if(b.team===state.team&&state.hp>0&&!state.realm&&(farFromLeader||!b.contact||performance.now()-b.contact.at>=4500)){
                                 const point=followTrail.goal(b,playerFeet);b.orderGoal=new THREE.Vector3(point.x,point.y,point.z);
                                 if(b.group.position.distanceTo(playerFeet)<7){const angle=(b.index-5)*Math.PI/2+yawObject.rotation.y,offset=playerFeet.clone().add(new THREE.Vector3(Math.cos(angle)*2.2,0,Math.sin(angle)*2.2));offset.y=realMap.getGroundHeight(offset.clone().add(new THREE.Vector3(0,2.2,0)));if(botNavigation.step(playerFeet,offset))b.orderGoal=offset;}
@@ -3992,7 +4001,7 @@
                             else if(state.spikePlanted){const angle=b.index*2.3,guard=spikeGroup.position.clone().add(new THREE.Vector3(Math.cos(angle)*7,0,Math.sin(angle)*7));guard.y=realMap.getGroundHeight(guard.clone().add(new THREE.Vector3(0,2.2,0)));b.orderGoal=guard.y> -80?guard:spikeGroup.position.clone();}
                             else{const sites=realMap.getBotSpawns(true);const p=sites[b.index%sites.length];b.orderGoal=new THREE.Vector3(p.x,p.y,p.z);}
                         }
-                        if(b.orderGoal&&!b.defusing&&(!b.combatVisible||b.team===state.team&&!state.realm&&b.group.position.distanceTo(yawObject.position)>16))moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b)));
+                        if(b.orderGoal&&!b.defusing&&(b.retakeGoal||!b.combatVisible||b.team===state.team&&!state.realm&&b.group.position.distanceTo(yawObject.position)>16))moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b)));
                     }else if(botNavigation){
                         b.roamTime=(b.roamTime||0)-dt;
                         if(b.roamTime<=0||!b.orderGoal||b.group.position.distanceTo(b.orderGoal)<1.8){
@@ -4129,7 +4138,7 @@
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
             const canPlant = state.hp>0 && !breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
             const canDefuse = state.hp>0 && !breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
-            const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical',planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
+            const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical'||state.spikePlanted,planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
             for(const b of bots)b.defusing=b.alive&&b.index===aiDefuse.index;state.defuseCheckpoint=Math.max(state.defuseCheckpoint,aiDefuse.checkpoint);
             if(aiDefuse.complete){const defuser=bots.find(b=>b.index===aiDefuse.index);state.spikePlanted=false;spikeGroup.visible=false;cancelSpikeAction();document.getElementById('spike-hud-badge').classList.add('hidden');endRound(state.team==='defend',`${defuser?.name||'防守方'} 成功拆除 SPIKE`);return;}
             if(aiDefuse.index!==null){cancelSpikeAction();if(bots.find(b=>b.index===aiDefuse.index)?.team===state.team){document.getElementById('spike-progress-box').classList.remove('hidden');document.getElementById('spike-action-label').textContent='隊友正在拆除 SPIKE · 7 秒';document.getElementById('spike-progress-bar').style.width=`${aiDefuse.progress*100}%`;}advanceSpikeFuse(dt);return;}
@@ -4150,7 +4159,7 @@
                 if(state.plantingProgress>=1){
                     cancelSpikeAction();
                     if(canPlant){
-                        state.spikePlanted=true;state.holdingSpike=false;state.spikeSite=getPlantSite();state.spikeTimer=SPIKE_RULES.fuseSeconds;state.spikeTickAt=performance.now();state.spikeDetonated=false;state.beepAccumulator=0;
+                        state.spikePlanted=true;state.holdingSpike=false;for(const b of bots){b.orderTime=0;b.orderGoal=null;b.navPath=[];b.navGoal=null;b.directAt=0;b.contact=null;}state.spikeSite=getPlantSite();state.spikeTimer=SPIKE_RULES.fuseSeconds;state.spikeTickAt=performance.now();state.spikeDetonated=false;state.beepAccumulator=0;
                         spikeGroup.position.set(yawObject.position.x,getGroundHeight(yawObject.position),yawObject.position.z);spikeGroup.rotation.y=yawObject.rotation.y;spikeGroup.visible=true;
                         document.getElementById('spike-hud-badge').classList.remove('hidden');sfx.playSpikeBeep(true);
                         abilityNotice('Spike 已安裝 · '+state.spikeSite+' 據點');setHudText('round-timer','0:45');return;
@@ -4198,7 +4207,7 @@
             badge.classList.toggle('hidden',!['carried','dropped','planted'].includes(s.phase));setHudText('spike-hud-badge',s.phase==='planted'?'SPIKE 已安裝':s.phase==='dropped'?'SPIKE 已掉落':s.carrierUid===currentUser?.uid?'攜帶 SPIKE · [4] 裝備 · [G] 丟下':state.team==='attack'?'SPIKE · '+(remotePlayers.get(s.carrierUid)?.data.name||'隊友')+' 攜帶中':'SPIKE 未安裝');
             const active=live&&state.hp>0&&state.isLocked&&!state.inBuyMenu;
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right;
-            const plant=active&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25&&canJump&&!moving;
+            const plant=active&&s.phase==='carried'&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25&&canJump&&!moving;
             const defuse=active&&state.team==='defend'&&s.phase==='planted'&&networkSpikeDistance()<3.3&&!moving;
             const pickup=state.hp>0&&state.isLocked&&!state.inBuyMenu&&state.team==='attack'&&s.phase==='dropped'&&networkSpikeDistance()<3.3;
             prompt.classList.toggle('hidden',!(plant||defuse||pickup));setHudText('site-prompt',pickup?'[F] 撿取 SPIKE':defuse?'按住 [4] 或 [F] 拆除 Spike · 半程保存':'按住 [4] 或 [F] 安裝 Spike · 4 秒');
@@ -4237,8 +4246,10 @@
         }
 
         function cancelSpikeAction(){
+            const planting=state.spikeAction==='plant';
             if(networkSpikeIntent){roomSocket?.send({type:'spike_cancel',id:networkSpikeIntent.id});networkSpikeIntent=null;}
             state.spikeAction=null;state.plantingProgress=state.spikePlanted?state.defuseCheckpoint:0;
+            if(planting){state.holdingSpike=false;spikeCarryRoot.visible=false;updateAmmoHUD();}
             document.getElementById('spike-progress-box').classList.add('hidden');
         }
         function updateSpikeVisuals(dt){

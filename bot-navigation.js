@@ -46,7 +46,7 @@ export class BotNavigation{
   bot.navPath=path;bot.navGoal=job.goal;this.jobs.delete(bot);
  }
  tick(dt){
-  this.clock+=dt;const until=performance.now()+2.5;let budget=20;
+  this.clock+=dt;const until=performance.now()+2.5;let budget=80;
   while(budget-->0&&this.jobs.size&&performance.now()<until){
    const [bot,j]=this.jobs.entries().next().value;this.jobs.delete(bot);
    if(!bot.alive)continue;this.jobs.set(bot,j);
