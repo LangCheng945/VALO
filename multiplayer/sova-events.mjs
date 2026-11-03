@@ -22,6 +22,13 @@ export async function abilityDamage(room,ws,p,raw,e,now){
  if(p.hp<=0){const socket=room.sockets().find(s=>room.data(s)?.uid===e.ownerUid),killer=socket&&room.data(socket);if(killer&&killer.uid!==p.uid&&killer.team!==p.team){await awardReynaSouls(room,killer,p,now);await awardIsoOrbs(room,killer,p,now);awardCloveContributors(room,killer,p,now);killer.kills++;room.save(socket,killer);}recordCloveDeath(p,now);p.deaths++;p.shieldReserve=0;p.healRemaining=0;p.active=false;p.respawnAt=room.rounds.enabled?0:now+5000;room.broadcast({type:'event',event:{type:'kill',killerUid:e.ownerUid,killerName:e.ownerName,victimUid:p.uid,victimName:p.name,weaponName:e.weaponName||(e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT'),isHead:false}});}
  room.save(ws,p);room.send(ws,{type:'damage',hp:p.hp,shield:p.shield,tempHealth:p.tempHealth||0,attacker:e.ownerName,cause:e.cause||'sova'});if(p.hp<=0)await room.spike.drop(p,now);
 }
+export async function damageSovaObject(room,selection,damage,now){
+ const effects=sovaEffects(room),recon=selection.kind==='sova-recon'&&effects.recons.find(e=>e.id===selection.id&&e.expiresAt>now&&e.hp>0);
+ const socket=selection.kind==='sova-drone'&&room.sockets().find(s=>room.data(s)?.uid===selection.id),target=socket&&room.data(socket),drone=target?.sova?.control;
+ if(recon){recon.hp=Math.max(0,recon.hp-damage);if(!recon.hp){effects.recons=effects.recons.filter(e=>e.id!==recon.id);room.broadcast({type:'event',event:{type:'sova_recon_end',id:recon.id}});}}
+ else if(drone?.kind==='drone'&&drone.endsAt>now&&drone.hp>0){drone.hp=Math.max(0,drone.hp-damage);room.save(socket,target);if(!drone.hp)await cancelSova(room,socket,target,now);}else return false;
+ await persist(room);return true;
+}
 export async function sovaEvent(room,ws,p,m,now){
  if(!m.type.startsWith('sova_'))return false;
  const fail=reason=>{room.send(ws,{type:'ability_error',reason});return true;},effects=sovaEffects(room);
@@ -29,9 +36,7 @@ export async function sovaEvent(room,ws,p,m,now){
  if(m.type==='sova_object_hit'){
   const recon=effects.recons.find(e=>e.id===m.id&&e.expiresAt>now),socket=room.sockets().find(s=>room.data(s)?.uid===m.ownerUid),target=socket&&room.data(socket),drone=target?.sova?.control?.kind==='drone'?target.sova.control:null,object=recon||drone;
   if(!object||p.hp<=0||!p.active||p.realm||sovaBusy(p)||cloveInvulnerable(p,now)||p.shotUsed||now-p.lastShot>400||!p.shotEnd||dist(p.shotEnd,object)>(recon?.8:1.2)||p.weapon==='melee'&&dist(p,object)>4.5)return true;
-  p.shotUsed=true;object.hp-=WEAPONS[p.shotWeapon||p.weapon]?.body||0;room.save(ws,p);
-  if(recon&&object.hp<=0){effects.recons=effects.recons.filter(e=>e.id!==recon.id);room.broadcast({type:'event',event:{type:'sova_recon_end',id:recon.id}});}else if(drone){room.save(socket,target);if(object.hp<=0)await cancelSova(room,socket,target,now);}
-  await persist(room);room.snapshot();return true;
+  p.shotUsed=true;room.save(ws,p);await damageSovaObject(room,{kind:recon?'sova-recon':'sova-drone',id:recon?recon.id:target.uid},WEAPONS[p.shotWeapon||p.weapon]?.body||0,now);room.snapshot();return true;
  }
  if(m.type==='sova_recon_seen'){
   const recon=effects.recons.find(e=>e.id===m.id&&e.expiresAt>now);if(recon&&reconPulse(recon,now)&&p.hp>0&&p.active&&!p.realm&&p.team!==recon.team&&!cloveInvulnerable(p,now)&&dist(p,recon)<SOVA.reconRadius){reveal(p,recon.team,now);room.save(ws,p);room.queueSnapshot?.();}return true;

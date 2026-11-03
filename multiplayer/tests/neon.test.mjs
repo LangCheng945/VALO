@@ -13,3 +13,29 @@ test('crouched Overdrive uses the lowered firing origin and lowered target head 
 test('Overdrive damages only the aimed device, spends one pulse and cancels camera control on destruction',async()=>{const f=fixture();f.room.cypherEffects={devices:[{id:'cam',kind:'camera',ownerUid:'p1',x:0,y:2.2,z:-4,hp:20}],flights:[],hats:[]};f.patch(1,{agent:'cypher',cypher:{control:{id:'cam'},eUsed:true}});await f.cast({type:'neon_ult'});await f.cast({type:'neon_beam',dx:1,dy:0,dz:0,object:{kind:'cypher',id:'cam'},targetUid:'p1'});assert.equal(f.room.cypherEffects.devices[0].hp,20);assert.equal(f.get(1).hp,100);await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'cypher',id:'cam'},targetUid:'p1'},now+50);assert.equal(f.room.cypherEffects.devices[0].hp,2);assert.equal(f.get(1).hp,100);await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'cypher',id:'cam'}},now+51);assert.equal(f.room.cypherEffects.devices[0].hp,2);await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'cypher',id:'cam'}},now+100);assert.equal(f.room.cypherEffects.devices.length,0);assert(!f.get(1).cypher.control);assert.equal(f.get(1).cypher.eReadyAt,now+100+45000);assert.equal(f.get(0).neon.battery,37);});
 test('wire endpoint destruction releases its victim without refund and turret destruction uses its existing rebuild cooldown',async()=>{const f=fixture();f.room.cypherEffects={devices:[{id:'wire',kind:'wire',ownerUid:'p2',team:'attack',a:{x:0,y:2.2,z:-4},b:{x:3,y:2.2,z:-4},hp:20}],flights:[],hats:[]};f.patch(1,{cypherAnchor:{id:'wire',x:0,z:-4},cypherSnaredUntil:now+5000});await f.cast({type:'neon_ult'});for(const n of [now,now+50])await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'cypher',id:'wire'}},n);assert(!f.get(1).cypherAnchor);assert(!f.get(1).cypherSnaredUntil);f.room.killjoyEffects={devices:[{id:'turret',kind:'turret',ownerUid:'p2',x:0,y:1.6,z:-4,hp:30}],flights:[]};for(const n of [now+100,now+150])await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'killjoy',id:'turret'}},n);assert.equal(f.room.killjoyEffects.devices.length,0);assert(f.get(2).killjoy.eReadyAt>now+40000);});
 test('device pulses reject unknown kinds, expired props and active Nanoswarm without applying actor damage',async()=>{const f=fixture();f.room.killjoyEffects={devices:[{id:'nano',kind:'nano',ownerUid:'p1',x:0,y:2.1,z:-4,hp:20,activeUntil:now+5000}],flights:[]};await f.cast({type:'neon_ult'});for(const [i,object]of [{kind:'killjoy',id:'nano'},{kind:'invalid',id:'nano'},{kind:'cypher',id:'missing'}].entries())await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object,targetUid:'p1'},now+i*50);assert.equal(f.room.killjoyEffects.devices[0].hp,20);assert.equal(f.get(1).hp,100);});
+test('Overdrive destroys recon and Leer using shared cleanup without hurting the actor behind them',async()=>{
+ const f=fixture();f.room.sovaEffects={flights:[],beams:[],recons:[{id:'recon',x:0,y:2.2,z:-4,hp:20,expiresAt:now+5000}]};f.room.reynaEffects={orbs:[],eyes:[{id:'eye',x:0,y:2.2,z:-4,hp:20,expiresAt:now+5000}]};await f.cast({type:'neon_ult'});
+ for(const [i,kind]of ['sova-recon','reyna'].entries()){
+  const id=i?'eye':'recon';await f.cast({type:'neon_beam',dx:1,dy:0,dz:0,object:{kind,id}},now+i*200);
+  const list=()=>i?f.room.reynaEffects.eyes:f.room.sovaEffects.recons;assert.equal(list()[0].hp,20);
+  for(const offset of [50,100])await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind,id},targetUid:'p1'},now+i*200+offset);
+  assert.equal(list().length,0);assert(f.events.some(e=>e.type===(i?'reyna_eye_end':'sova_recon_end')&&e.id===id));
+ }
+ assert.equal(f.get(1).hp,100);assert.equal(f.get(0).neon.battery,34);
+});
+test('Overdrive cancels a destroyed drone and rejects expired or isolated drone controls',async()=>{
+ const f=fixture();f.room.sovaEffects={flights:[],recons:[],beams:[]};f.patch(1,{agent:'sova',sova:{control:{kind:'drone',x:0,y:2.2,z:-4,hp:30,endsAt:now+5000}}});await f.cast({type:'neon_ult'});
+ for(const t of [now,now+50])await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'sova-drone',id:'p1'}},t);
+ assert.equal(f.get(1).sova.control,null);assert(f.events.some(e=>e.type==='sova_control_end'&&e.ownerUid==='p1'));assert.equal(f.get(1).hp,100);
+ for(const [i,patch]of [{realm:'duel'},{realm:null}].entries()){
+  f.patch(1,{...patch,sova:{control:{kind:'drone',x:0,y:2.2,z:-4,hp:30,endsAt:i?now:now+5000}}});await f.cast({type:'neon_beam',dx:0,dy:0,dz:-1,object:{kind:'sova-drone',id:'p1'}},now+100+i*50);assert.equal(f.get(1).sova.control.hp,30);
+ }
+});
+test('Overdrive ray tests rotated barrier sections, preserves destroyed segments, fortifies and expires walls',async()=>{
+ const f=fixture(),w={id:'wall',x:0,y:0,z:-4,yaw:Math.PI/4,createdAt:now,fortified:false,hp:[400,20,400,0]};f.room.barriers=[w];await f.cast({type:'neon_ult'});
+ const pulse=(segment,t,dx=0,dy=0,dz=-1)=>f.cast({type:'neon_beam',dx,dy,dz,object:{kind:'barrier',id:'wall',segment},targetUid:'p1'},t);
+ await pulse(1,now,1,0,0);assert.equal(w.hp[1],20);await pulse(4,now+50);await pulse('1',now+100);assert.equal(w.hp[1],20);
+ await pulse(1,now+150);assert.equal(w.hp[1],2);await pulse(1,now+200);assert.equal(w.hp[1],0);assert.equal(w.hp[0],400);assert.equal(f.get(1).hp,100);
+ await pulse(0,now+3400);assert(w.fortified);assert.equal(w.hp[1],0);assert.equal(w.hp[3],0);assert.equal(w.hp[0],800);assert(f.events.some(e=>e.type==='wall_state'));
+ await pulse(2,now+40100);assert.equal(w.hp[2],800);
+});

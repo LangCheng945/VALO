@@ -2,6 +2,10 @@ import{BARRIER,segmentPosition,insideSegment,advanceBarrier}from'./barrier-rules
 import{validPose,WEAPONS}from'./protocol.mjs';
 export function liveBarriers(room,now=Date.now()){return(room.barriers||[]).filter(w=>w.createdAt+BARRIER.lifetimeMs>now&&w.hp.some(hp=>hp>0));}
 async function persist(room){await room.ctx.storage.put('barriers',room.barriers);}
+export async function damageBarrierSegment(room,id,index,damage,now){
+ const w=liveBarriers(room,now).find(w=>w.id===id);if(!w||!Number.isInteger(index)||index<0||index>=4)return false;
+ advanceBarrier(w,now);if(!w.hp[index])return false;w.hp[index]=Math.max(0,w.hp[index]-damage);await persist(room);room.broadcast({type:'event',event:{type:'wall_state',...w}});return true;
+}
 export async function barrierEvent(room,ws,p,m,now){
  if(m.type!=='wall'&&m.type!=='wall_hit')return false;
  const fail=reason=>{room.send(ws,{type:'ability_error',key:'c',reason});return true;};
@@ -23,7 +27,7 @@ export async function barrierEvent(room,ws,p,m,now){
  }else{
   if(p.shotUsed||now-p.lastShot>400||!p.shotEnd||!insideSegment(w,i,p.shotEnd,.35))return true;p.shotUsed=true;
  }
- w.hp[i]=Math.max(0,w.hp[i]-weapon.body);room.save(ws,p);await persist(room);room.broadcast({type:'event',event:{type:'wall_state',...w}});return true;
+ room.save(ws,p);await damageBarrierSegment(room,w.id,i,weapon.body,now);return true;
 }
 export async function updateBarriers(room,now){let changed=false;for(const w of room.barriers||[]){const before=w.fortified;advanceBarrier(w,now);if(before!==w.fortified){room.broadcast({type:'event',event:{type:'wall_state',...w}});changed=true;}}
  const live=liveBarriers(room,now);if(live.length!==(room.barriers||[]).length){const ids=new Set(live.map(w=>w.id));for(const w of room.barriers||[])if(!ids.has(w.id))room.broadcast({type:'event',event:{type:'wall_remove',id:w.id}});room.barriers=live;changed=true;}if(changed)await persist(room);return live.length>0;}

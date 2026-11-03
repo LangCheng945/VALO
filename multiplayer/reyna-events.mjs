@@ -15,6 +15,10 @@ export async function awardReynaSouls(room,killer,victim,now){
  }
  await persist(room);
 }
+export async function damageReynaEye(room,id,damage,now){
+ const effects=reynaEffects(room),eye=effects.eyes.find(e=>e.id===id&&e.expiresAt>now&&e.hp>0);if(!eye)return false;
+ eye.hp=Math.max(0,eye.hp-damage);if(!eye.hp){effects.eyes=effects.eyes.filter(e=>e.id!==id);room.broadcast({type:'event',event:{type:'reyna_eye_end',id}});}await persist(room);return true;
+}
 export async function reynaEvent(room,ws,p,m,now){
  if(!m.type.startsWith('reyna_'))return false;
  const fail=reason=>{room.send(ws,{type:'ability_error',reason});return true;},effects=reynaEffects(room);
@@ -22,7 +26,7 @@ export async function reynaEvent(room,ws,p,m,now){
  if(m.type==='reyna_eye_hit'){
   const eye=effects.eyes.find(e=>e.id===m.id&&e.expiresAt>now);
   if(!eye||p.hp<=0||!p.active||p.realm||cloveInvulnerable(p,now)||reynaBusy(p,now)||p.weapon==='melee'&&Math.hypot(p.x-eye.x,p.y-eye.y,p.z-eye.z)>4.5||p.shotUsed||now-p.lastShot>400||!p.shotEnd||Math.hypot(p.shotEnd.x-eye.x,p.shotEnd.y-eye.y,p.shotEnd.z-eye.z)>REYNA.eyeRadius+.7)return true;
-  p.shotUsed=true;eye.hp-=WEAPONS[p.shotWeapon||p.weapon]?.body||0;room.save(ws,p);if(eye.hp<=0){effects.eyes=effects.eyes.filter(e=>e.id!==eye.id);room.broadcast({type:'event',event:{type:'reyna_eye_end',id:eye.id}});}await persist(room);room.snapshot();return true;
+  p.shotUsed=true;room.save(ws,p);await damageReynaEye(room,eye.id,WEAPONS[p.shotWeapon||p.weapon]?.body||0,now);room.snapshot();return true;
  }
  if(m.type==='reyna_exposed'){
   const eye=effects.eyes.find(e=>e.id===m.id&&e.expiresAt>now&&e.createdAt+REYNA.eyeArmMs<=now);

@@ -21,7 +21,7 @@ The Worker advertises `neon-kit-1`, restores active walls/bolts/stun warnings to
 
 ## Limits
 
-There is no complete server map collider; existing client-owned movement and static line-of-sight reports remain bounded rather than fully authoritative. The electric beam now damages actors plus Cypher cameras/wire endpoints and Killjoy turret/alarm/nanoswarm/lockdown devices. Device hits use one fixed-damage pulse, share existing destruction/cooldown logic and cannot also damage an actor behind the prop. Active Nanoswarm is not destructible. Other prop families (such as Sova/Leer/barrier sections) are not yet supported by the electric beam. Third-person gun visibility and lightweight hand/ankle electric rings follow sprint/slide/Overdrive; effects are removed on unequip, death, realm isolation and disconnect. The avatar pose still uses the existing character animation set. Spectator weapon models do not recreate Neon's local electric hand pose. Numeric values and timing are trainer adaptations, not latest competitive balancing claims.
+There is no complete server map collider; existing client-owned movement and static line-of-sight reports remain bounded rather than fully authoritative. The electric beam now damages actors plus Cypher cameras/wire endpoints and Killjoy turret/alarm/nanoswarm/lockdown devices. Device hits use one fixed-damage pulse, share existing destruction/cooldown logic and cannot also damage an actor behind the prop. Active Nanoswarm is not destructible. Overdrive also damages Sova recon bolts and active Owl Drones, Reyna Leer eyes and individual Sage barrier sections. Destroying a drone ends its owner’s control; broken barrier sections stay broken when the remaining wall fortifies. Third-person gun visibility and lightweight hand/ankle electric rings follow sprint/slide/Overdrive; effects are removed on unequip, death, realm isolation and disconnect. The avatar pose still uses the existing character animation set. Spectator weapon models do not recreate Neon's local electric hand pose. Numeric values and timing are trainer adaptations, not latest competitive balancing claims.
 
 ## Checks
 
@@ -29,13 +29,15 @@ There is no complete server map collider; existing client-owned movement and sta
 
 ## Device-hit extension
 
-`neon-props-1` advertises beam damage to supported props. The client reports the
+`neon-props-1` advertises Cypher/Killjoy device damage; `neon-props-2` adds Sova recon/drone, Reyna Leer and Sage barrier sections. The client reports the
 first actual collider struck; the Worker resolves a known device ID, bounds the
 ray/range, and applies the fixed pulse once. Unknown, expired, off-ray or active
 Nanoswarm targets cannot take damage. Client static-world occlusion remains a
 limitation; the Worker does not have the complete map mesh.
 
-`neon-devices.mjs` resolves target geometry. Destruction uses the same Cypher and
-Killjoy helpers as firearm hits, so camera control, wire release and rebuild
+`neon-devices.mjs` resolves target geometry. Destruction uses the same Cypher,
+Killjoy, Sova, Reyna and barrier helpers as firearm hits, so camera control, wire release and rebuild
 cooldowns remain consistent. Tests include foreground-prop interception, no
 double actor damage, camera cancellation and turret rebuild via real peers.
+
+The extended tests cover off-ray rejection, expired/isolated drones, controller release, rotated barrier bounds, per-section HP, fortification and expiry. Real WebSocket peers verify Leer removal and drone control release; browser tests fire through actual recon/Leer/barrier colliders and check that the bot behind the prop receives no damage.
