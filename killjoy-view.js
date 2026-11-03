@@ -1,3 +1,4 @@
+import {attachLockdownModel} from './lockdown-model.js?v=lockdown1';
 import{KJ,killjoyState,detained,resetKilljoy,deviceOnline,turretFacing,killjoyFlight}from'./multiplayer/killjoy-rules.mjs?v=neon2';
 import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
 import{disposeEffect}from'./ability-effects.js?v=neon2';
@@ -33,7 +34,7 @@ export class KilljoyKit{
   if(e.kind==='alarm'){hit=new T.Mesh(new T.SphereGeometry(.28,10,8),yellow);hit.scale.set(1,.7,1);hit.position.y=.25;mesh.add(hit);for(const sign of [-1,1]){const leg=new T.Mesh(new T.BoxGeometry(.08,.2,.35),metal);leg.position.set(sign*.25,.1,0);mesh.add(leg);}}
   if(e.kind==='turret'){hit=new T.Mesh(new T.BoxGeometry(.52,.52,.45),yellow);hit.position.y=.6;mesh.add(hit);const base=new T.Mesh(new T.CylinderGeometry(.35,.45,.15,6),metal);base.position.y=.1;mesh.add(base);const gun=new T.Mesh(new T.CylinderGeometry(.06,.06,.45,8),metal);gun.rotation.x=Math.PI/2;gun.position.set(0,.65,-.4);mesh.add(gun);}
   if(e.kind==='lockdown'){hit=new T.Mesh(new T.CylinderGeometry(.35,.48,.9,8),yellow);hit.position.y=.45;mesh.add(hit);const ring=new T.Mesh(new T.TorusGeometry(.55,.045,5,32),new T.MeshBasicMaterial({color:0xa7f18e}));ring.rotation.x=Math.PI/2;ring.position.y=.3;mesh.add(ring);const boundary=new T.Mesh(new T.RingGeometry(KJ.lockdownRadius-.08,KJ.lockdownRadius,64),new T.MeshBasicMaterial({color:0xdc9bff,transparent:true,opacity:.5,side:T.DoubleSide,depthWrite:false}));boundary.rotation.x=-Math.PI/2;boundary.position.y=.03;mesh.add(boundary);}
-  hit.userData.killjoyDevice=e.id;mesh.rotation.y=e.yaw||0;this.api.scene.add(mesh);this.api.shootable.push(hit);mesh.updateMatrixWorld(true);return{mesh,hit};
+  hit.userData.killjoyDevice=e.id;mesh.rotation.y=e.yaw||0;this.api.scene.add(mesh);this.api.shootable.push(hit);mesh.updateMatrixWorld(true);if(e.kind==='lockdown')attachLockdownModel(mesh,hit);return{mesh,hit};
  }
  receive(e){if(e.type==='killjoy_flight_end'){this.remove(this.flights,e.id);return true;}if(e.type==='killjoy_remove'){this.remove(this.devices,e.id);return true;}if(e.type==='killjoy_shot'){this.api.tracer({x:e.x,y:e.y,z:e.z},{x:e.ex,y:e.ey,z:e.ez});return true;}
   if(e.type==='killjoy_alarm'||e.type==='killjoy_lockdown'){const mesh=new T.Mesh(new T.SphereGeometry(1,16,10),new T.MeshBasicMaterial({color:e.type==='killjoy_alarm'?0xf9b1ff:0xb2ee9d,wireframe:true,transparent:true,opacity:.4,depthWrite:false}));mesh.position.set(e.x,e.y+.4,e.z);this.api.scene.add(mesh);this.bursts.push({mesh,at:this.now(),radius:e.radius||KJ.alarmBlast});return true;}

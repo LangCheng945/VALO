@@ -1,0 +1,17 @@
+# Additional usable source assets
+
+Pinned source: [unkwsr/open-aim](https://github.com/unkwsr/open-aim/tree/e1e81cf8ea37e5c363d7720c78cb17fedf0edd94), `site/aim-viewmodel`. These classifications are based on downloaded JSON payloads, not filenames alone. Source descriptions are community packaging metadata, not an official Riot download catalog.
+
+| Candidate | Verified contents | Integration status |
+| --- | --- | --- |
+| `killjoy.device.json/bin`, `killjoy.device.df.jpg`, `killjoy.device.mask.png` | 5,059 vertices, 7,050 triangles, metre units, static shell, albedo and emissive mask | Integrated as Lockdown's cosmetic shell. Existing hitbox, HP, countdown and network behavior retained. |
+| `killjoy.detain.json` | Intro/loop/outro first-person detention animation descriptions, named moving/held bones, quantization scales | Needs paired binary decoding, phase playback and rig retargeting. |
+| `knife.json`, `knife.gun.png` | Tactical knife: 992 vertices / 1,274 triangles, hand rig and animation descriptions | A possible selectable alternative. It is not the user's Prime//2.0 karambit; not substituted automatically. |
+| `melee.knife.b996f03cc9.json` | Knife idle/run additives and named first-person bones | Requires correct additive-reference pose and corresponding binary; metadata alone is not a playable animation. |
+| `viewmodel.equip.json`, `phantom.loco.b0ccd17632.json` | Vandal equip timing/quantized tracks; Phantom idle/run/walk additive clip metadata | Needs full arm/gun rig synchronization and animation time adaptation. |
+| `smoke-jett-enemy.73177dc412.json` | Enemy Cloudburst phase definitions, particle emitters, lifetime/size/color/material distributions | Needs the paired mesh/texture buffers and a matching particle-material renderer. |
+| `smoke-omen-ally.8d8898e624.json` | Allied Dark Cover loop/telegraph/outro systems and texture/material parameter curves | Needs rendering adaptation; cannot simply load as a glTF scene. |
+| `flashfx.sky.json` | Skye victim flash emitters, leaf sprite sheet mapping, lifetime/size curves | Needs controlled screen-space particle rendering tied to the existing flash duration. |
+| `muzzle.5073054cbb.json` | Weapon-specific ADS/hip muzzle-system selection and error thresholds | Useful for replacing generic muzzle planes; corresponding material/particle systems need implementation. |
+
+All underlying game assets/designs remain Riot Games property. Repository MIT licensing does not establish an asset redistribution license. No upstream executable JavaScript is executed by this inventory workflow.
