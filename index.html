@@ -717,12 +717,13 @@
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=original1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=hands3';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=jett1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=hands3';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=hands3';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
         import {AgentPreview} from './agent-preview.js?v=neon2';
+        import {FirstPersonBody} from './first-person-body.js?v=body1';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon2';
         import {SpectatorView} from './spectator-view.js?v=neon2';
         import {spectatorCandidates} from './spectator-rules.mjs';
@@ -1528,6 +1529,7 @@
         let firstPersonHands=null;
         const spectatorView=new SpectatorView(scene,{skinTexture:smiteTexture,environment:viewEnvironmentTarget.texture});
         preloadAgentAvatars();
+        const firstPersonBody=new FirstPersonBody(scene,state.agent);
         let spectatorUiState=false;
         function updateSpectatorView(dt){
             document.body.classList.toggle('clove-active',state.agent==='clove');const eligible=state.hp<=0&&!state.inBuyMenu&&!state.roundEnding;
@@ -3163,7 +3165,7 @@
         window.selectAgent = function(agentKey) {
             if(!isAgent(agentKey)||state.realm||omenKit.busy())return false;
             if(currentRoomId&&!agentSupported(agentKey,roomSocket?.serverFeatures)){const message='連線伺服器正在更新這個角色，請稍後重新加入房間';shopFeedback(message);document.getElementById('agent-picker-feedback').textContent=message;return false;}
-            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();cypherKit.cancelEquip();cancelReconInput();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.unequip();state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
+            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();cypherKit.cancelEquip();cancelReconInput();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.unequip();state.agent = agentKey;buildFirstPersonViewmodel();abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             for(const key of AGENT_KEYS){const card=document.getElementById('agent-card-'+key);card.classList.toggle('active',agentKey===key);card.setAttribute('aria-pressed',String(agentKey===key));}
             document.getElementById('agent-picker').close();
@@ -4421,6 +4423,7 @@
             if(now-lastRadarDraw>=50){drawRadar();lastRadarDraw=now;}
 
             const spectatorCamera=updateSpectatorView(dt);const omenCamera=omenKit.viewCamera();if(omenCamera)spectatorView.weaponRoot.visible=false;const activeCamera=skyeKit.viewCamera()||cypherKit.viewCamera()||sovaKit.viewCamera()||omenCamera||spectatorCamera;if(skyeKit.viewCamera()||cypherKit.viewCamera()||sovaKit.viewCamera())spectatorView.weaponRoot.visible=false;const viewerRealm=spectatorView.active?(remotePlayers.get(spectatorView.uid)?.data.realm||null):state.realm;isoKit.filterActors(viewerRealm);omenKit.hideChannelBodies();reynaKit.hideActors();
+            firstPersonBody.update(dt,{agent:state.agent,position:yawObject.position,yaw:yawObject.rotation.y,moving:isMoving,walking:moveState.walk,crouching:state.crouchAmount>.5,grounded:canJump,visible:activeCamera===camera&&state.isLocked&&!state.inBuyMenu&&state.hp>0&&!spectatorView.active});
             if(!state.inBuyMenu)renderGameplayFrame(activeCamera);
         }
 

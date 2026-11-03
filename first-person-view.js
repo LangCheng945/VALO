@@ -1,3 +1,4 @@
+import {installJettHands,poseJettHand} from './jett-hands.js?v=jett1';
 import {AGENTS,normalizeAgent} from './multiplayer/agents.mjs?v=neon2';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs?v=hands3';
@@ -82,7 +83,7 @@ export class FirstPersonHands{
   const sage=agent!=='jett';const skin=new T.MeshStandardMaterial({color:0x9c624a,roughness:.84,metalness:0,envMap:environment,envMapIntensity:.12});
   const glove=new T.MeshStandardMaterial({color:sage?0xa3674d:0x030b10,roughness:.91,envMap:environment,envMapIntensity:.2});
   const sleeve=new T.MeshStandardMaterial({color:sage?0x546761:0x08171b,roughness:.94});const cuff=new T.MeshStandardMaterial({color:sage?0x0e7566:0x21616a,roughness:.65,metalness:.12});
-  this.materials={skin,glove,sleeve,cuff};for(const m of Object.values(this.materials))m.color.convertSRGBToLinear();this.arms=[];
+  this.materials={skin,glove,sleeve,cuff};this.root.userData.handMaterials=Object.values(this.materials);for(const m of Object.values(this.materials))m.color.convertSRGBToLinear();this.arms=[];
   for(const side of [-1,1]){
    const rest=key==='overdrive'&&side>0?'point':key==='orb'||key==='bladestorm'||key==='melee'&&side<0;const hand=animatedHand(side,this.materials,rest,key==='melee'&&side>0);hand.userData.openRest=rest===true;hand.userData.side=side;this.root.add(hand);
    const arm=new T.Group();arm.name=side<0?'left-tailored-sleeve':'right-tailored-sleeve';
@@ -91,9 +92,9 @@ export class FirstPersonHands{
    const seam=new T.Mesh(new T.TorusGeometry(.035,.0014,4,16),cuff);seam.rotation.x=Math.PI/2;arm.add(seam);this.root.add(arm);
    this.arms.push({side,hand,arm,sleeveMesh,cuff:end,seam,target:new T.Vector3(),wrist:new T.Vector3(),direction:new T.Vector3(),grasp:new T.Vector3(),receiver:new T.Vector3(),elbow:new T.Vector3(side<0?-.18:.50,-.63,.06)});
   }
-  this.setAgent(agent);this.update({});
+  this.agent=agent;this.setAgent(agent);this.update({});this.ready=installJettHands(this).catch(()=>false);
  }
- setAgent(agent){const colors=AGENTS[normalizeAgent(agent)].hands;for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
+ setAgent(agent){const previous=this.agent;this.agent=agent;if(previous!==agent&&this.arms){for(const a of this.arms)if(a.rig){a.rig.skeleton.dispose();a.rig.mesh.geometry.dispose();a.rig.mesh.material.dispose();a.hand.clear();const rest=this.key==='overdrive'&&a.side>0?'point':this.key==='orb'||this.key==='bladestorm'||this.key==='melee'&&a.side<0;const replacement=animatedHand(a.side,this.materials,rest,this.key==='melee'&&a.side>0);for(const child of [...replacement.children])a.hand.add(child);a.rig=null;}this.skeletalReady=false;if(agent==='jett')this.ready=installJettHands(this).catch(()=>false);}const colors=AGENTS[normalizeAgent(agent)].hands;for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
  update({reload=0,magazine=null,inspect=0,meleeGrip=null,dt=0}={}){
   this.elapsed+=dt;const p=this.profile;inspect=Math.max(0,Math.min(1,inspect));
   for(const a of this.arms){
@@ -114,9 +115,9 @@ export class FirstPersonHands{
    if(a.side<0&&reload>0){opening=track(reload,[[0,0],[.08,.7],[.18,0],[.43,0],[.50,.8],[.60,0],[.79,0],[.87,.6],[1,0]])[0];}
    if(a.side<0&&inspect>0&&this.key!=='melee'){const release=Math.sin(inspect*Math.PI)**2;opening=Math.max(opening,release*.8);target.x-=release*.07;target.y-=release*.035;}
    if(this.key==='melee'&&a.side>0)opening=(meleeGrip?.fingerRelease||0);
-   for(const mesh of a.hand.children)mesh.morphTargetInfluences[0]=opening;
+   for(const mesh of a.hand.children)if(mesh.morphTargetInfluences)mesh.morphTargetInfluences[0]=opening;poseJettHand(a,opening,this.key);
    a.hand.position.copy(target);
-   const wrist=a.wrist.set(0,0,.095).applyEuler(a.hand.rotation).add(target);
+   const wrist=a.wrist.set(0,0,a.rig?.03:.095).applyEuler(a.hand.rotation).add(target);
    const elbow=a.elbow,direction=a.direction.copy(wrist).sub(elbow),length=direction.length();
    a.arm.position.copy(elbow).add(wrist).multiplyScalar(.5);a.arm.quaternion.setFromUnitVectors(up,direction.normalize());a.sleeveMesh.scale.y=Math.max(.01,length);a.cuff.position.y=length*.5-.018;a.seam.position.y=length*.5-.037;
   }
@@ -147,4 +148,4 @@ export function updateMagazine(magazine,progress,key){
  magazine.visible=key==='classic'?active&&progress>.17&&progress<.84:!(progress>.46&&progress<.54);
  magazine.userData.reloadStage=!active?'idle':progress<.17?'reach':progress<.46?'remove':progress<.54?'replace':progress<.80?'insert':progress<.96?'settle':'idle';
 }
-export function disposeViewmodel(root){const gs=new Set(),ms=new Set();root.traverse(o=>{if(o.geometry&&!o.geometry.userData.sharedWeaponGeometry)gs.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])ms.add(m);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());root.clear();}
+export function disposeViewmodel(root){root.traverse(o=>{o.userData.disposed=true;if(o.isSkinnedMesh)o.skeleton?.dispose();});const gs=new Set(),ms=new Set();root.traverse(o=>{for(const m of o.userData.handMaterials||[])ms.add(m);if(o.geometry&&!o.geometry.userData.sharedWeaponGeometry)gs.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])ms.add(m);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());root.clear();}
