@@ -41,3 +41,7 @@ cooldowns remain consistent. Tests include foreground-prop interception, no
 double actor damage, camera cancellation and turret rebuild via real peers.
 
 The extended tests cover off-ray rejection, expired/isolated drones, controller release, rotated barrier bounds, per-section HP, fortification and expiry. Real WebSocket peers verify Leer removal and drone control release; browser tests fire through actual recon/Leer/barrier colliders and check that the bot behind the prop receives no damage.
+
+## Input lifecycle
+
+Opening the menu, losing focus/pointer lock, round transitions and death immediately clear Neon’s held fire, prepared cast, movement action and visible hands. Pausing and switching weapons also interrupt active Neon actions on the Worker’s next state message, without waiting for its alarm. A living player may re-equip an unexpired Overdrive; interruption neither refunds the ultimate nor extends its deadline. Dead Neon input falls through to spectator controls. WebSocket and browser tests cover these transitions.

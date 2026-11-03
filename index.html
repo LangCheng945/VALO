@@ -693,7 +693,7 @@
         <div class="agent-picker-roster"><div class="agent-picker-tools"><div id="agent-role-filters" role="group" aria-label="角色定位篩選"></div><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
-        import {NeonKit} from './neon-view.js?v=neon3';
+        import {NeonKit} from './neon-view.js?v=neon4';
         import {NEON,neonDeath} from './multiplayer/neon-rules.mjs?v=neon2';
         import {CypherKit} from './cypher-view.js?v=neon2';
         import {cypherDeath} from './multiplayer/cypher-rules.mjs?v=neon2';
@@ -3441,6 +3441,7 @@
         }
 
         function resetMovementInput() {
+            neonKit.suspend();
             cancelSlowEquip();
             cancelBarrierPlacement();
             state.healingEquipped=false;state.healPendingUntil=0;abilityCast.cancel();cancelSpikeAction();

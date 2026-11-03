@@ -20,3 +20,14 @@ test('real Overdrive destroys Leer and an active Owl Drone, synchronizing remova
   await a.wait(m=>m.type==='event'&&m.event.type==='sova_control_end'&&m.event.ownerUid===bw.uid);await b.wait(players(bw.uid,p=>!p.sova?.control));assert(!b.messages.some(m=>m.type==='damage'));
  }finally{for(const p of peers)p.ws.close();}
 });
+test('pausing and weapon changes immediately interrupt Neon equipment and sprint without refunding the ultimate',{timeout:12000},async()=>{
+ const code=await roomCode(),peers=[];try{
+  const a=peer(code,'neon');peers.push(a);const aw=await a.wait(m=>m.type==='welcome');await activate(a,'neon');a.send({type:'neon_ult'});
+  const active=(await a.wait(players(aw.uid,p=>p.neon.equipped))).players.find(p=>p.uid===aw.uid),deadline=active.neon.ultUntil;
+  let mark=a.messages.length;a.send({type:'state',...a.pose,active:false});await a.wait(players(aw.uid,p=>!p.active&&!p.neon.equipped&&p.neon.ultUntil===deadline&&p.ultUsed),mark);
+  mark=a.messages.length;a.send({type:'state',...a.pose});a.send({type:'neon_ult'});await a.wait(players(aw.uid,p=>p.neon.equipped),mark);
+  mark=a.messages.length;a.send({type:'state',...a.pose,weapon:'classic'});await a.wait(players(aw.uid,p=>p.weapon==='classic'&&!p.neon.equipped&&p.neon.ultUntil===deadline),mark);
+  a.pose.weapon='classic';a.send({type:'neon_run'});await a.wait(players(aw.uid,p=>p.neon.running));mark=a.messages.length;
+  a.send({type:'state',...a.pose,active:false});await a.wait(players(aw.uid,p=>!p.active&&!p.neon.running&&!p.neon.slideUntil),mark);
+ }finally{for(const p of peers)p.ws.close();}
+});
