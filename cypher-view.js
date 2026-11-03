@@ -1,4 +1,4 @@
-import{CYPHER as C,cypherState,cameraControl,cypherBusy,cypherFlight,wireContact,constrainTether,resetCypher,concussed}from'./multiplayer/cypher-rules.mjs?v=duo1';
+import{CYPHER as C,cypherState,cameraControl,cypherBusy,cypherFlight,wireContact,constrainTether,resetCypher,concussed}from'./multiplayer/cypher-rules.mjs?v=recon1';
 import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
 import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';
 import{reveal}from'./multiplayer/sova-rules.mjs?v=neon2';

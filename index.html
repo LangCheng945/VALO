@@ -693,6 +693,8 @@
         <div class="agent-picker-roster"><div class="agent-picker-tools"><div id="agent-role-filters" role="group" aria-label="角色定位篩選"></div><label class="agent-search-label" for="agent-search">特務名單</label><input id="agent-search" type="search" placeholder="搜尋名稱或定位…" autocomplete="off"><p id="agent-picker-feedback" role="status"></p></div><div id="agent-picker-grid"></div><button id="agent-picker-confirm" type="button">確認選擇 <span>JETT</span></button></div>
     </dialog>
     <script type="module">
+        import {ReconKit} from './recon-view.js?v=recon1';
+        import {resetRecon,reconDeath} from './multiplayer/recon-rules.mjs?v=recon1';
         import {RazeKit} from './raze-view.js?v=duo1';
         import {AstraKit} from './astra-view.js?v=duo1';
         import {razeDeath} from './multiplayer/raze-rules.mjs?v=duo1';
@@ -700,9 +702,9 @@
         import {ViperKit} from './viper-view.js?v=viper1';
         import {stopViper} from './multiplayer/viper-rules.mjs?v=viper1';
         import {BreachKit} from './breach-view.js?v=breach1';
-        import {NeonKit} from './neon-view.js?v=duo1';
+        import {NeonKit} from './neon-view.js?v=recon1';
         import {NEON,neonDeath} from './multiplayer/neon-rules.mjs?v=neon2';
-        import {CypherKit} from './cypher-view.js?v=duo1';
+        import {CypherKit} from './cypher-view.js?v=recon1';
         import {cypherDeath} from './multiplayer/cypher-rules.mjs?v=neon2';
         import {KilljoyKit} from './killjoy-view.js?v=neon2';
         import {KJ,detained,killjoyDeath} from './multiplayer/killjoy-rules.mjs?v=neon2';
@@ -712,7 +714,7 @@
         import {REYNA,reynaBusy,reynaDismissed,empressActive,reynaDeath} from './multiplayer/reyna-rules.mjs?v=neon2';
         import {BrimstoneKit} from './brimstone-view.js?v=neon2';
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
-        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=duo1';
+        import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=armory1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=neon2';
@@ -1945,13 +1947,13 @@
         function applyServerSpawn(player){
             if(!player)return;removeCorpse(currentUser?.uid||'self');applyRoomTeam(player.team);state.hp=player.hp;state.shield=player.shield;state.armorType=player.armorType||(player.shield===25?'light':player.shield>0?'heavy':'none');state.shieldReserve=player.shieldReserve||0;if(FIREARMS[player.primaryWeapon]?.slot==='primary')state.primaryWeaponKey=player.primaryWeapon;if(isSidearm(player.secondaryWeapon))state.secondaryWeaponKey=player.secondaryWeapon;state.kills=player.kills;state.deaths=player.deaths;
             yawObject.position.set(player.x,player.y,player.z);yawObject.rotation.y=player.yaw;pitchObject.rotation.x=0;playerVelocity.set(0,0,0);resetMovementInput();resetAbilities();if(state.agent==='phoenix'&&Number.isFinite(player.slowCharges))state.qCharges=player.slowCharges;if(state.agent==='phoenix'&&player.barrierUsed!==undefined)state.cCharges=player.barrierUsed?0:1;if(player.ultUsed!==undefined)state.xCharges=player.ultUsed?0:1;
-            razeKit.sync(player);astraKit.sync(player);viperKit.sync(player);breachKit.sync(player);neonKit.sync(player);cypherKit.sync(player);killjoyKit.sync(player);sovaKit.sync(player);reynaKit.sync(player);brimKit.sync(player);isoKit.sync(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
+            fadeKit.sync(player);skyeKit.sync(player);razeKit.sync(player);astraKit.sync(player);viperKit.sync(player);breachKit.sync(player);neonKit.sync(player);cypherKit.sync(player);killjoyKit.sync(player);sovaKit.sync(player);reynaKit.sync(player);brimKit.sync(player);isoKit.sync(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();pushMyNetworkState(true);
         }
         function receivePlayerSnapshot(players,round){
             if(round)receiveRoomRound(round);
             const seen=new Set();
             for(const p of players){
-                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;state.tempHealth=p.tempHealth||0;state.decayUntil=p.decayUntil||0;razeKit.sync(p);astraKit.sync(p);viperKit.sync(p);breachKit.sync(p);neonKit.sync(p);cypherKit.sync(p);killjoyKit.sync(p);sovaKit.sync(p);reynaKit.sync(p);brimKit.sync(p);isoKit.sync(p);omenKit.sync(p);if(state.agent==='clove')cloveKit.sync(p);if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
+                if(p.uid===currentUser?.uid){state.hp=p.hp;state.shield=p.shield;state.armorType=p.armorType||(p.shield===25?'light':p.shield>0?'heavy':'none');state.shieldReserve=p.shieldReserve||0;state.kills=p.kills;state.deaths=p.deaths;state.tempHealth=p.tempHealth||0;state.decayUntil=p.decayUntil||0;fadeKit.sync(p);skyeKit.sync(p);razeKit.sync(p);astraKit.sync(p);viperKit.sync(p);breachKit.sync(p);neonKit.sync(p);cypherKit.sync(p);killjoyKit.sync(p);sovaKit.sync(p);reynaKit.sync(p);brimKit.sync(p);isoKit.sync(p);omenKit.sync(p);if(state.agent==='clove')cloveKit.sync(p);if(state.agent==='phoenix'){if(Number.isFinite(p.slowCharges))state.qCharges=p.slowCharges;if(p.barrierUsed!==undefined)state.cCharges=p.barrierUsed?0:1;if(p.ultUsed!==undefined)state.xCharges=p.ultUsed?0:1;if(Number.isFinite(p.healCooldown))state.eCooldown=p.healCooldown;}if(p.hp<=0){ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);}continue;}
                 seen.add(p.uid);
                 if(!remotePlayers.has(p.uid))remotePlayers.set(p.uid,createRemotePlayerAvatar(p.uid,p));
                 else{const rp=remotePlayers.get(p.uid),wasDead=rp.data.hp<=0,changed=rp.data.team!==p.team||rp.data.name!==p.name||rp.data.agent!==p.agent;rp.data=p;rp.targetPos.set(p.x,p.y-2.2,p.z);rp.targetYaw=p.yaw;if(wasDead||rp.group.position.distanceTo(rp.targetPos)>18)rp.group.position.copy(rp.targetPos);rp.group.visible=true;rp.hpFill.scale.x=Math.max(.01,p.hp/100);
@@ -2149,13 +2151,13 @@
                     document.getElementById('hud-room-code').textContent='ROOM: '+currentRoomId;document.getElementById('round-phase-label').textContent=mapDefinition.name.toUpperCase()+' #'+currentRoomId;document.getElementById('round-timer').textContent='∞';
                     document.getElementById('sb-room-title').textContent=mapDefinition.name.toUpperCase()+' // ROOM #'+currentRoomId;
                     if(message.player){state.playerName=message.player.name||state.playerName;document.getElementById('input-player-name').value=state.playerName;if(isAgent(message.player.agent)&&message.player.agent!==state.agent)selectAgent(message.player.agent);if(isSidearm(message.player.weapon))state.secondaryWeaponKey=message.player.weapon;else if(FIREARMS[message.player.weapon]?.slot==='primary')state.primaryWeaponKey=message.player.weapon;}
-                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const ev of [...(message.razeEffects?.flights||[]),...(message.razeEffects?.devices||[])])razeKit.receive(ev);for(const ev of [...(message.astraEffects?.stars||[]),...(message.astraEffects?.areas||[])])astraKit.receive(ev);for(const ev of [...(message.viperEffects?.devices||[]),...(message.viperEffects?.flights||[])])viperKit.receive(ev);for(const ev of message.breachEffects?.waves||[])breachKit.receive(ev);for(const ev of [...(message.neonEffects?.walls||[]),...(message.neonEffects?.flights||[]),...(message.neonEffects?.stuns||[])])neonKit.receive(ev);for(const ev of [...(message.cypherEffects?.devices||[]),...(message.cypherEffects?.flights||[]),...(message.cypherEffects?.hats||[])])cypherKit.receive(ev);for(const ev of [...(message.killjoyEffects?.devices||[]),...(message.killjoyEffects?.flights||[])])killjoyKit.receive(ev);for(const ev of [...(message.sovaEffects?.flights||[]),...(message.sovaEffects?.recons||[]),...(message.sovaEffects?.beams||[])])sovaKit.receive(ev);for(const ev of [...(message.reynaEffects?.eyes||[]),...(message.reynaEffects?.orbs||[])])reynaKit.receive(ev);for(const ev of [...(message.brimEffects?.areas||[]),...(message.brimEffects?.flights||[])])brimKit.receive(ev);for(const ev of [...(message.omenEffects?.smokes||[]),...(message.omenEffects?.flights||[])])omenKit.receive(ev);for(const ev of [...(message.isoEffects?.walls||[]),...(message.isoEffects?.flights||[]),...(message.isoEffects?.orbs||[])])isoKit.receive(ev);for(const ev of [...(message.cloveEffects?.smokes||[]),...(message.cloveEffects?.flights||[])])cloveKit.receive(ev);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
+                    applyServerSpawn(message.player);receiveRoomRound(message.round);for(const ev of [...(message.reconEffects?.devices||[]),...(message.reconEffects?.flights||[]),...(message.reconEffects?.areas||[])])fadeKit.receive(ev)||skyeKit.receive(ev);for(const ev of [...(message.razeEffects?.flights||[]),...(message.razeEffects?.devices||[])])razeKit.receive(ev);for(const ev of [...(message.astraEffects?.stars||[]),...(message.astraEffects?.areas||[])])astraKit.receive(ev);for(const ev of [...(message.viperEffects?.devices||[]),...(message.viperEffects?.flights||[])])viperKit.receive(ev);for(const ev of message.breachEffects?.waves||[])breachKit.receive(ev);for(const ev of [...(message.neonEffects?.walls||[]),...(message.neonEffects?.flights||[]),...(message.neonEffects?.stuns||[])])neonKit.receive(ev);for(const ev of [...(message.cypherEffects?.devices||[]),...(message.cypherEffects?.flights||[]),...(message.cypherEffects?.hats||[])])cypherKit.receive(ev);for(const ev of [...(message.killjoyEffects?.devices||[]),...(message.killjoyEffects?.flights||[])])killjoyKit.receive(ev);for(const ev of [...(message.sovaEffects?.flights||[]),...(message.sovaEffects?.recons||[]),...(message.sovaEffects?.beams||[])])sovaKit.receive(ev);for(const ev of [...(message.reynaEffects?.eyes||[]),...(message.reynaEffects?.orbs||[])])reynaKit.receive(ev);for(const ev of [...(message.brimEffects?.areas||[]),...(message.brimEffects?.flights||[])])brimKit.receive(ev);for(const ev of [...(message.omenEffects?.smokes||[]),...(message.omenEffects?.flights||[])])omenKit.receive(ev);for(const ev of [...(message.isoEffects?.walls||[]),...(message.isoEffects?.flights||[]),...(message.isoEffects?.orbs||[])])isoKit.receive(ev);for(const ev of [...(message.cloveEffects?.smokes||[]),...(message.cloveEffects?.flights||[])])cloveKit.receive(ev);for(const spray of message.sprays||[])receiveSpray(spray);clearIceBarriers();for(const wall of message.barriers||[])receiveIceBarrier(wall);clearSlowObjects();for(const field of message.slowFields||[])receiveSlowEvent(field);for(const flight of message.slowFlights||[])receiveSlowEvent(flight);clearInterval(roomPingTimer);roomPingTimer=setInterval(()=>roomSocket?.send({type:'ping',at:Date.now()}),5000);
                 },
                 host:uid=>{if(roomHostUid!==uid){roomHostUid=uid;updateMapPermissions();}},mapChanged:followRoomMap,mapError:reason=>{clearTimeout(mapChangeTimer);updateMapPermissions();networkFeedback(reason);},
                 players:receivePlayerSnapshot,event:handleNetworkCombatEvent,omenRelocate:player=>{omenKit.sync(player);omenKit.api.relocate(player);pushMyNetworkState(true);},isoRelocate:player=>{state.armorType=player.armorType;state.shieldReserve=player.shieldReserve||0;state.tempHealth=player.tempHealth||0;isoKit.relocate(player);omenKit.sync(player);if(state.agent==='clove')cloveKit.sync(player);pushMyNetworkState(true);},spawn:applyServerSpawn,round:receiveRoomRound,abilityError:reason=>{neonKit.pendingUntil=0;cypherKit.pendingUntil=0;killjoyKit.pendingUntil=0;sovaKit.pendingUntil=0;reynaKit.pendingUntil=0;brimKit.pendingUntil=0;omenKit.pendingUntil=0;isoKit.pendingUntil=0;cloveKit.pendingUntil=0;state.slowPendingUntil=0;state.healPendingUntil=0;state.barrierPendingUntil=0;abilityNotice(reason)},abilityResult:message=>{if(message.key==='e'&&state.agent==='phoenix')confirmHealing();},
                 spikeError:reason=>{networkSpikeRetryAt=performance.now()+1000;cancelSpikeAction();abilityNotice(reason);},
                 armorResult:player=>{state.armorType=player.armorType;state.shield=player.shield;state.shieldReserve=player.shieldReserve||0;updateHealthHUD();updateShopUI();},armorError:reason=>shopFeedback(reason),
-                damage(message){state.hp=message.hp;state.shield=message.shield;state.tempHealth=message.tempHealth||0;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){neonDeath(state);razeDeath(state);state.astraConcussUntil=0;state.astraPull=null;stopViper(state);cypherDeath(state);killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.nearsightUntil=state.deafenedUntil=0;resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
+                damage(message){state.hp=message.hp;state.shield=message.shield;state.tempHealth=message.tempHealth||0;updateHealthHUD();const vig=document.getElementById('damage-overlay');vig.style.boxShadow='inset 0 0 100px #ff283c99';setTimeout(()=>vig.style.boxShadow='',180);if(state.hp===0){neonDeath(state);state.fadeTether=null;state.fadeTrailUntil=state.skyeConcussUntil=state.skyeFlashUntil=0;razeDeath(state);state.astraConcussUntil=0;state.astraPull=null;stopViper(state);cypherDeath(state);killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.nearsightUntil=state.deafenedUntil=0;resetMovementInput();setScope(false);ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);showCenterBanner(message.cause==='spike'?'Spike 引爆':'遭到擊斃',message.attacker+(roomMode==='rounds'?' · 等待隊友復活或下一回合':' · 練習房 5 秒後重生'),2000);}},
                 latency(ms){document.getElementById('lobby-room-status').textContent=`房間 #${currentRoomId} · ${ms} ms`;}
             });return roomSocket;
         }
@@ -2170,7 +2172,7 @@
 
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
-            if(razeKit.receive(ev)||astraKit.receive(ev)||viperKit.receive(ev)||breachKit.receive(ev)||neonKit.receive(ev)||cypherKit.receive(ev)||killjoyKit.receive(ev)||sovaKit.receive(ev)||reynaKit.receive(ev)||brimKit.receive(ev)||omenKit.receive(ev)||isoKit.receive(ev)||cloveKit.receive(ev))return;
+            if(fadeKit.receive(ev)||skyeKit.receive(ev)||razeKit.receive(ev)||astraKit.receive(ev)||viperKit.receive(ev)||breachKit.receive(ev)||neonKit.receive(ev)||cypherKit.receive(ev)||killjoyKit.receive(ev)||sovaKit.receive(ev)||reynaKit.receive(ev)||brimKit.receive(ev)||omenKit.receive(ev)||isoKit.receive(ev)||cloveKit.receive(ev))return;
             if(ev.type==='revive'){
                 if(ev.phase==='complete'){removeCorpse(ev.targetUid);return;}
                 const actor=remotePlayers.get(ev.targetUid);if(!corpses.has(ev.targetUid)&&actor)markCorpse(ev.targetUid,new THREE.Vector3(ev.x,ev.y,ev.z),actor.data.team,actor);
@@ -2407,14 +2409,14 @@
         function fireBladeVolley(){
             if(state.weaponKey!=='bladestorm'||state.inBuyMenu||!state.isLocked||state.hp<=0||state.roundEnding||state.isReloading||state.bladeKnives<=0||performance.now()-state.lastShotTime<WEAPONS.bladestorm.fireRate)return;
             if(currentRoomId&&!roomSocket?.serverFeatures?.includes('blade-volley')){abilityNotice('連線後端尚待更新飛刀散射，請稍候重新加入房間');return;}
-            if(razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
+            if(fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             const count=state.bladeKnives,offsets=bladeFan(count),id=crypto.randomUUID();state.bladeKnives=0;state.mag=0;
             try{for(let i=0;i<count;i++){bladeVolleyContext={id,count,index:i,offset:offsets[i]};fireWeapon();}}finally{bladeVolleyContext=null;refreshBladeKnives();returnFromEmptyBlades();}
         }
         let shotgunContext=null;
         function fireWeapon() {
-            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()||killjoyKit.blocked()||cypherKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()) return;
-            if(razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
+            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()||killjoyKit.blocked()||cypherKit.blocked()||fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()) return;
+            if(fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
@@ -2543,7 +2545,7 @@
                         }
                     }
                 } else {
-                    razeKit.hitObject(hit.object,wpn.bodyDmg);cypherKit.hitObject(hit.object,wpn.bodyDmg);killjoyKit.hitObject(hit.object,wpn.bodyDmg);sovaKit.hitObject(hit.object,wpn.bodyDmg);reynaKit.hitObject(hit.object,wpn.bodyDmg);omenKit.hitObject(hit.object);isoKit.hitObject(hit.object);if(hit.object.userData.barrierId)damageBarrier(hit.object,wpn.bodyDmg);
+                    fadeKit.hitObject(hit.object,wpn.bodyDmg);skyeKit.hitObject(hit.object,wpn.bodyDmg);razeKit.hitObject(hit.object,wpn.bodyDmg);cypherKit.hitObject(hit.object,wpn.bodyDmg);killjoyKit.hitObject(hit.object,wpn.bodyDmg);sovaKit.hitObject(hit.object,wpn.bodyDmg);reynaKit.hitObject(hit.object,wpn.bodyDmg);omenKit.hitObject(hit.object);isoKit.hitObject(hit.object);if(hit.object.userData.barrierId)damageBarrier(hit.object,wpn.bodyDmg);
                     // Hit wall/floor: spawn bullet hole decal + yellow sparks
                     if (hit.face && !hit.object.userData.cypherDevice && !hit.object.userData.killjoyDevice && !hit.object.userData.sovaRecon && !hit.object.userData.sovaDroneUid && !hit.object.userData.reynaEye && !hit.object.userData.barrierId) {
                         const worldNormal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
@@ -2586,7 +2588,7 @@
         }
 
         function reloadWeapon() {
-            if(razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
+            if(fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             const wpn = WEAPONS[state.weaponKey];
             if (wpn.isMelee || state.weaponKey === 'bladestorm') return;
             setScope(false);
@@ -2634,7 +2636,7 @@
         function handleBotKilled(bot, isHead,creditPlayer=true,killerName=state.playerName,causeWeapon='VANDAL') {
             reynaKit.takedown(bot,creditPlayer||Date.now()-(bot.lastPlayerDamage||0)<=REYNA.assistMs);const duelDeath=isoKit.beforeBotDeath(bot);if(!duelDeath)isoKit.takedown(bot,creditPlayer||Date.now()-(bot.lastPlayerDamage||0)<=8000);
             cloveKit.takedown(bot,creditPlayer||Date.now()-(bot.lastPlayerDamage||0)<=CLOVE.assistWindowMs);
-            bot.alive = false;botNavigation?.jobs.delete(bot);
+            reconDeath(bot);bot.alive = false;botNavigation?.jobs.delete(bot);
             bot.dyingTimer = .65;bot.hp=0;bot.hpBg.visible=bot.hpFill.visible=false;markCorpse('bot:'+bot.index,bot.group.position,bot.team,bot);
             if(creditPlayer){
             state.roundKills++;
@@ -2655,7 +2657,7 @@
             if (isTraining()) {
                 setTimeout(() => {
                     if(!bots.includes(bot)||state.roundEnding)return;removeCorpse('bot:'+bot.index);bot.hpBg.visible=bot.hpFill.visible=true;
-                    bot.hp = 100;bot.astraPull=null;bot.astraConcussUntil=0;bot.viperPoisonUntil=bot.viperLastPoisonAt=0;bot.breachConcussUntil=bot.breachFlashUntil=bot.breachLiftAt=0;bot.neonConcussUntil=0;bot.detainedUntil=0;bot.sovaRevealUntil=0;bot.leerUntil=0;bot.stimUntil=0;bot.nearsightUntil=bot.deafenedUntil=0;
+                    bot.hp = 100;bot.fadeTether=null;bot.fadeTrailUntil=bot.skyeConcussUntil=bot.skyeFlashUntil=0;bot.astraPull=null;bot.astraConcussUntil=0;bot.viperPoisonUntil=bot.viperLastPoisonAt=0;bot.breachConcussUntil=bot.breachFlashUntil=bot.breachLiftAt=0;bot.neonConcussUntil=0;bot.detainedUntil=0;bot.sovaRevealUntil=0;bot.leerUntil=0;bot.stimUntil=0;bot.nearsightUntil=bot.deafenedUntil=0;
                     bot.hpFill.scale.x = 1;
                     bot.group.rotation.x = 0;
                     const safe=realMap.ready?randomBotSpawn(realMap,{x:bot.baseX,y:bot.baseY||0,z:bot.baseZ},bots.filter(b=>b!==bot&&b.alive).map(b=>b.group.position)):{x:bot.baseX,y:bot.baseY||0,z:bot.baseZ};bot.group.position.set(safe.x,safe.y,safe.z);bot.lastSafePosition=bot.group.position.clone();bot.navPath=[];bot.navGoal=null;bot.directAt=0;bot.contact=null;
@@ -2926,12 +2928,15 @@
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
         const cypherKit=new CypherKit({...killjoyKit.api,corpses:()=>corpses,dartTargets:()=>sovaKit.api.targets(),stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},tether:p=>{yawObject.position.x=p.x;yawObject.position.z=p.z;},smoke:(e,mesh)=>{if(smokeSpheres.some(s=>s.id===e.id)){disposeEffect(mesh);return;}mesh.position.set(e.x,e.y+2.3,e.z);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'cypher',life:7.25,createdAt:e.activeUntil-7250-offset,expiresAt:e.activeUntil-offset});}});
-        const neonKit=new NeonKit({...killjoyKit.api,hitDevice:(mesh,damage)=>razeKit.hitObject(mesh,damage)||cypherKit.hitObject(mesh,damage)||killjoyKit.hitObject(mesh,damage)||sovaKit.hitObject(mesh,damage)||reynaKit.hitObject(mesh,damage)||(mesh.userData.barrierId?(damageBarrier(mesh,damage),true):false),ammo:updateAmmoHUD,dartTargets:()=>sovaKit.api.targets(),grounded:()=>canJump&&!state.climbingRope,moveDirection:()=>{const x=Number(moveState.right)-Number(moveState.left),z=Number(moveState.backward)-Number(moveState.forward),d=new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);if(d.length()<.01)return null;return d.normalize();},clearStatic:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),length=d.length();return length<.001||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,length-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
+        const neonKit=new NeonKit({...killjoyKit.api,hitDevice:(mesh,damage)=>fadeKit.hitObject(mesh,damage)||skyeKit.hitObject(mesh,damage)||razeKit.hitObject(mesh,damage)||cypherKit.hitObject(mesh,damage)||killjoyKit.hitObject(mesh,damage)||sovaKit.hitObject(mesh,damage)||reynaKit.hitObject(mesh,damage)||(mesh.userData.barrierId?(damageBarrier(mesh,damage),true):false),ammo:updateAmmoHUD,dartTargets:()=>sovaKit.api.targets(),grounded:()=>canJump&&!state.climbingRope,moveDirection:()=>{const x=Number(moveState.right)-Number(moveState.left),z=Number(moveState.backward)-Number(moveState.forward),d=new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);if(d.length()<.01)return null;return d.normalize();},clearStatic:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),length=d.length();return length<.001||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,length-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
         const breachKit=new BreachKit({...killjoyKit.api,yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,lift:t=>{if(t.self){if(state.hp>0&&!state.realm){playerVelocity.y=Math.max(playerVelocity.y,8);canJump=false;}}else if(t.bot){t.bot.breachLiftAt=Date.now();}},clearLine:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),len=d.length();return len<.01||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,len-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
         const viperKit=new ViperKit({...killjoyKit.api,health:updateHealthHUD});
         const razeKit=new RazeKit({...killjoyKit.api,dartTargets:()=>sovaKit.api.targets(),sound:()=>sfx.playAbilitySound('dash'),impulse:(t,v)=>{if(t.self){if(state.hp<=0||state.realm)return;astraKit.close();const old=state.razeImpulse?.until>performance.now()?state.razeImpulse:{x:0,z:0};state.razeImpulse={x:Math.max(-25,Math.min(25,old.x+v.x)),z:Math.max(-25,Math.min(25,old.z+v.z)),until:performance.now()+550};playerVelocity.y=Math.min(20,Math.max(0,playerVelocity.y)+v.y);canJump=false;}else if(t.bot){t.bot.breachLiftAt=Date.now();const next=t.bot.group.position.clone().add(new THREE.Vector3(v.x*.12,0,v.z*.12));next.y=realMap.getGroundHeight(next.clone().add(new THREE.Vector3(0,2.2,0)));if(botNavigation?.step(t.bot.group.position,next,p=>checkPlayerCollision(p,0,true)))t.bot.group.position.copy(next);}}});
         const astraKit=new AstraKit({...killjoyKit.api,map:realMap,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);},pullBot:(b,e,dt)=>{const d=new THREE.Vector3(e.x-b.group.position.x,0,e.z-b.group.position.z),len=d.length();if(len<.15)return;const next=b.group.position.clone().addScaledVector(d.normalize(),Math.min(len,ASTRA.pullSpeed*Math.min(.06,dt)));next.y=realMap.getGroundHeight(next.clone().add(new THREE.Vector3(0,2.2,0)));if(botNavigation?.step(b.group.position,next,p=>checkPlayerCollision(p,0,true)))b.group.position.copy(next);},smoke:(e,mesh)=>{if(smokeSpheres.some(s=>s.id===e.id)){disposeEffect(mesh);return;}mesh.position.set(e.x,e.y+2.2,e.z);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'astra',life:(e.expiresAt-e.createdAt)/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});}});
-        function clearFieldObjects(){razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        const reconApi={...killjoyKit.api,ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z)),clearMotion:(a,b)=>{const o=new THREE.Vector3(a.x,a.y+.6,a.z),d=new THREE.Vector3(b.x,b.y+.6,b.z).sub(o),len=d.length();return len<.001||!new THREE.Raycaster(o,d.normalize(),0,len+.25).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,dartTargets:()=>sovaKit.api.targets(),health:updateHealthHUD,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);setScope(false);},tether:p=>{const next=yawObject.position.clone();next.x=p.x;next.z=p.z;if(!checkPlayerCollision(next)){yawObject.position.x=p.x;yawObject.position.z=p.z;}},tetherBot:(b,p)=>{const next=b.group.position.clone();next.x=p.x;next.z=p.z;if(botNavigation?.step(b.group.position,next,v=>checkPlayerCollision(v,0,true)))b.group.position.copy(next);},clearLine:(a,b)=>{if(neonKit.blocksLine(a,b)||viperKit.blocksLine(a,b)||astraKit.audioScale(a,b)<1)return false;const origin=new THREE.Vector3(a.x,a.y,a.z),end=new THREE.Vector3(b.x,b.y,b.z),delta=end.clone().sub(origin),len=delta.length(),line=new THREE.Line3(origin,end);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceTo(s.mesh.position)<(s.mesh.userData.smokeRadius||4.2)*s.mesh.scale.x))return false;return len<.001||!new THREE.Raycaster(origin,delta.normalize(),0,Math.max(0,len-.3)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}};
+        const fadeKit=new ReconKit('fade',reconApi),skyeKit=new ReconKit('skye',reconApi);
+        function cancelReconInput(){fadeKit.cancel();skyeKit.cancel();if(skyeKit.busy())skyeKit.endControl();}
+        function clearFieldObjects(){fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -2987,12 +2992,13 @@
         function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
-            const names=state.agent==='raze'?{c:'Boom Bot · 爆破機器人',q:'Blast Pack · 炸藥包／Q 引爆',e:'Paint Shells · 子母手榴彈',x:'Showstopper · 火箭'}:state.agent==='astra'?{c:'Gravity Well · 引力',q:'Nova Pulse · 震盪',e:'Nebula · 煙霧',x:'Astral Form／Cosmic Divide · 星界'}:state.agent==='viper'?{c:'Snake Bite · 蛇咬',q:'Poison Cloud · 毒霧球／Q 開關',e:'Toxic Screen · 毒幕／E 開關',x:'Viper’s Pit · 毒氣領域'}:state.agent==='breach'?{c:'Aftershock · 穿牆爆破',q:'Flashpoint · 穿牆閃光',e:'Fault Line · 蓄力震盪',x:'Rolling Thunder · 震盪擊飛'}:state.agent==='neon'?{c:'Fast Lane · 雙電牆',q:'Relay Bolt · 震盪彈',e:'High Gear · 疾跑／右鍵滑鏟',x:'Overdrive · 超載'}:state.agent==='cypher'?{c:'Trapwire · 絆線',q:'Cyber Cage · 煙籠',e:'Spycam · 攝影機／E 操作',x:'Neural Theft · 神經竊盜'}:state.agent==='killjoy'?{c:'Nanoswarm · 奈米蟲群',q:'Alarmbot · 警報機器人／Q 召回',e:'Turret · 砲塔／E 召回',x:'Lockdown · 全面封鎖'}:state.agent==='sova'?{c:'Owl Drone · 偵察機',q:'Shock Bolt · 電擊箭',e:'Recon Bolt · 偵察箭',x:"Hunter’s Fury · 獵人之怒"}:state.agent==='reyna'?{c:'Leer · 致盲眼',q:'Devour · 吞噬',e:'Dismiss · 消散',x:'Empress · 女皇'}:state.agent==='brimstone'?{c:'Stim Beacon · 振奮信標',q:'Incendiary · 燃燒彈',e:'Sky Smoke · 煙幕',x:'Orbital Strike · 軌道轟炸'}:state.agent==='omen'?{c:'Shrouded Step · 短距離傳送',q:'Paranoia · 致盲',e:'Dark Cover · 煙霧',x:'From the Shadows · 全圖傳送'}:state.agent==='iso'?{c:'Contingency · 移動擋彈牆',q:'Undercut · 穿牆易傷',e:'Double Tap · 單次傷害護盾',x:'Kill Contract · 獨立決鬥'}:state.agent==='clove'?{c:'Pick-me-up · 暫時生命與加速',q:'Meddle · 減損靈球',e:'Ruse · 死亡後仍可放煙',x:'Not Dead Yet · 限時復活'}:{c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
+            const names=state.agent==='fade'?{c:'Prowler · 獵獸',q:'Seize · 束縛',e:'Haunt · 偵測眼',x:'Nightfall · 恐懼波'}:state.agent==='skye'?{c:'Regrowth · 按住治療隊友',q:'Trailblazer · 可操控偵察獸',e:'Guiding Light · 飛鷹閃光／E 引爆',x:'Seekers · 追蹤生物'}:state.agent==='raze'?{c:'Boom Bot · 爆破機器人',q:'Blast Pack · 炸藥包／Q 引爆',e:'Paint Shells · 子母手榴彈',x:'Showstopper · 火箭'}:state.agent==='astra'?{c:'Gravity Well · 引力',q:'Nova Pulse · 震盪',e:'Nebula · 煙霧',x:'Astral Form／Cosmic Divide · 星界'}:state.agent==='viper'?{c:'Snake Bite · 蛇咬',q:'Poison Cloud · 毒霧球／Q 開關',e:'Toxic Screen · 毒幕／E 開關',x:'Viper’s Pit · 毒氣領域'}:state.agent==='breach'?{c:'Aftershock · 穿牆爆破',q:'Flashpoint · 穿牆閃光',e:'Fault Line · 蓄力震盪',x:'Rolling Thunder · 震盪擊飛'}:state.agent==='neon'?{c:'Fast Lane · 雙電牆',q:'Relay Bolt · 震盪彈',e:'High Gear · 疾跑／右鍵滑鏟',x:'Overdrive · 超載'}:state.agent==='cypher'?{c:'Trapwire · 絆線',q:'Cyber Cage · 煙籠',e:'Spycam · 攝影機／E 操作',x:'Neural Theft · 神經竊盜'}:state.agent==='killjoy'?{c:'Nanoswarm · 奈米蟲群',q:'Alarmbot · 警報機器人／Q 召回',e:'Turret · 砲塔／E 召回',x:'Lockdown · 全面封鎖'}:state.agent==='sova'?{c:'Owl Drone · 偵察機',q:'Shock Bolt · 電擊箭',e:'Recon Bolt · 偵察箭',x:"Hunter’s Fury · 獵人之怒"}:state.agent==='reyna'?{c:'Leer · 致盲眼',q:'Devour · 吞噬',e:'Dismiss · 消散',x:'Empress · 女皇'}:state.agent==='brimstone'?{c:'Stim Beacon · 振奮信標',q:'Incendiary · 燃燒彈',e:'Sky Smoke · 煙幕',x:'Orbital Strike · 軌道轟炸'}:state.agent==='omen'?{c:'Shrouded Step · 短距離傳送',q:'Paranoia · 致盲',e:'Dark Cover · 煙霧',x:'From the Shadows · 全圖傳送'}:state.agent==='iso'?{c:'Contingency · 移動擋彈牆',q:'Undercut · 穿牆易傷',e:'Double Tap · 單次傷害護盾',x:'Kill Contract · 獨立決鬥'}:state.agent==='clove'?{c:'Pick-me-up · 暫時生命與加速',q:'Meddle · 減損靈球',e:'Ruse · 死亡後仍可放煙',x:'Not Dead Yet · 限時復活'}:{c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
             if(abilityIconAgent!==state.agent){
                 abilityIconAgent=state.agent;
                 for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.innerHTML=abilityIcon(state.agent,k);if(!enabled)names[k]='技能尚未加入';const label=document.getElementById('skill-'+k+'-name');label.textContent=k.toUpperCase();label.title=names[k];icon.parentElement.title=names[k];}
             }
             for(const k of ['c','q','e','x']){const icon=document.getElementById('skill-'+k+'-icon');icon.dataset.available=String(!enabled||!!state.realm||state.hp<=0&&!(state.agent==='clove'&&['e','x'].includes(k))?false:state.agent==='cypher'&&k==='e'&&!!cypherKit.own('camera')?true:state.agent==='killjoy'&&['q','e'].includes(k)&&!!killjoyKit.own(k==='q'?'alarm':'turret')?true:k==='e'&&sage?state.eCooldown<=0:k==='x'&&state.agent==='jett'&&state.bladeStormActive?state.bladeKnives>0:state[k+'Charges']>0);icon.dataset.armed=String(state.agent==='cypher'&&k==='e'&&!!cypherKit.own('camera')||k==='e'&&state.dashReadyUntil>performance.now()||state.agent==='killjoy'&&['q','e'].includes(k)&&!!killjoyKit.own(k==='q'?'alarm':'turret'));}
+            if(state.agent==='skye')document.getElementById('skill-c-name').textContent='C · '+Math.ceil(state.recon?.healPool??100);
             if(state.agent==='astra')document.getElementById('skill-x-box').title='X 星界 · 剩餘星體 '+Math.max(0,4-(state.astra?.used||0));
             if(state.agent==='viper')document.getElementById('skill-e-name').textContent='E · '+Math.floor(state.viper?.fuel??100);
             if(state.agent==='neon')document.getElementById('skill-e-name').textContent='E · '+Math.ceil(state.neon?.energy??100);
@@ -3009,14 +3015,16 @@
         }
         function resetAbilities() {
             cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.healRemaining=0;state.slowPendingUntil=0;state.barrierPendingUntil=0;
-            state.ultUsed=false;razeKit.reset();astraKit.reset();viperKit.reset();breachKit.reset();neonKit.reset();cypherKit.reset();killjoyKit.reset();sovaKit.reset();reynaKit.reset();brimKit.reset();omenKit.reset();isoKit.reset();cloveKit.reset();state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
+            state.ultUsed=false;resetRecon(state);fadeKit.reset();skyeKit.reset();razeKit.reset();astraKit.reset();viperKit.reset();breachKit.reset();neonKit.reset();cypherKit.reset();killjoyKit.reset();sovaKit.reset();reynaKit.reset();brimKit.reset();omenKit.reset();isoKit.reset();cloveKit.reset();state.cCharges=state.agent==='jett'?2:1;state.qCharges=state.agent==='jett'?1:2;
             clearTimeout(bladeEmptyTimer);state.bladeStormActive=false;state.bladeKnives=0;state.weaponAmmo={};
             if(!AGENTS[state.agent].abilities)state.cCharges=state.qCharges=0;
             state.eCharges=AGENTS[state.agent].abilities?1:0;state.xCharges=state.eCharges;state.cCooldown=state.qCooldown=state.eCooldown=0;
-            state.dashReadyUntil=0;state.dashArmedAt=0;if(state.agent==='raze')razeKit.refresh();if(state.agent==='astra')astraKit.refresh();if(state.agent==='viper')viperKit.refresh();if(state.agent==='breach')breachKit.refresh();if(state.agent==='neon')neonKit.refresh();if(state.agent==='cypher')cypherKit.refresh();if(state.agent==='killjoy')killjoyKit.refresh();if(state.agent==='sova')sovaKit.refresh();if(state.agent==='reyna')reynaKit.refresh();if(state.agent==='brimstone')brimKit.refresh();if(state.agent==='omen')omenKit.refresh();if(state.agent==='iso')isoKit.refresh();if(state.agent==='clove')cloveKit.refresh();updateAbilityHUD();
+            state.dashReadyUntil=0;state.dashArmedAt=0;if(state.agent==='fade')fadeKit.refresh();if(state.agent==='skye')skyeKit.refresh();if(state.agent==='raze')razeKit.refresh();if(state.agent==='astra')astraKit.refresh();if(state.agent==='viper')viperKit.refresh();if(state.agent==='breach')breachKit.refresh();if(state.agent==='neon')neonKit.refresh();if(state.agent==='cypher')cypherKit.refresh();if(state.agent==='killjoy')killjoyKit.refresh();if(state.agent==='sova')sovaKit.refresh();if(state.agent==='reyna')reynaKit.refresh();if(state.agent==='brimstone')brimKit.refresh();if(state.agent==='omen')omenKit.refresh();if(state.agent==='iso')isoKit.refresh();if(state.agent==='clove')cloveKit.refresh();updateAbilityHUD();
         }
         function triggerAbilityC() {
             if(killjoyKit.detained())return;
+            if(fadeKit.key('KeyC'))return;
+            if(skyeKit.key('KeyC'))return;
             if(razeKit.key('KeyC'))return;
             if(astraKit.key('KeyC'))return;
             if(viperKit.key('KeyC'))return;
@@ -3040,6 +3048,8 @@
         }
         function triggerAbilityQ() {
             if(killjoyKit.detained())return;
+            if(fadeKit.key('KeyQ'))return;
+            if(skyeKit.key('KeyQ'))return;
             if(razeKit.key('KeyQ'))return;
             if(astraKit.key('KeyQ'))return;
             if(viperKit.key('KeyQ'))return;
@@ -3060,6 +3070,8 @@
         }
         function triggerAbilityE() {
             if(killjoyKit.detained())return;
+            if(fadeKit.key('KeyE'))return;
+            if(skyeKit.key('KeyE'))return;
             if(razeKit.key('KeyE'))return;
             if(astraKit.key('KeyE'))return;
             if(viperKit.key('KeyE'))return;
@@ -3097,6 +3109,8 @@
         }
         function triggerUltimateX() {
             if(killjoyKit.detained())return;
+            if(fadeKit.key('KeyX'))return;
+            if(skyeKit.key('KeyX'))return;
             if(razeKit.key('KeyX'))return;
             if(astraKit.key('KeyX'))return;
             if(viperKit.key('KeyX'))return;
@@ -3122,7 +3136,7 @@
          ********************************************************************/
         function equipWeaponSlot(slotKey,{fresh=false}={}) {
             if(slotKey==='bladestorm'&&(!state.bladeStormActive||state.bladeKnives<=0))return;
-            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();cypherKit.cancelEquip();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.unequip();clearTimeout(bladeEmptyTimer);
+            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();cypherKit.cancelEquip();cancelReconInput();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.unequip();clearTimeout(bladeEmptyTimer);
             if(state.weaponKey!=='bladestorm')state.weaponAmmo[state.weaponKey]={mag:state.mag,reserve:state.reserve};
             cancelSlowEquip();
             cancelBarrierPlacement();abilityCast.cancel();
@@ -3148,7 +3162,7 @@
         window.selectAgent = function(agentKey) {
             if(!isAgent(agentKey)||state.realm||omenKit.busy())return false;
             if(currentRoomId&&!agentSupported(agentKey,roomSocket?.serverFeatures)){const message='連線伺服器正在更新這個角色，請稍後重新加入房間';shopFeedback(message);document.getElementById('agent-picker-feedback').textContent=message;return false;}
-            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();cypherKit.cancelEquip();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.unequip();state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
+            omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();killjoyKit.cancelEquip();cypherKit.cancelEquip();cancelReconInput();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.unequip();state.agent = agentKey;firstPersonHands?.setAgent(agentKey);abilityCast.setAgent(agentKey);resetAbilities();state.healRemaining=0;updateShopUI();
             if(state.weaponKey==='bladestorm')equipWeaponSlot(state.primaryWeaponKey);
             for(const key of AGENT_KEYS){const card=document.getElementById('agent-card-'+key);card.classList.toggle('active',agentKey===key);card.setAttribute('aria-pressed',String(agentKey===key));}
             document.getElementById('agent-picker').close();
@@ -3231,7 +3245,7 @@
         let previewAgent=state.agent,selectedAgentRole='all',selectedEntryScope=null,agentPickerStartsGame=false;
         const agentEntryScope=()=>selectedMap+'::'+(currentRoomId||'solo');
         const roleDescriptions={'決鬥者':'在交戰中創造突破口，協助隊伍取得進攻空間。','守衛者':'守住關鍵位置，保護隊伍並限制敵方推進。','先鋒':'探查威脅，協助隊伍打開進攻路線。','控場者':'掌握視野與節奏，協助隊伍進出據點。','特務':'選擇角色外型，投入訓練與對戰。'};
-        const pickerSkills={raze:[['c','Boom Bot','部署可被擊毀的機器人，沿地面行進並追蹤前方敵人。'],['q','Blast Pack','投擲炸藥包，再按 Q 引爆；可推動自己且不造成自身傷害。'],['e','Paint Shells','投擲彈跳的子母手榴彈，爆炸後分裂四顆小彈；兩次擊殺補充。'],['x','Showstopper','限時裝備火箭；可切回武器，再按 X 取出。']],astra:[['c','Gravity Well','對星體施放引力，拉扯附近角色，結束時使仍在範圍內者易傷。'],['q','Nova Pulse','啟動星體，短暫延遲後造成震盪。'],['e','Nebula','啟動星體形成煙霧；F 可回收未使用的星體並短暫放煙。'],['x','Astral Form / Cosmic Divide','X 進入星界部署星體；星界中再按 X 選兩點建立阻擋子彈的分界。']],viper:[['c','Snake Bite','投擲藥劑，在地面形成持續傷害與易傷區域。'],['q','Poison Cloud','部署毒霧球，再按 Q 開關；與毒幕共用燃料。'],['e','Toxic Screen','沿前方地面部署毒幕，再按 E 開關；子彈可穿過。'],['x','Viper’s Pit','在附近地面展開毒氣領域；離開過久或死亡會消失，再按 X 可結束。']],breach:[['c','Aftershock','瞄準牆面，向另一側釋放延遲的兩次爆破。'],['q','Flashpoint','向牆後釋放閃光；視線、朝向影響效果，也會閃到隊友。'],['e','Fault Line','按住左鍵蓄力，放開釋放穿牆的地面震盪；冷卻後可再使用。'],['x','Rolling Thunder','向前逐波釋放寬幅震盪並擊飛命中角色。']],neon:[['c','Fast Lane','沿地面升起兩道遮蔽視線的電牆；不阻擋子彈，也不造成傷害。'],['q','Relay Bolt','投擲彈跳一次的能量彈，兩次接觸分別產生震盪爆發。'],['e','High Gear','消耗能量疾跑，移動時右鍵滑鏟；兩次擊殺補充一次滑鏟。'],['x','Overdrive','用指尖電流攻擊，移動中依然精準；X 可切回，擊殺刷新電量和時間。']],cypher:[['c','Trapwire','連接兩面牆，敵人穿過會被束縛並暴露；打掉端點可以解除。'],['q','Cyber Cage','投擲煙籠，瞄準落地裝置按 F 啟動；煙籠不阻擋子彈。'],['e','Spycam','在牆上部署攝影機，再按 E 操作；左鍵射出追蹤鏢，敵人按住 F 可以移除。'],['x','Neural Theft','瞄準附近剛倒下的敵人，把帽子丟出後偵察存活敵人兩次。']],killjoy:[['c','Nanoswarm','投擲奈米蟲群，落地後瞄準裝置按 F 遙控啟動。'],['q','Alarmbot','部署追蹤敵人的警報機器人，爆炸施加易傷；再次按 Q 召回。'],['e','Turret','部署前方半圓視野內自動射擊的砲塔；再次按 E 召回。'],['x','Lockdown','部署可破壞的封鎖裝置，倒數結束後拘束範圍內敵人。']],sova:[['c','Owl Drone','操作可被擊毀的偵察機；本體停留原地並可受攻擊。'],['q','Shock Bolt','按住左鍵蓄力、放開發射；右鍵設定 0／1／2 次彈跳。'],['e','Recon Bolt','可破壞的偵察箭，脈衝依視線標記敵人，冷卻後補充。'],['x','Hunter’s Fury','短暫蓄力後發射最多三道穿牆光束，命中造成傷害並標記。']],reyna:[['c','Leer','裝備並投出可破壞的眼球，限制看見它的敵人的遠距視野。'],['q','Devour','消耗靈魂球持續治療；需要保持連線。'],['e','Dismiss','消耗靈魂球短暫虛化，期間不能攻擊；女皇期間隱形。'],['x','Empress','強化射擊與換彈，擊殺／助攻自動治療，擊殺刷新持續時間。']],brimstone:[['c','Stim Beacon','部署信標，使附近隊友短暫加速並加快射擊和換彈。'],['q','Incendiary','裝備燃燒彈，左鍵發射；接觸地面形成持續傷害區。'],['e','Sky Smoke','地圖標記後確認部署，整回合共三顆煙幕。'],['x','Orbital Strike','在地圖標記轟炸範圍，警示後造成持續傷害。']],omen:[['c','Shrouded Step','瞄準可站立地面，確認後短距離傳送。'],['q','Paranoia','穿過地形的能量波，限制命中者遠距視野並壓低腳步聲。'],['e','Dark Cover','在地圖選擇煙霧位置；滾輪可調整樓層。'],['x','From the Shadows','選擇全圖落點，暗影成形後傳送；可自行取消，敵人射中暗影也會取消。']],iso:[['c','Contingency','向前移動的擋彈牆，不阻擋人物通行。'],['q','Undercut','穿過地形的能量波，使命中角色暫時易傷。'],['e','Double Tap','準備後獲得抵擋一次傷害的護盾；擊殺後射擊能量球可恢復護盾。'],['x','Kill Contract','捕捉前方敵人，進入隔離空間決鬥；勝者返回原位置。']],clove:[['c','Pick-me-up','近期擊殺或傷害助攻後取得暫時生命與加速。'],['q','Meddle','裝備並投擲靈球，使範圍內角色暫時減損生命。'],['e','Ruse','開啟地圖標記煙霧，死亡後仍可從倒地位置放煙。'],['x','Not Dead Yet','倒地後限時復活；需擊殺或傷害助攻才能存活。']],jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
+        const pickerSkills={fade:[['c','Prowler','部署可被擊毀的獵獸；按住左鍵引導，接近敵人造成近視。'],['q','Seize','投擲球體，落地後束縛範圍內敵人，施加減損與聽覺干擾。'],['e','Haunt','投擲可被擊毀的偵測眼，依視線揭露敵人並留下恐懼路徑。'],['x','Nightfall','向前釋放恐懼波，使命中敵人留下路徑、暫時減損與失聰。']],skye:[['c','Regrowth','按住左鍵治療看得到的受傷隊友；不能自補，資源有限。'],['q','Trailblazer','控制偵察獸，本體留在原地；WASD 移動，Space 跳躍，左鍵撲擊。'],['e','Guiding Light','投出飛鷹，按住左鍵引導，再按 E 引爆閃光；會閃到隊友。'],['x','Seekers','放出最多三個可被摧毀的追蹤生物，接觸敵人造成近視。']],raze:[['c','Boom Bot','部署可被擊毀的機器人，沿地面行進並追蹤前方敵人。'],['q','Blast Pack','投擲炸藥包，再按 Q 引爆；可推動自己且不造成自身傷害。'],['e','Paint Shells','投擲彈跳的子母手榴彈，爆炸後分裂四顆小彈；兩次擊殺補充。'],['x','Showstopper','限時裝備火箭；可切回武器，再按 X 取出。']],astra:[['c','Gravity Well','對星體施放引力，拉扯附近角色，結束時使仍在範圍內者易傷。'],['q','Nova Pulse','啟動星體，短暫延遲後造成震盪。'],['e','Nebula','啟動星體形成煙霧；F 可回收未使用的星體並短暫放煙。'],['x','Astral Form / Cosmic Divide','X 進入星界部署星體；星界中再按 X 選兩點建立阻擋子彈的分界。']],viper:[['c','Snake Bite','投擲藥劑，在地面形成持續傷害與易傷區域。'],['q','Poison Cloud','部署毒霧球，再按 Q 開關；與毒幕共用燃料。'],['e','Toxic Screen','沿前方地面部署毒幕，再按 E 開關；子彈可穿過。'],['x','Viper’s Pit','在附近地面展開毒氣領域；離開過久或死亡會消失，再按 X 可結束。']],breach:[['c','Aftershock','瞄準牆面，向另一側釋放延遲的兩次爆破。'],['q','Flashpoint','向牆後釋放閃光；視線、朝向影響效果，也會閃到隊友。'],['e','Fault Line','按住左鍵蓄力，放開釋放穿牆的地面震盪；冷卻後可再使用。'],['x','Rolling Thunder','向前逐波釋放寬幅震盪並擊飛命中角色。']],neon:[['c','Fast Lane','沿地面升起兩道遮蔽視線的電牆；不阻擋子彈，也不造成傷害。'],['q','Relay Bolt','投擲彈跳一次的能量彈，兩次接觸分別產生震盪爆發。'],['e','High Gear','消耗能量疾跑，移動時右鍵滑鏟；兩次擊殺補充一次滑鏟。'],['x','Overdrive','用指尖電流攻擊，移動中依然精準；X 可切回，擊殺刷新電量和時間。']],cypher:[['c','Trapwire','連接兩面牆，敵人穿過會被束縛並暴露；打掉端點可以解除。'],['q','Cyber Cage','投擲煙籠，瞄準落地裝置按 F 啟動；煙籠不阻擋子彈。'],['e','Spycam','在牆上部署攝影機，再按 E 操作；左鍵射出追蹤鏢，敵人按住 F 可以移除。'],['x','Neural Theft','瞄準附近剛倒下的敵人，把帽子丟出後偵察存活敵人兩次。']],killjoy:[['c','Nanoswarm','投擲奈米蟲群，落地後瞄準裝置按 F 遙控啟動。'],['q','Alarmbot','部署追蹤敵人的警報機器人，爆炸施加易傷；再次按 Q 召回。'],['e','Turret','部署前方半圓視野內自動射擊的砲塔；再次按 E 召回。'],['x','Lockdown','部署可破壞的封鎖裝置，倒數結束後拘束範圍內敵人。']],sova:[['c','Owl Drone','操作可被擊毀的偵察機；本體停留原地並可受攻擊。'],['q','Shock Bolt','按住左鍵蓄力、放開發射；右鍵設定 0／1／2 次彈跳。'],['e','Recon Bolt','可破壞的偵察箭，脈衝依視線標記敵人，冷卻後補充。'],['x','Hunter’s Fury','短暫蓄力後發射最多三道穿牆光束，命中造成傷害並標記。']],reyna:[['c','Leer','裝備並投出可破壞的眼球，限制看見它的敵人的遠距視野。'],['q','Devour','消耗靈魂球持續治療；需要保持連線。'],['e','Dismiss','消耗靈魂球短暫虛化，期間不能攻擊；女皇期間隱形。'],['x','Empress','強化射擊與換彈，擊殺／助攻自動治療，擊殺刷新持續時間。']],brimstone:[['c','Stim Beacon','部署信標，使附近隊友短暫加速並加快射擊和換彈。'],['q','Incendiary','裝備燃燒彈，左鍵發射；接觸地面形成持續傷害區。'],['e','Sky Smoke','地圖標記後確認部署，整回合共三顆煙幕。'],['x','Orbital Strike','在地圖標記轟炸範圍，警示後造成持續傷害。']],omen:[['c','Shrouded Step','瞄準可站立地面，確認後短距離傳送。'],['q','Paranoia','穿過地形的能量波，限制命中者遠距視野並壓低腳步聲。'],['e','Dark Cover','在地圖選擇煙霧位置；滾輪可調整樓層。'],['x','From the Shadows','選擇全圖落點，暗影成形後傳送；可自行取消，敵人射中暗影也會取消。']],iso:[['c','Contingency','向前移動的擋彈牆，不阻擋人物通行。'],['q','Undercut','穿過地形的能量波，使命中角色暫時易傷。'],['e','Double Tap','準備後獲得抵擋一次傷害的護盾；擊殺後射擊能量球可恢復護盾。'],['x','Kill Contract','捕捉前方敵人，進入隔離空間決鬥；勝者返回原位置。']],clove:[['c','Pick-me-up','近期擊殺或傷害助攻後取得暫時生命與加速。'],['q','Meddle','裝備並投擲靈球，使範圍內角色暫時減損生命。'],['e','Ruse','開啟地圖標記煙霧，死亡後仍可從倒地位置放煙。'],['x','Not Dead Yet','倒地後限時復活；需擊殺或傷害助攻才能存活。']],jett:[['c','雲爆煙霧','投擲短暫遮蔽視線的煙霧。'],['q','氣流竄升','利用上升氣流快速升高。'],['e','逐風衝刺','準備後再次施放，向移動方向快速衝刺。'],['x','暴風刃','裝備飛刀，右鍵可一次射出剩餘飛刀。']],phoenix:[['c','屏障靈球','放置能逐區塊破壞的冰牆。'],['q','緩速靈球','投擲靈球，在落點形成緩速區域。'],['e','治癒靈球','治療受傷隊友，或以右鍵自補。'],['x','復活','瞄準附近倒地隊友，將其復活。']]};
         function previewAgentChoice(key){
             previewAgent=key;const agent=AGENTS[key];
             document.getElementById('agent-preview-role').textContent=agent.role;document.getElementById('agent-preview-name').textContent=agent.short;document.getElementById('agent-preview-name').style.setProperty('--name-chars',agent.short.length);document.getElementById('agent-preview-description').textContent=roleDescriptions[agent.role]||roleDescriptions['特務'];document.getElementById('agent-preview-art').src='./assets/ui/'+agent.model+'.webp';
@@ -3309,7 +3323,7 @@
                 ['c',sage?'▥':'☁',sage?'屏障靈球':'雲爆煙霧',state.cCharges],
                 ['q',sage?'◉':'▲',sage?'緩速靈球':'氣流竄升',state.qCharges],
                 ['e',sage?'✚':'➤',sage?'治癒靈球':'逐風衝刺',state.eCharges]
-            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?(state.agent==='raze'?{c:'Boom Bot',q:'Blast Pack',e:'Paint Shells'}[key]:state.agent==='astra'?{c:'Gravity Well',q:'Nova Pulse',e:'Nebula'}[key]:state.agent==='viper'?{c:'Snake Bite',q:'Poison Cloud',e:'Toxic Screen'}[key]:state.agent==='breach'?{c:'Aftershock',q:'Flashpoint',e:'Fault Line'}[key]:state.agent==='neon'?{c:'Fast Lane',q:'Relay Bolt',e:'High Gear'}[key]:state.agent==='cypher'?{c:'Trapwire',q:'Cyber Cage',e:'Spycam'}[key]:state.agent==='killjoy'?{c:'Nanoswarm',q:'Alarmbot',e:'Turret'}[key]:state.agent==='sova'?{c:'Owl Drone',q:'Shock Bolt',e:'Recon Bolt'}[key]:state.agent==='reyna'?{c:'Leer',q:'Devour',e:'Dismiss'}[key]:state.agent==='brimstone'?{c:'Stim Beacon',q:'Incendiary',e:'Sky Smoke'}[key]:state.agent==='omen'?{c:'Shrouded Step',q:'Paranoia',e:'Dark Cover'}[key]:state.agent==='iso'?{c:'Contingency',q:'Undercut',e:'Double Tap'}[key]:state.agent==='clove'?{c:'Pick-me-up',q:'Meddle',e:'Ruse'}[key]:name):key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
+            ])document.getElementById('shop-ability-'+key).innerHTML=`<span>${abilityIcon(state.agent,key)}</span><b>${enabled?(state.agent==='fade'?{c:'Prowler',q:'Seize',e:'Haunt'}[key]:state.agent==='skye'?{c:'Regrowth',q:'Trailblazer',e:'Guiding Light'}[key]:state.agent==='raze'?{c:'Boom Bot',q:'Blast Pack',e:'Paint Shells'}[key]:state.agent==='astra'?{c:'Gravity Well',q:'Nova Pulse',e:'Nebula'}[key]:state.agent==='viper'?{c:'Snake Bite',q:'Poison Cloud',e:'Toxic Screen'}[key]:state.agent==='breach'?{c:'Aftershock',q:'Flashpoint',e:'Fault Line'}[key]:state.agent==='neon'?{c:'Fast Lane',q:'Relay Bolt',e:'High Gear'}[key]:state.agent==='cypher'?{c:'Trapwire',q:'Cyber Cage',e:'Spycam'}[key]:state.agent==='killjoy'?{c:'Nanoswarm',q:'Alarmbot',e:'Turret'}[key]:state.agent==='sova'?{c:'Owl Drone',q:'Shock Bolt',e:'Recon Bolt'}[key]:state.agent==='reyna'?{c:'Leer',q:'Devour',e:'Dismiss'}[key]:state.agent==='brimstone'?{c:'Stim Beacon',q:'Incendiary',e:'Sky Smoke'}[key]:state.agent==='omen'?{c:'Shrouded Step',q:'Paranoia',e:'Dark Cover'}[key]:state.agent==='iso'?{c:'Contingency',q:'Undercut',e:'Double Tap'}[key]:state.agent==='clove'?{c:'Pick-me-up',q:'Meddle',e:'Ruse'}[key]:name):key.toUpperCase()}</b><small>${!enabled?'技能尚未加入':state[key+'Cooldown']>0?'冷卻中':charges+' 次'} · [${key.toUpperCase()}]</small>`;
         }
 
         function setHudText(id,value){const el=document.getElementById(id),text=String(value);if(el.textContent!==text)el.textContent=text;}
@@ -3472,7 +3486,7 @@
         }
 
         function resetMovementInput() {
-            razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.suspend();
+            cancelReconInput();razeKit.unequip();astraKit.close();viperKit.cancel();breachKit.cancel();neonKit.suspend();
             cancelSlowEquip();
             cancelBarrierPlacement();
             state.healingEquipped=false;state.healPendingUntil=0;abilityCast.cancel();cancelSpikeAction();
@@ -3559,7 +3573,7 @@
         document.addEventListener('pointerlockerror',()=>{if(!immersiveEntryPending){showBuyMenu();abilityNotice('請再次點擊「進入戰場」鎖定滑鼠');}});
 
         document.addEventListener('mousemove', (e) => {
-            if(!state.isLocked||state.inBuyMenu)return;if(astraKit.mouseMove(e))return;if(cypherKit.mouseMove(e))return;if(sovaKit.mouseMove(e))return;if(brimKit.mouseMove(e))return;if(omenKit.mouseMove(e))return;if(cloveKit.mouseMove(e))return;
+            if(!state.isLocked||state.inBuyMenu)return;if(skyeKit.mouseMove(e))return;if(astraKit.mouseMove(e))return;if(cypherKit.mouseMove(e))return;if(sovaKit.mouseMove(e))return;if(brimKit.mouseMove(e))return;if(omenKit.mouseMove(e))return;if(cloveKit.mouseMove(e))return;
             if(state.hp<=0)return;
             const zoom = WEAPONS[state.weaponKey].zoomLevels?.[state.scopeLevel - 1] || 1;
             const sens = 0.006 * state.sensitivity / zoom;
@@ -3574,6 +3588,8 @@
                 safeRequestPointerLock();
             }
             if(omenKit.mouseDown(e)){e.preventDefault();return;}
+            if(fadeKit.mouseDown(e)){e.preventDefault();return;}
+            if(skyeKit.mouseDown(e)){e.preventDefault();return;}
             if(razeKit.mouseDown(e)){e.preventDefault();return;}
             if(astraKit.mouseDown(e)){e.preventDefault();return;}
             if(viperKit.mouseDown(e)){e.preventDefault();return;}
@@ -3604,7 +3620,7 @@
         });
 
         document.addEventListener('mouseup', (e) => {
-            breachKit.mouseUp(e);neonKit.mouseUp(e);sovaKit.mouseUp(e);
+            fadeKit.mouseUp(e);skyeKit.mouseUp(e);breachKit.mouseUp(e);neonKit.mouseUp(e);sovaKit.mouseUp(e);
             if (e.button === 0) isMouseDown = false;
         });
 
@@ -3662,6 +3678,7 @@
             if(reynaKit.blocked()&&code==='KeyB'){abilityNotice('請先結束技能再購買');return;}
             if(killjoyKit.detained()&&code==='KeyB'){abilityNotice('拘束結束後才能購買');return;}
             if(cypherKit.busy()&&code==='KeyB'){abilityNotice('先退出攝影機');return;}
+            if(skyeKit.busy()&&code==='KeyB'){abilityNotice('先退出偵察獸');return;}
             if(sovaKit.busy()&&code==='KeyB'){abilityNotice('先退出偵察機或獵人之怒');return;}
             if(omenKit.busy()&&code==='KeyB'){abilityNotice('傳送期間無法購買');return;}
             if(state.realm&&code==='KeyB'){abilityNotice('獨立決鬥中無法購買');return;}
@@ -3677,6 +3694,7 @@
             if(killjoyKit.detained()&&!['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','ControlLeft','ControlRight','Space'].includes(code)){e.preventDefault();return;}
             if(cypherKit.busy()&&code==='KeyE'){cypherKit.key(code);return;}
             if(astraKit.key(code==='KeyF'?code:'')){e.preventDefault();return;}
+            if(skyeKit.keyDown(code)){e.preventDefault();return;}
             if(neonKit.keyDown(code)){e.preventDefault();return;}
             if(cypherKit.keyDown(code)){e.preventDefault();return;}
             if(sovaKit.keyDown(code)){e.preventDefault();return;}
@@ -3721,7 +3739,7 @@
         });
 
         document.addEventListener('keyup', (e) => {
-            const code = e.code;cypherKit.keyUp(code);sovaKit.keyUp(code);
+            const code = e.code;cypherKit.keyUp(code);sovaKit.keyUp(code);skyeKit.keyUp(code);
             if (code === 'Tab' && !state.inBuyMenu) {
                 e.preventDefault();
                 document.getElementById('scoreboard-modal').classList.add('hidden');
@@ -3940,7 +3958,7 @@
         }
 
         function botCanSee(eye,target,actor=null){
-            const delta=target.clone().sub(eye),distance=delta.length();if((actor?.breachFlashUntil||0)>breachKit.now()||distance>42||distance<.001||Math.max(actor?.nearsightUntil||0,actor?.leerUntil||0)>omenKit.now()&&distance>OMEN.nearRange)return false;
+            const delta=target.clone().sub(eye),distance=delta.length();if((Math.max(actor?.breachFlashUntil||0,actor?.skyeFlashUntil||0))>breachKit.now()||distance>42||distance<.001||Math.max(actor?.nearsightUntil||0,actor?.leerUntil||0)>omenKit.now()&&distance>OMEN.nearRange)return false;
             if(viperKit.blocksLine(eye,target)||neonKit.blocksLine(eye,target))return false;const line=new THREE.Line3(eye,target);
             if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<((s.mesh.userData.smokeRadius||3.8)*s.mesh.scale.x)**2))return false;
             raycaster.set(eye,delta.divideScalar(distance));raycaster.near=0;raycaster.far=Math.max(0,distance-.4);
@@ -3949,7 +3967,7 @@
 
         function updateBotsAndVFX(dt) {
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
@@ -4003,9 +4021,9 @@
                 }
 
                 b.hpBg.lookAt(playerPos);
-                b.hpFill.lookAt(playerPos);
+                b.hpFill.lookAt(playerPos);b.hpFill.scale.x=Math.max(.01,b.hp/100);
 
-                if((b.breachFlashUntil||0)>breachKit.now()){b.visibleTarget=null;b.combatVisible=false;b.reactionTimer=0;return;}
+                if(Math.max(b.breachFlashUntil||0,b.skyeFlashUntil||0)>breachKit.now()){b.visibleTarget=null;b.combatVisible=false;b.reactionTimer=0;return;}
                 if (b.blindTimer > 0) {
                     b.blindTimer -= dt;
                     if (b.blindTimer <= 0) b.visor.material.color.setHex(0xFFBE0B);
@@ -4125,7 +4143,7 @@
             }, 240);
 
             if (state.hp <= 0) {
-                state.hp = 0;neonDeath(state);razeDeath(state);state.astraConcussUntil=0;state.astraPull=null;stopViper(state);cypherDeath(state);killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.stimUntil=0;state.nearsightUntil=state.deafenedUntil=0;
+                state.hp = 0;neonDeath(state);state.fadeTether=null;state.fadeTrailUntil=state.skyeConcussUntil=state.skyeFlashUntil=0;razeDeath(state);state.astraConcussUntil=0;state.astraPull=null;stopViper(state);cypherDeath(state);killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.stimUntil=0;state.nearsightUntil=state.deafenedUntil=0;
                 state.deaths++;
                 updateHealthHUD();
                 updateAliveHUD();
@@ -4136,7 +4154,7 @@
         }
 
         function updateTimersAndSpike(dt) {
-            razeKit.update(dt);astraKit.update(dt);viperKit.update(dt);breachKit.update(dt);neonKit.update(dt);cypherKit.update(dt);killjoyKit.update(dt);sovaKit.update(dt);reynaKit.update(dt);brimKit.update(dt);omenKit.update(dt);isoKit.update(dt);cloveKit.update(dt);
+            fadeKit.update(dt);skyeKit.update(dt);razeKit.update(dt);astraKit.update(dt);viperKit.update(dt);breachKit.update(dt);neonKit.update(dt);cypherKit.update(dt);killjoyKit.update(dt);sovaKit.update(dt);reynaKit.update(dt);brimKit.update(dt);omenKit.update(dt);isoKit.update(dt);cloveKit.update(dt);
             if(!currentRoomId&&state.armorType==='regen'){tickArmor(state,performance.now());updateHealthHUD();}
             if(state.isLocked&&!state.inBuyMenu) {
                 if(state.healRemaining>0&&!currentRoomId&&performance.now()-(state.lastDamage||0)>=2000){const heal=Math.min(state.healRemaining,3*dt);state.hp=Math.min(100,state.hp+heal);state.tempHealth=Math.min(state.tempHealth||0,Math.max(0,150-state.hp));state.healRemaining-=heal;updateHealthHUD();}
@@ -4163,8 +4181,8 @@
             if(!state.isLocked||state.inBuyMenu){botDefuse.reset(state.defuseCheckpoint);for(const b of bots)b.defusing=false;cancelSpikeAction();if(state.spikePlanted)advanceSpikeFuse(dt);return;}
 
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right||Math.hypot(playerVelocity.x,playerVelocity.z)>.25||state.astraPull?.until>astraKit.now()||state.razeImpulse?.until>performance.now();
-            const canPlant = state.hp>0 && !razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
-            const canDefuse = state.hp>0 && !razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
+            const canPlant = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && Math.abs(yawObject.position.y-2.2-getGroundHeight(yawObject.position))<.25 && !state.spikePlanted && state.team==='attack' && canJump && !moving;
+            const canDefuse = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
             const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical'||state.spikePlanted,planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
             for(const b of bots)b.defusing=b.alive&&b.index===aiDefuse.index;state.defuseCheckpoint=Math.max(state.defuseCheckpoint,aiDefuse.checkpoint);
             if(aiDefuse.complete){const defuser=bots.find(b=>b.index===aiDefuse.index);state.spikePlanted=false;spikeGroup.visible=false;cancelSpikeAction();document.getElementById('spike-hud-badge').classList.add('hidden');endRound(state.team==='defend',`${defuser?.name||'防守方'} 成功拆除 SPIKE`);return;}
@@ -4287,7 +4305,7 @@
             if(spikeCarryRoot.visible)gunGroup.visible=false;
         }
 
-        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(scene.fog!==fog)scene.background=scene.fog.color;renderer.render(scene,camera);scene.fog=fog;scene.background=background;}
+        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(scene.fog!==fog)scene.background=scene.fog.color;renderer.render(scene,camera);scene.fog=fog;scene.background=background;}
         function animate() {
             requestAnimationFrame(animate);
             spectatorView.restoreHidden();
@@ -4339,7 +4357,7 @@
 
             updateRope(dt);
             // Player Movement Physics
-            if (state.isLocked && state.hp > 0 && !state.roundEnding && !state.climbingRope && !omenKit.busy()&&!sovaKit.busy()&&!cypherKit.busy()&&!astraKit.blocked()) {
+            if (state.isLocked && state.hp > 0 && !state.roundEnding && !state.climbingRope && !omenKit.busy()&&!sovaKit.busy()&&!skyeKit.busy()&&!cypherKit.busy()&&!astraKit.blocked()) {
                 const speed = getMovementSpeed(WEAPONS[state.weaponKey], state.crouchAmount > 0.5, moveState.walk, state.isScoped)*slowMultiplier(yawObject.position)*(state.realm?1:cloveKit.movement())*isoKit.movement()*omenKit.movement()*(brimKit.buff()?BRIM.moveRate:1)*reynaKit.movement()*sovaKit.movement()*killjoyKit.movement()*cypherKit.movement()*neonKit.movement()*breachKit.movement()*astraKit.movement();
                 const inputZ = Number(moveState.backward) - Number(moveState.forward);
                 const inputX = Number(moveState.right) - Number(moveState.left);
@@ -4401,7 +4419,7 @@
             pushMyNetworkState(false);
             if(now-lastRadarDraw>=50){drawRadar();lastRadarDraw=now;}
 
-            const spectatorCamera=updateSpectatorView(dt);const omenCamera=omenKit.viewCamera();if(omenCamera)spectatorView.weaponRoot.visible=false;const activeCamera=cypherKit.viewCamera()||sovaKit.viewCamera()||omenCamera||spectatorCamera;if(cypherKit.viewCamera()||sovaKit.viewCamera())spectatorView.weaponRoot.visible=false;const viewerRealm=spectatorView.active?(remotePlayers.get(spectatorView.uid)?.data.realm||null):state.realm;isoKit.filterActors(viewerRealm);omenKit.hideChannelBodies();reynaKit.hideActors();
+            const spectatorCamera=updateSpectatorView(dt);const omenCamera=omenKit.viewCamera();if(omenCamera)spectatorView.weaponRoot.visible=false;const activeCamera=skyeKit.viewCamera()||cypherKit.viewCamera()||sovaKit.viewCamera()||omenCamera||spectatorCamera;if(skyeKit.viewCamera()||cypherKit.viewCamera()||sovaKit.viewCamera())spectatorView.weaponRoot.visible=false;const viewerRealm=spectatorView.active?(remotePlayers.get(spectatorView.uid)?.data.realm||null):state.realm;isoKit.filterActors(viewerRealm);omenKit.hideChannelBodies();reynaKit.hideActors();
             if(!state.inBuyMenu)renderGameplayFrame(activeCamera);
         }
 

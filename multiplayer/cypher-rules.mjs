@@ -3,7 +3,7 @@ export const CYPHER=Object.freeze({wireRange:6,wireSpan:9,wireHp:20,wireArmMs:80
 export const cypherState=p=>(p.cypher||={});
 export const cameraControl=p=>p.cypher?.control||null;
 export const cypherBusy=(p,now)=>!!cameraControl(p)||(p.cypher?.removeUntil||0)>now;
-export const concussed=(p,now)=>p.hp>0&&!p.realm&&Math.max(p.cypherConcussUntil||0,p.neonConcussUntil||0,p.breachConcussUntil||0,p.astraConcussUntil||0)>now;
+export const concussed=(p,now)=>p.hp>0&&!p.realm&&Math.max(p.cypherConcussUntil||0,p.neonConcussUntil||0,p.breachConcussUntil||0,p.astraConcussUntil||0,p.skyeConcussUntil||0)>now;
 export function resetCypher(p){p.lastDeathAt=0;p.cypher={};p.cypherTag=null;p.cypherSnaredUntil=0;p.cypherConcussUntil=0;p.cypherAnchor=null;}
 export function cypherDeath(p){if(p.cypher){p.cypher.control=null;p.cypher.removeUntil=0;}p.cypherTag=null;p.cypherSnaredUntil=0;p.cypherConcussUntil=0;p.cypherAnchor=null;}
 export function cypherPublic(p){const s=p.cypher||{};return{cUsed:s.cUsed||0,qUsed:s.qUsed||0,eUsed:!!s.eUsed,eReadyAt:s.eReadyAt||0,control:s.control||null,removeUntil:s.removeUntil||0};}

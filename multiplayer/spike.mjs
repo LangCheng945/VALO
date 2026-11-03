@@ -1,3 +1,4 @@
+import {reconDeath} from './recon-rules.mjs';
 import {razeDeath} from './raze-rules.mjs';
 import {astraDeath} from './astra-rules.mjs';
 import {stopViper} from './viper-rules.mjs';
@@ -68,7 +69,7 @@ export class RoomSpike {
    Object.assign(s,{phase:'detonated',action:null,detonatedAt:s.explodesAt});
    for(const ws of r.sockets()){
     const p=r.data(ws);if(!this.valid(p)||reynaDismissed(p,now)||distance(p,s)>=SPIKE.radius)continue;
-    p.lastDeathAt=now;neonDeath(p);stopViper(p);razeDeath(p);astraDeath(p);breachDeath(p);cypherDeath(p);p.clove={};p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;p.hp=0;p.shield=0;p.shieldReserve=0;p.deaths++;p.active=false;p.healRemaining=0;p.reviveAt=0;p.respawnAt=0;r.save(ws,p);
+    p.lastDeathAt=now;neonDeath(p);stopViper(p);razeDeath(p);reconDeath(p);astraDeath(p);breachDeath(p);cypherDeath(p);p.clove={};p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;p.hp=0;p.shield=0;p.shieldReserve=0;p.deaths++;p.active=false;p.healRemaining=0;p.reviveAt=0;p.respawnAt=0;r.save(ws,p);
     r.send(ws,{type:'damage',hp:0,shield:0,attacker:'Spike',cause:'spike'});
     r.broadcast({type:'event',event:{type:'kill',killerUid:null,killerName:'Spike',victimUid:p.uid,victimName:p.name,weaponName:'SPIKE',isHead:false}});
    }

@@ -147,7 +147,7 @@ const catalog={
   "name": "Fade",
   "model": "fade",
   "role": "先鋒",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -287,7 +287,7 @@ const catalog={
   "name": "Skye",
   "model": "skye",
   "role": "先鋒",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
