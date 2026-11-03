@@ -1,3 +1,4 @@
+import{cancelCypher}from'./cypher-events.mjs';
 import{KJ,killjoyState,detained,deviceOnline,turretFacing,killjoyFlight}from'./killjoy-rules.mjs';
 import{finite,WEAPONS}from'./protocol.mjs';
 import{cloveInvulnerable}from'./clove-rules.mjs';
@@ -68,7 +69,7 @@ export async function tickKilljoy(room,now){const effects=killjoyEffects(room);l
    if(e.kind==='alarm'&&e.chaseUntil){if(visible&&distance(body(p),e)<1.8){for(const ws of room.sockets()){const v=room.data(ws);if(targetValid(v,e,now)&&distance(body(v),e)<KJ.alarmBlast){v.vulnerableUntil=now+KJ.vulnerableMs;room.save(ws,v);}}room.broadcast({type:'event',event:{type:'killjoy_alarm',id:e.id,x:e.x,y:e.y,z:e.z}});await remove(room,e,now,'triggered');}else if(now>=e.chaseUntil)await remove(room,e,now,'expired');}
    if(e.kind==='turret'&&visible&&distance(body(p),e)<KJ.turretRange&&turretFacing(e,p)&&now>=e.nextShot){const range=distance(body(p),e),damage=range<20?8:range<35?6:4;await abilityDamage(room,target,p,damage,{...e,id:e.id+':'+now,weaponName:'TURRET',cause:'killjoy'},now);room.broadcast({type:'event',event:{type:'killjoy_shot',id:e.id,x:e.x,y:e.y+.7,z:e.z,ex:p.x,ey:p.y-1,ez:p.z}});e.burst--;e.nextShot=now+(e.burst>0?KJ.turretShotMs:KJ.turretGapMs);if(e.burst<=0)e.burst=3;}
   }
-  if(e.kind==='lockdown'&&now>=e.endsAt){for(const ws of room.sockets()){const p=room.data(ws);if(!targetValid(p,e,now)||Math.hypot(p.x-e.x,p.z-e.z)>KJ.lockdownRadius)continue;if(p.sova?.control)await cancelSova(room,ws,p,now);if(p.omen?.channel)await cancelOmenChannel(room,ws,p,now);p.detainedUntil=Math.max(p.detainedUntil||0,now+KJ.detainMs);await room.spike.cancel(p.uid,now);p.spikeEquipped=false;p.shotUsed=true;room.save(ws,p);}room.broadcast({type:'event',event:{type:'killjoy_lockdown',id:e.id,x:e.x,y:e.y,z:e.z,radius:KJ.lockdownRadius}});await remove(room,e,now,'fired');}
+  if(e.kind==='lockdown'&&now>=e.endsAt){for(const ws of room.sockets()){const p=room.data(ws);if(!targetValid(p,e,now)||Math.hypot(p.x-e.x,p.z-e.z)>KJ.lockdownRadius)continue;if(p.cypher?.control||p.cypher?.removeUntil)await cancelCypher(room,ws,p);if(p.sova?.control)await cancelSova(room,ws,p,now);if(p.omen?.channel)await cancelOmenChannel(room,ws,p,now);p.detainedUntil=Math.max(p.detainedUntil||0,now+KJ.detainMs);await room.spike.cancel(p.uid,now);p.spikeEquipped=false;p.shotUsed=true;room.save(ws,p);}room.broadcast({type:'event',event:{type:'killjoy_lockdown',id:e.id,x:e.x,y:e.y,z:e.z,radius:KJ.lockdownRadius}});await remove(room,e,now,'fired');}
  }
  effects.flights=effects.flights.filter(f=>f.createdAt+KJ.flightMs>now);pending=effects.devices.length>0||effects.flights.length>0||room.sockets().some(ws=>room.data(ws)?.detainedUntil>now);await persist(room);await room.rounds.elimination();return pending;
 }

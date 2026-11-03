@@ -441,7 +441,7 @@ portraits load lazily; native 3D meshes/textures load only for appearing charact
 Startup prewarming is limited to Jett/Sage, not the full catalog. Bot spawning,
 remote actors, corpse rendering and spectator labels share the same catalog.
 The backend advertises `agent-models-28`, retaining the previous four-role flag.
-Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova/Killjoy remain appearance options without dedicated abilities.
+Roles beyond Jett/Sage/Iso/Clove/Omen/Brimstone/Reyna/Sova/Killjoy/Cypher remain appearance options without dedicated abilities.
 Authored first-person hands are approximations, not original per-character rigs.
 
 
@@ -696,3 +696,20 @@ cover actual-map previews/rotation, thrown grenade contact/arming/activation,
 autonomous damage, chase/vulnerability, leash/recall/rebuild, destructible Lockdown,
 real countdown/detention locks, ally/invulnerability/realm exclusions, movement,
 fractional armor, live replay and round cleanup.
+
+### Cypher abilities and deployed model assets
+
+Cypher now has C Trapwire, Q Cyber Cage, E Spycam and X Neural Theft, with local
+play and the `cypher-kit-1` multiplayer feature. Wires reveal/tether crossing
+enemies and have destructible endpoints. Cages are thrown, activated with F and
+permit bullets. The camera has a remote view, removable tracking darts and
+recall/destruction cooldowns; the controlling body remains vulnerable. X throws
+a textured hat at a recent enemy corpse and reveals enemies twice.
+
+The hat and open cage shell are imported **community recreations**, not verified
+original Riot extractions. Camera, wire endpoints and cage puck remain authored
+approximations. [Sources, controls and limits](docs/cypher-abilities.md),
+[model provenance and license](assets/abilities/README.md).
+
+Validation: `multiplayer/tests/cypher.test.mjs`, `cypher-live.test.mjs` against
+Wrangler, and `node tests/test_cypher_browser.cjs` against the actual Ascent mesh.

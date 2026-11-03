@@ -1,0 +1,30 @@
+{
+  "sourceRepository": "https://github.com/staticaron/CypherAgent",
+  "sourceCommit": "0ea103e4b3901597a008b6e6b37ea58a03db0e7f",
+  "assetKind": "Community recreation, NOT verified original game extraction.",
+  "license": "Repository MIT license, retained in STATICARON-LICENSE.txt; VALORANT design belongs to Riot Games.",
+  "hatTextureSource": "Assets/Assets/CypherHatTex.png",
+  "hatTextureSha256": "f5de9f2d6ce7a4424c902c8ab25de1a931c890ecd3084594c2f54d0dd39a8d3e",
+  "models": [
+    {
+      "file": "cypher-hat.glb",
+      "sourcePath": "Assets/Assets/Models/Cypher/CypherHat.fbx",
+      "sourceSha256": "3fda435d1ff702af7360a0c4ae7540670ee9f8b6dd4b2de0b7f130ae4a8fff41",
+      "bytes": 85604,
+      "sha256": "ce5cbdbb9edbc8b45f0385a51ed2b60e62b167cf8680133d4f0640a5926aacb8",
+      "vertices": 457,
+      "polygons": 413,
+      "processing": "Normalized units and axes; hat uses upstream UV/albedo, shell gets runtime shader."
+    },
+    {
+      "file": "cypher-cage-shell.glb",
+      "sourcePath": "Assets/Assets/Models/Cypher/smoke.fbx",
+      "sourceSha256": "506d7d32661c532f3f2dcec67f676250ecad0940b7630b6a1d192096db70f80e",
+      "bytes": 10128,
+      "sha256": "750a66bf757b265b5c13711b1829d6d9aab80cffb4db3bf38d7d57c12c03ecac",
+      "vertices": 128,
+      "polygons": 64,
+      "processing": "Normalized units and axes; hat uses upstream UV/albedo, shell gets runtime shader."
+    }
+  ]
+}
