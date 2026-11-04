@@ -1,3 +1,4 @@
+import {makeMechanismMesh,addOperatorScope} from './gun-mechanisms.js?v=mech1';
 // Local geometry adapter. Asset provenance: assets/weapons/README.md.
 const THREE=window.THREE;
 const cache=new Map(),originalTextures=new Map();
@@ -16,13 +17,14 @@ export async function loadWeaponModel(key,material) {
   if(m.originalSkin){const r=await fetch(`./assets/weapons/${key}.uv.bin?v=${encodeURIComponent(m.skin||'base')}`);if(!r.ok)throw Error('Original UV '+key);const bytes=await r.arrayBuffer();if(bytes.byteLength!==m.vertices*8)throw Error('Invalid original UV');uv.set(new Float32Array(bytes));g.userData.originalSkin=true;}
   g.setAttribute('uv',new THREE.BufferAttribute(uv,2));g.computeBoundingSphere();g.userData.sharedWeaponGeometry=true;return g;
  })().catch(e=>{cache.delete(key);throw e}));
- const geometry=await cache.get(key);if(geometry.userData.originalSkin){let texture=originalTextures.get(key);if(!texture){texture=await new THREE.TextureLoader().loadAsync(`./assets/weapons/${key}.original.png?v=${encodeURIComponent(geometry.userData.skinId)}`);texture.encoding=THREE.sRGBEncoding;texture.flipY=false;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;originalTextures.set(key,texture);}material.map=texture;material.emissiveMap=null;material.emissive?.setHex(0);material.color?.setHex(0xffffff);material.roughness=.65;material.metalness=.25;material.needsUpdate=true;}const mesh=new THREE.Mesh(geometry,material);mesh.name=`detailed-${key}`;
+ const geometry=await cache.get(key);if(geometry.userData.originalSkin){let texture=originalTextures.get(key);if(!texture){texture=await new THREE.TextureLoader().loadAsync(`./assets/weapons/${key}.original.png?v=${encodeURIComponent(geometry.userData.skinId)}`);texture.encoding=THREE.sRGBEncoding;texture.flipY=false;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;originalTextures.set(key,texture);}material.map=texture;material.emissiveMap=null;material.emissive?.setHex(0);material.color?.setHex(0xffffff);material.roughness=.65;material.metalness=.25;material.needsUpdate=true;}const mesh=await makeMechanismMesh(key,geometry,material);mesh.name=`detailed-${key}`;
  mesh.quaternion.set(-.5,.5,.5,.5);mesh.scale.setScalar(.009);
- mesh.position.set(.25,-.29,-.35);return mesh;
+ mesh.position.set(.25,-.29,-.35);if(key==='operator')await addOperatorScope(mesh);return mesh;
 }
 
 // Preserve the pinned source geometry; presentation groups own their cloned buffers.
 export function styleWeaponMesh(mesh,key,materials){
+ if(mesh.isSkinnedMesh)for(const m of Object.values(materials))m.skinning=true;
  if(mesh.geometry.userData.originalSkin){for(const m of [materials.steel,materials.rubber]){m.map=materials.paint.map;m.color.setHex(0xffffff);m.roughness=.65;m.metalness=.25;m.needsUpdate=true;}}
  const original=mesh.geometry,p=original.attributes.position,index=original.index,paint=[],steel=[],rubber=[],box=[];original.computeBoundingBox();const bounds=original.boundingBox,length=bounds.max.x-bounds.min.x;
  for(let i=0;i<index.count;i+=3){const ids=[index.getX(i),index.getX(i+1),index.getX(i+2)],x=ids.reduce((s,v)=>s+p.getX(v),0)/3,y=ids.reduce((s,v)=>s+p.getY(v),0)/3,z=ids.reduce((s,v)=>s+p.getZ(v),0)/3;
@@ -33,7 +35,7 @@ export function styleWeaponMesh(mesh,key,materials){
  }
  const geometry=original.clone();geometry.userData.sharedWeaponGeometry=false;geometry.setIndex([...paint,...steel,...rubber]);geometry.clearGroups();let start=0;for(const [i,indices]of[paint,steel,rubber].entries()){geometry.addGroup(start,indices.length,i);start+=indices.length;}
  mesh.geometry=geometry;mesh.material=[materials.paint,materials.steel,materials.rubber];
- if(!box.length)return null;
+ if(!box.length){if(!original.userData.sharedWeaponGeometry)original.dispose();return null;}
  const g=original.clone();g.userData.sharedWeaponGeometry=false;g.setIndex(box);g.clearGroups();const selectedBounds=new THREE.Box3(),point=new THREE.Vector3();for(const v of box)selectedBounds.expandByPoint(point.fromBufferAttribute(p,v));const center=selectedBounds.getCenter(new THREE.Vector3());g.translate(-center.x,-center.y,-center.z);
  const part=new THREE.Mesh(g,materials.paint);part.name='odin-original-ammunition-box';part.quaternion.copy(mesh.quaternion);part.scale.copy(mesh.scale);
  const root=new THREE.Group();root.name='odin-detachable-magazine';root.position.copy(center).multiplyScalar(mesh.scale.x).applyQuaternion(mesh.quaternion).add(mesh.position);root.userData.basePosition=root.position.clone();root.add(part);return root;

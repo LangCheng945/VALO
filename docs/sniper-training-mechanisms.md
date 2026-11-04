@@ -1,0 +1,15 @@
+# Sniper presentation, training presets and gun mechanisms
+
+Source references are pinned to `unkwsr/open-aim` commit `e1e81cf8ea37e5c363d7720c78cb17fedf0edd94`.
+
+Classic and Operator now retain gun skeletons, per-vertex skin weights and complete sampled `gunFire` clips from `site/aim-viewmodel/{classic,operator}.json/bin`. The clips drive the Classic slide/trigger and Operator bolt and related moving gun parts. Interpolation runs only for the current equipped gun after an accepted shot. Expired clips restore the bind pose. Private skinned geometry and skeleton textures are disposed on weapon changes; decoded asset payloads are cached. Existing ammunition, reload, recoil and firing-rate rules remain in control. This does not import complete source arm/reload animation: the chosen Phoenix hands still use the current pose adapter.
+
+Operator also includes the separately packaged scope mesh and its original albedo. Sniper ADS uses a locally authored circular black mask, thin crosshair and small center dot, retaining existing 2.5×/5× Operator zoom controls. The overlay is an adaptation, not an extracted original reticle image.
+
+The training menu adds three local presets: 60-second stationary flick (3 targets, Gaia Vandal), 90-second stop/strafe (5 targets, Vandal), and 120-second sniper strafe (3 targets, Operator). Timing, strafe speed and travel/dwell ranges are adapted from `app/studio/drill.js` and `scenarios/ascent-b-retake-peekers.json`, with centimetre/source-to-local movement scaling. Presets retain this project's safe map spawns and collision system; upstream scene coordinates and the complete scenario library are not imported. Strafe targets pause, reverse and refuse walls or unsupported elevation changes. These training modes do not shoot back.
+
+Applying a preset restarts single-player practice and updates the mode, timer, bot count and equipped weapon. Switching mode manually clears the preset. Active rooms reject single-player preset changes without resetting the match. Existing duration persistence continues; presets themselves do not persist.
+
+Asset hashes and processing are recorded in `assets/mechanisms/provenance.json`. To reproduce converted mechanism assets, put the pinned `classic.json/bin`, `operator.json/bin` and `operator.scope.png` together and run `python tools/export-gun-mechanisms.py <directory>` from the repository root. Game assets/designs belong to Riot Games; this is an unofficial fan adaptation.
+
+Validation: `node tests/test_sniper_drills_browser.cjs` checks real shot/ammunition triggers, slide/bolt deformation and pose reset, scope geometry and two zoom levels, preset configuration and room guard, repeated strafe movement, walls/ledges and the actual Ascent collision mesh. `node tests/test_first_person_view.cjs` checks existing hands, geometry, magazine/reload behavior, draw recovery, quick swaps, inspect, ADS and shaders. Software Chrome screenshots verify the scope and gun presentation; these are functional checks, not a hardware performance benchmark.

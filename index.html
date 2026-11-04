@@ -105,8 +105,9 @@
         }
         #scope-overlay {
             pointer-events: none;
-            background: radial-gradient(circle, transparent 35%, rgba(6, 10, 15, 0.98) 37%, #04070b 100%);
+            background:transparent;
         }
+        .scope-lens{position:relative;width:82vmin;height:82vmin;border-radius:50%;box-shadow:0 0 0 160vmax #030405;border:2px solid #101216;overflow:hidden}.scope-h,.scope-v{position:absolute;background:#161718;left:50%;top:50%;transform:translate(-50%,-50%)}.scope-h{width:100%;height:1px}.scope-v{height:100%;width:1px}.scope-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;background:#f64a44;border-radius:50%;transform:translate(-50%,-50%)}.scope-label{position:absolute;bottom:5vh;color:#d9e0df;background:#000b;padding:4px 8px;font:11px monospace}
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
         }
@@ -193,16 +194,9 @@
 
     <!-- Operator Dual-Zoom Sniper Scope Overlay -->
     <div id="scope-overlay" class="hidden absolute inset-0 z-15 flex items-center justify-center">
-        <div class="w-full h-[1.5px] bg-[#FF4655]/80 absolute"></div>
-        <div class="h-full w-[1.5px] bg-[#FF4655]/80 absolute"></div>
-        <div class="w-3 h-3 rounded-full bg-[#FF4655] shadow-[0_0_10px_#FF4655] absolute"></div>
-        <div class="w-[68vh] h-[68vh] rounded-full border-2 border-[#00F5D4]/40 absolute flex items-center justify-between px-6">
-            <div class="flex space-x-2"><span class="w-2 h-1 bg-[#FF4655]"></span><span class="w-2 h-1 bg-[#FF4655]"></span></div>
-            <div class="flex space-x-2"><span class="w-2 h-1 bg-[#FF4655]"></span><span class="w-2 h-1 bg-[#FF4655]"></span></div>
-        </div>
-        <div class="absolute bottom-[12vh] text-xs font-val tracking-[0.3em] text-[#00F5D4] bg-black/70 px-3 py-1 border border-[#00F5D4]/40">
-            <span id="scope-zoom-label">OPERATOR // 2.5X</span>
-        </div>
+        <div class="scope-lens"><i class="scope-h"></i><i class="scope-v"></i><i class="scope-dot"></i></div>
+        <span id="scope-zoom-label" class="scope-label">OPERATOR // 2.5X</span>
+
     </div>
 
     <div id="stance-hud" class="absolute bottom-40 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex gap-3 text-xs font-bold tracking-widest bg-black/50 border border-white/20 px-3 py-1">
@@ -716,7 +710,7 @@
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
-        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=gaia1';
+        import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=mech1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=phoenix1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=hands3';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=hands3';
@@ -732,6 +726,8 @@
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
+        import {updateMechanism} from './gun-mechanisms.js?v=mech1';
+        import {installTrainingPresets,stepTrainingStrafe} from './training-presets.mjs?v=drill1';
         import {loadGaiaMagazine} from './gaia-magazine.js?v=gaia1';
         import {installSettingsImporter} from './settings-import.js?v=import1';
         import {headshotRenderer} from './headshot-effect.js?v=head1';
@@ -1203,7 +1199,7 @@
             const summary=getTrainingSummary(state.training);
             const remaining=state.trainingDuration ? Math.max(0,Math.ceil(state.trainingDuration-state.training.elapsed)) : 0;
             const clock=state.trainingDuration ? `${Math.floor(remaining/60).toString().padStart(2,'0')}:${(remaining%60).toString().padStart(2,'0')}` : '自由';
-            const key=[summary.accuracy,summary.headshots,summary.kills,clock,state.trainingBest,state.trainingSessions,state.gameMode,state.freeRoam].join('|');
+            const key=[summary.accuracy,summary.headshots,summary.kills,clock,state.trainingBest,state.trainingSessions,state.gameMode,state.freeRoam,state.activeDrill?.id].join('|');
             if(key===lastTrainingRender)return;
             lastTrainingRender=key;
             document.getElementById('trainer-best').textContent=state.trainingBest===null?'—':state.trainingBest;
@@ -1214,7 +1210,7 @@
             document.getElementById('trainer-live-accuracy').textContent=`${summary.accuracy}%`;
             document.getElementById('trainer-live-headshots').textContent=`${summary.headshots}%`;
             document.getElementById('trainer-live-time').textContent=clock;
-            document.getElementById('trainer-live-mode').textContent=state.freeRoam?'自由跑圖':state.gameMode==='stationary'?'預瞄定位':'移動追蹤';
+            document.getElementById('trainer-live-mode').textContent=state.freeRoam?'自由跑圖':state.activeDrill?.label||(state.gameMode==='stationary'?'預瞄定位':'移動追蹤');
         }
         function tickTraining(dt) {
             if(isTraining() && state.isLocked && !state.training.finished) {
@@ -1911,7 +1907,7 @@
             const spawns = state.gameMode === 'tactical' ? BOT_SPAWNS
                 : [{x:0,z:25,patrol:1.5},{x:-30,z:45,patrol:1.5},{x:30,z:45,patrol:1.5},{x:-40,z:8,patrol:1.5},{x:40,z:8,patrol:1.5}];
             const points=realMap.ready?realMap.getBotSpawns(state.gameMode==='tactical'):spawns;
-            points.forEach((sp, idx) => {
+            points.slice(0,state.gameMode!=='tactical'&&state.activeDrill?state.activeDrill.count:points.length).forEach((sp, idx) => {
                 bots.push(createHumanoidBot(idx,realMap.ready?randomBotSpawn(realMap,sp,bots.map(b=>b.group.position)):sp));
             });
             if(state.gameMode==='tactical'&&!currentRoomId&&realMap.ready){
@@ -2445,6 +2441,7 @@
 
             weaponDrawElapsed=weaponDrawDuration(state.weaponKey);weaponMotionRoot.position.set(0,0,0);weaponMotionRoot.rotation.set(0,0,0);
             state.hasPlayedThisRound=true;state.lastShotTime = now;
+            const firedMesh=gunGroup.getObjectByName('detailed-'+state.weaponKey);if(firedMesh)firedMesh.userData.firedAt=now;
             state.consecutiveShots++;
             state.isInspecting = false;
             if (isTraining() && !wpn.isMelee && state.weaponKey !== 'bladestorm') state.training.shots++;
@@ -3221,6 +3218,7 @@
         window.setGameMode = function(mode) {
             if(currentRoomId){networkFeedback('請先離開好友房間，再選擇單人訓練');return;}
             if (!['tactical','strafing','stationary'].includes(mode)) return;
+            if(!state.applyingDrill){state.activeDrill=null;const select=document.getElementById('training-preset');if(select)select.value='';}
             state.gameMode = mode;
             if(state.freeRoam) {state.enableBots=true;document.getElementById('chk-enable-bots').checked=true;state.freeRoam=false;}
             document.body.classList.toggle('is-training',mode!=='tactical');
@@ -3966,6 +3964,8 @@
             }
 
             const meleeGrip=knifeSpinGroup?updateKarambit(knifeSpinGroup,{draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration('melee')),inspect:state.isInspecting?state.inspectTimer/KARAMBIT_INSPECT_SECONDS:0}):null;
+            const mechanismMesh=gunGroup.getObjectByName('detailed-'+state.weaponKey);
+            updateMechanism(mechanismMesh,mechanismMesh?.userData.firedAt===undefined?Infinity:(performance.now()-mechanismMesh.userData.firedAt)/1000);
             firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Floating Blade Storm Daggers hover animation
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
@@ -4046,7 +4046,8 @@
 
                 if (!(b.astraPull?.until>astraKit.now())&&(state.gameMode !== 'stationary'||b.retakeGoal)&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
                     let moved=false;
-                    if(botNavigation&&(state.gameMode==='tactical'||b.retakeGoal)){
+                    if(isTraining()&&state.activeDrill?.speed)moved=stepTrainingStrafe(b,dt,state.activeDrill,{getGroundHeight},p=>checkPlayerCollision(p,0));
+                    else if(botNavigation&&(state.gameMode==='tactical'||b.retakeGoal)){
                         b.orderTime=(b.orderTime||0)-dt;
                         if(b.orderTime<=0){
                             b.orderTime=.7+Math.random()*.4;
@@ -4454,6 +4455,7 @@
             renderTrainingStats();
             updateShopUI();
             installSettingsImporter({state,setSensitivity:window.setTrainerSensitivity});
+            installTrainingPresets({state,inRoom:()=>!!currentRoomId,notice:abilityNotice,reset:resetRound,mode:window.setGameMode,duration:window.setTrainerDuration,weapon:equipWeaponSlot});
             animate();
             await loadActualMap();
             const room=new URLSearchParams(location.search).get('room');

@@ -1,0 +1,25 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourcePath": "site/aim-viewmodel",
+  "sourceFiles": {
+    "classic.bin": "484ecd429b40eef7712458310db872e37c1701c5b04638c9c61c9a25ad250d73",
+    "classic.json": "758bb580302239c34bf69356bc9a9a5b931d0f6f60ad9aacd7d5debfc7542ac9",
+    "operator.bin": "1d094dcfd4b39093b0543d2d87c79a2987456d0b9b5979255b3e3e5ad5d55bb3",
+    "operator.json": "5d111ed9f28c4f87cd83a3881898390a7890ee47167600ba410e13af9175ab4d",
+    "operator.scope.png": "50dc2f33d057f82cacdf4f5b30e3f6c2bda491d4f0cbbd1a9af86aa82db6f771"
+  },
+  "outputs": {
+    "classic.fire.bin": "8d641db1ca0f664c5c7f6fdc20ea4a532f82f708c91e968f965c0b718a41b494",
+    "classic.json": "0a20c1b23658c7f7b2250b9d90afafd3f5b714d6b35ed38343f82072c2e2b704",
+    "classic.weights.bin": "ccf29923659834c6946f15e734b309629fbc0b5ce20764a34b1f1fe0827075d5",
+    "operator.fire.bin": "3844459bf31cc937e4bd4a79cc008a5769d8e2621e04dba1dd342ec863f65115",
+    "operator.json": "f471652950d42f3346c9c0f443858df5d3c996ba4a2c2cf8448404b90afd72cf",
+    "operator.scope.bin": "76750551ab06ed0f1488a6062f11f4c4b054a71b441f924a488df7a32d15b2d8",
+    "operator.scope.json": "fcc5888b57c7a7249408bccbd8fccf223b6a53153444206634528ece5b29cb4b",
+    "operator.scope.png": "50dc2f33d057f82cacdf4f5b30e3f6c2bda491d4f0cbbd1a9af86aa82db6f771",
+    "operator.weights.bin": "9d4ee4d33310d075a806f8e89c6fa8b49c5e09fe6d88d27daab7895e16f6d88f"
+  },
+  "processing": "Gun skin indices/weights, bind skeleton and full sampled gunFire translations/quaternions retained for Classic and Operator. Operator scope positions/normals/UV/indices and original scope albedo retained. Existing Phoenix arm adapter and local reload controls remain.",
+  "credit": "Underlying game designs and assets belong to Riot Games; community-packed source open-aim. Source MIT licensing does not establish a redistribution license for Riot game assets."
+}
