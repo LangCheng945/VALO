@@ -31,3 +31,8 @@ test('host can bring both peers to Sunset and resume the same teams',async()=>{
  const code=await create(),a=peer(code),b=peer(code),clients=[a,b];
  try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');const host=aw.uid===aw.hostUid?a:b;host.send({type:'map_change',map:'sunset'});const am=await a.wait(m=>m.type==='map_changed'),bm=await b.wait(m=>m.type==='map_changed');assert.equal(am.map,'sunset');assert.equal(bm.map,'sunset');a.ws.close();b.ws.close();for(const [old,next]of [[aw,am],[bw,bm]]){const c=peer(code,{token:next.resumeToken,map:'sunset'});clients.push(c);const w=await c.wait(m=>m.type==='welcome');assert.equal(w.map,'sunset');assert.equal(w.uid,old.uid);assert.equal(w.player.team,old.player.team);assert.equal(w.player.active,false);}}finally{clients.forEach(c=>c.ws.close());}
 });
+
+for(const map of ['split','lotus','bind','corrode'])test('whole-room transfer and identity resume on '+map,async()=>{
+ const code=await create(),a=peer(code),b=peer(code),clients=[a,b];try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');const host=aw.hostUid===aw.uid?a:b;host.send({type:'map_change',map});const am=await a.wait(m=>m.type==='map_changed'),bm=await b.wait(m=>m.type==='map_changed');assert.equal(am.map,map);assert.equal(bm.map,map);a.ws.close();b.ws.close();for(const [old,next]of [[aw,am],[bw,bm]]){const c=peer(code,{token:next.resumeToken,map});clients.push(c);const w=await c.wait(m=>m.type==='welcome');assert.equal(w.map,map);assert.equal(w.uid,old.uid);assert.equal(w.player.team,old.player.team);assert.equal(w.player.hp,100);assert.equal(w.player.active,false);}}
+ finally{clients.forEach(c=>c.ws.close());}
+});

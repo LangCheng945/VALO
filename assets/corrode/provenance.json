@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "sourcePath": "site/aim-maps/rook",
+  "files": {
+    "minimap.png": "9f9ed010f502a1146435e779ec2979ce2eb72f78559df19fb89d47e36c98a483",
+    "corrode.glb": "aee67d622e45d1744de2ea0cf6320b590d5f6e42fd6a9632fc7468a1620ae445",
+    "minimap.json": "863af3c19b919f9334896d18af653691ac7953eff1045fa331572491f3bc86fe",
+    "collision.json": "2748c0dae8a816616875c21e37941c5c227ccbd6cbc34c2b94b197de3e876362",
+    "cover.webp": "3dde6ce5f211dd02e94fe60b0032301ecfc24b849f60958ae0565fa9eccb0f37"
+  },
+  "processing": "Source GLB/materials/UV, minimap, collision and optional ropes. Coordinates scaled 4/3 by runtime. Safe spawn/bot/site positions verified against source triangle collision. Plant polygons reconstructed from gold source minimap footprints and checked against actual floor height. Teleporters/rotating doors are not simulated by these static scene assets. Game assets belong to Riot Games."
+}

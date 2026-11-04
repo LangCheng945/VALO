@@ -1,3 +1,4 @@
+import {applyLocomotion} from './weapon-locomotion.js?v=expansion2';
 // Complete source arm rigs: the weapon and wrist share the native attachment bone.
 const T=globalThis.THREE;let payload;const armCache=new Map();
 async function fetchData(path,json=false){const r=await fetch('./assets/tactical-knife/'+path);if(!r.ok)throw Error('Knife asset '+path);return json?r.json():r.arrayBuffer();}
@@ -26,12 +27,12 @@ export function createWeaponArmRig(hands,animationData){
   hands.root.visible=false;Object.assign(root.userData,{data,bones,tracks:bones.map(b=>data.meta.trackNames.indexOf(data.trackAliases?.[b.name]||b.name)),arms,stage,loaded:true,qa:new T.Quaternion(),qb:new T.Quaternion(),from:new Float32Array(bones.length*7)});updateTacticalKnife(root,{now:performance.now()});return true;
  }).catch(e=>{console.warn('Native firearm arms unavailable',e);return false});return root;
 }
-export function updateTacticalKnife(root,{dt=0,moving=false,now=performance.now(),camera=null,reload=0,scoped=false,fingerRelease=0,ringRotation=[-.18,0,-.55],inspect=0,draw=1,poseClip=null,poseTime=0}={}){
+export function updateTacticalKnife(root,{dt=0,moving=false,walking=false,crouching=false,now=performance.now(),camera=null,reload=0,scoped=false,fingerRelease=0,ringRotation=[-.18,0,-.55],inspect=0,draw=1,poseClip=null,poseTime=0}={}){
  if(!root?.userData.loaded)return;
  const s=root.userData,{meta,frames}=s.data;s.time+=dt;
  if(s.firedAt!==s.lastFire){for(let i=0;i<s.bones.length;i++){s.bones[i].position.toArray(s.from,i*7);s.bones[i].quaternion.toArray(s.from,i*7+3);}s.lastFire=s.firedAt;}
  const elapsed=s.firedAt===undefined?Infinity:(now-s.firedAt)/1000,attackClip=meta.clips[s.attackVariant]||meta.clips.attack,attack=elapsed>=0&&elapsed<(attackClip?.duration||0);
- const attackName=s.attackVariant&&meta.clips[s.attackVariant]?s.attackVariant:'attack',name=poseClip&&meta.clips[poseClip]?poseClip:reload>0&&meta.clips.reload?'reload':inspect>0&&meta.clips.inspect?'inspect':draw<1&&meta.clips.equip?'equip':scoped&&meta.clips.ads?'ads':attack?attackName:moving&&meta.clips.walk?'walk':'idle',clip=meta.clips[name],time=poseClip?poseTime:name==='reload'?Math.min(.999999,reload)*clip.duration:name==='inspect'?Math.min(1,inspect)*clip.duration:name==='equip'?draw*clip.duration:name==='ads'?clip.duration:attack?elapsed:s.time%Math.max(.001,clip.duration);
+ const attackName=s.attackVariant&&meta.clips[s.attackVariant]?s.attackVariant:'attack',name=poseClip&&meta.clips[poseClip]?poseClip:reload>0&&meta.clips.reload?'reload':inspect>0&&meta.clips.inspect?'inspect':draw<1&&meta.clips.equip?'equip':scoped&&meta.clips.ads?'ads':attack?attackName:moving&&!s.locomotion&&meta.clips.walk?'walk':'idle',clip=meta.clips[name],time=poseClip?poseTime:name==='reload'?Math.min(.999999,reload)*clip.duration:name==='inspect'?Math.min(1,inspect)*clip.duration:name==='equip'?draw*clip.duration:name==='ads'?clip.duration:attack?elapsed:s.time%Math.max(.001,clip.duration);
  const f=Math.max(0,Math.min(clip.frames-1,time/clip.duration*(clip.frames-1))),a=Math.floor(f),b=Math.min(a+1,clip.frames-1),t=f-a;
  for(let i=0;i<s.bones.length;i++){
   const track=s.tracks[i];if(track<0)continue;const bone=s.bones[i],start=clip.offset+a*meta.stride+track*(meta.channelSize||7),end=clip.offset+b*meta.stride+track*(meta.channelSize||7);
@@ -39,6 +40,7 @@ export function updateTacticalKnife(root,{dt=0,moving=false,now=performance.now(
   if(name==='attack'&&elapsed<.06){const w=Math.max(0,elapsed/.06);bone.position.multiplyScalar(w);bone.position.x+=s.from[i*7]*(1-w);bone.position.y+=s.from[i*7+1]*(1-w);bone.position.z+=s.from[i*7+2]*(1-w);bone.quaternion.copy(s.qa.fromArray(s.from,i*7+3).slerp(bone.quaternion,w));}
   if(name==='attack'&&clip.duration-elapsed<.1){const w=1-(clip.duration-elapsed)/.1,at=meta.clips.idle.offset+track*(meta.channelSize||7);bone.position.x=T.MathUtils.lerp(bone.position.x,frames[at],w);bone.position.y=T.MathUtils.lerp(bone.position.y,frames[at+1],w);bone.position.z=T.MathUtils.lerp(bone.position.z,frames[at+2],w);bone.quaternion.slerp(s.qb.fromArray(frames,at+3).normalize(),w);}
  }
+ applyLocomotion(s,{dt,moving,walking,crouching,enabled:!poseClip&&!reload&&!inspect&&draw>=1&&!scoped&&!attack});
  if(s.ringModel&&fingerRelease>0)for(const bone of s.bones)if(/^R_(Middle|Ring|Pinky)[0-3]$|^R_Thumb[1-3]$/.test(bone.name))bone.quaternion.slerp(bone.userData.bindQ,fingerRelease*(bone.name.includes('Thumb')?.4:.85));
  if(s.supportOffset){const clavicle=s.bones.find(b=>b.name==='L_Clavicle');clavicle.position.add(s.supportOffset);}
  if(camera){

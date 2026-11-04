@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "source": "site/aim-viewmodel/killjoy.detain.json and .bin",
+  "files": {
+    "meta.json": "39e0e0fe3343c81eb61e78b8e03253ce2ca7537430c3ea54843f45788997f703",
+    "arms.poses.bin": "3acccbce23cbe6a604d72d7e1c92ee59d33376084a216c8bbc6391fb26d385f3"
+  },
+  "processing": "Native quantized animation tracks; named bone retargeting to complete Phoenix/Jett rigs. Locomotion preserves mesh-space additive rotation and local translation; detained preserves intro/loop/exit phases."
+}

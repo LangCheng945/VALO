@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "source": "app/mods/aim-maps/juliett.lightmaps.json, juliett.lights.json and juliett.lightmap.0.{irr,sh}.avif",
+  "files": {
+    "lightmaps.json": "0810d97b2b9532a2ef31c80a25dbe93505399bcf2f9d896d430bfe6e3a874e93",
+    "lights.json": "daf5fa6d3c7cb80c3cf5d698ed20e4d8b6bdc595b951ef68df500a6fd0a8b9c3",
+    "lightmap.0.irr.avif": "bb6fa145800ab32e7ff7171737eda02ecc936dc56b4b502244373fe4da61f2fb",
+    "lightmap.0.sh.avif": "7998539d3547299dc5ed0b0b42bc1a59eee86267e00f5e8cbc16184d23abd72b"
+  },
+  "processing": "Per-source-instance UV scale/bias retained as GPU instanced attributes. Irradiance sRGB decoded explicitly, signed L1 SH normals applied, source non-test directional light converted from UE axes/degrees. Baked local illumination avoids hundreds of dynamic point lights."
+}

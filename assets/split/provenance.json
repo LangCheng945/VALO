@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "sourcePath": "site/aim-maps/bonsai",
+  "files": {
+    "minimap.png": "cc102270353627dab124a7c4ecc429fa150982aa7f243b944ac15f8f83b5b7c8",
+    "minimap.json": "3a89b08dca6d647f6f5e1d6abc68e2d1cc694dbd108699bd8d3fd80da35016ab",
+    "ropes.json": "2e4051cd5f22993321b9a2c41a65258bd0cb9d16edb7b10c4fd6b98f564a0f57",
+    "collision.json": "124801aebaf2f5526178402439cd4ee1680006624f86cb9bf653383187eac041",
+    "cover.webp": "12ce5cc1d0abab52d22b18cf5bea26faefde53a8a89244f83a7390ac8a506b90",
+    "split.glb": "0a859dc63dece3d6d4e99d132643bebbde2089beeb36ff1835b98177448f7074"
+  },
+  "processing": "Source GLB/materials/UV, minimap, collision and optional ropes. Coordinates scaled 4/3 by runtime. Safe spawn/bot/site positions verified against source triangle collision. Plant polygons reconstructed from gold source minimap footprints and checked against actual floor height. Teleporters/rotating doors are not simulated by these static scene assets. Game assets belong to Riot Games."
+}

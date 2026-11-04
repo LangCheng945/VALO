@@ -1,6 +1,7 @@
-import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=collection1';
+import {loadLocomotion} from './weapon-locomotion.js?v=expansion2';
+import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
 import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
-import {collectionArmData,updateCollectionModel} from './collection.js?v=collection1';
+import {collectionArmData,updateCollectionModel} from './collection.js?v=expansion2';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 const T=globalThis.THREE,cache=new Map(),exact=new Set(['vandal','phantom','classic','operator','ghost','guardian','sheriff','marshal']);
 const directSpace=new Set(['vandal','phantom','classic','operator']);
@@ -12,7 +13,7 @@ function sourceMagazine(key,mesh,data,spare=false){const info=data.meta[spare?'m
 export function createNativeWeaponHands(hands,key,mesh,magazine,flash,{onMagazine=()=>{}}={}){
  const collection=mesh.userData.collectionData,profile=collection?key:weaponPoseProfile(key),root=createWeaponArmRig(hands,collection?collectionArmData(mesh,hands):poseData(profile));root.name='native-'+key+'-viewmodel';root.userData.profile=profile;
  root.ready=root.ready.then(ready=>{if(!ready||root.userData.disposed||hands.root.userData.disposed)return false;
-  const s=root.userData,{meta}=s.data,bone=s.bones.find(b=>b.name===meta.attach.bone),mount=new T.Group();mount.quaternion.fromArray(meta.attach.q);bone.add(mount);s.mount=mount;s.model=mesh;
+  const s=root.userData;loadLocomotion(key).then(data=>{if(!root.userData.disposed)s.locomotion=data});const {meta}=s.data,bone=s.bones.find(b=>b.name===meta.attach.bone),mount=new T.Group();mount.quaternion.fromArray(meta.attach.q);bone.add(mount);s.mount=mount;s.model=mesh;
   mesh.parent?.remove(mesh);mesh.position.set(0,0,0);mesh.quaternion.identity();mesh.scale.set(1,directSpace.has(key)||collection?1:-1,1);mount.add(mesh);
   if(mesh.userData.mechanism&&key===profile&&!collection){const frames=s.data.gunReload.slice();if(!directSpace.has(key))for(let i=0;i<frames.length;i+=7){frames[i+1]*=-1;frames[i+3]*=-1;frames[i+5]*=-1;}mesh.userData.mechanism.meta.reload=meta.gunClips.reload;mesh.userData.mechanism.reloadFrames=frames;}
   if(collection){s.collection=collection;if(collection.partModels.magazine){const part=collection.partModels.magazine,carrier=new T.Group();carrier.name=key+'-detachable-magazine';carrier.userData.basePosition=new T.Vector3();carrier.userData.nativeDriven=true;carrier.add(part);mesh.add(carrier);s.magazine=carrier;if(magazine)onMagazine(carrier,magazine);}}
@@ -32,8 +33,8 @@ export function createNativeWeaponHands(hands,key,mesh,magazine,flash,{onMagazin
   return true;
  }).catch(error=>{console.warn('Native weapon attachment unavailable',error);root.userData.loaded=false;hands.root.visible=true;return false;});return root;
 }
-export function updateNativeWeaponHands(root,{dt=0,moving=false,reload=0,scoped=false,inspect=0,draw=1,camera,now=performance.now()}={}){
+export function updateNativeWeaponHands(root,{dt=0,moving=false,walking=false,crouching=false,reload=0,scoped=false,inspect=0,draw=1,camera,now=performance.now()}={}){
  if(!root?.userData.loaded)return;
  const s=root.userData;if(s.supportBase){const fade=reload>0?reload<.2?1-reload/.2:reload>.8?(reload-.8)/.2:0:1;s.supportOffset.copy(s.supportBase).multiplyScalar(fade);}
- updateTacticalKnife(root,{dt,moving,reload,scoped,camera,now,inspect,draw});if(s.collection)updateCollectionModel(s.model,s);if(s.spare){s.magazine.visible=!(reload>.27&&reload<.82);s.spare.visible=reload>.27&&reload<.85;}
+ updateTacticalKnife(root,{dt,moving,walking,crouching,reload,scoped,camera,now,inspect,draw});if(s.collection)updateCollectionModel(s.model,s);if(s.spare){s.magazine.visible=!(reload>.27&&reload<.82);s.spare.visible=reload>.27&&reload<.85;}
 }

@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "sourcePath": "app/mods/aim-viewmodel",
+  "sourceBinaryHashes": {
+    "ares": "7f19ac6d9db0b63f868df603079ec4c89f64f897b006899be32a759e8ec33f26",
+    "bucky": "9778b7ffffce9e06cf722fcc554191b99cb6285c28ccaca98278a13a1c60df6d",
+    "bulldog": "fd4ae7e9ffc9a4ada6319f79b1fd9367bacf6172d3ee0caa8dd68939e7fc179d",
+    "judge": "21ffd4e99dda71e7018b7301c85b455c45a153c906d864b3d925efedc717a0e2",
+    "odin": "9d6645a15ac3c8e4540f5c0cdfa4d38424e12bb6cdce740852cb8b4fc709b93a",
+    "outlaw": "1fd6082aac9ac9f235d163599485c2b424bd86f792ab28e5be064379eafe7de8",
+    "shorty": "3fd000754b054fffa0a905ea851d9768cff7ca5677e5bfff43e9cb23c63ee0ea",
+    "spectre": "17349721bd079de4db72126ae4e3cf4dc4b7b00c4f58b346ea9432aa349dd8fd",
+    "stinger": "4ff510dcb2f153b5d9f959ceff742776f5eca099f9f859d4700a5971b4601de9"
+  },
+  "processing": "Original weighted gun geometry, attachment, parts, materials and matching full TRS arms/gun clips; equip montages decoded with shared skin codec; textures bounded to 2048px. Game designs/assets belong to Riot Games."
+}

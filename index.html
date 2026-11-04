@@ -509,7 +509,7 @@
             </header>
             <div id="armory-grid" class="trainer-layout">
                 <main class="trainer-main">
-                    <div id="match-result-panel" class="hidden border border-[#00F5D4]/50 bg-black/40 p-3 mb-3"><strong id="match-result-text"></strong><p id="match-result-help" class="text-xs my-2"></p><button id="btn-rematch" onclick="restartRoomMatch()" class="bg-[#00F5D4] text-black font-bold px-3 py-2">重新開局</button></div><div class="map-picker"><label id="map-picker-label" for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option><option value="sunset">SUNSET · 日落之城</option></select><small id="map-picker-help">切換會重置訓練；好友房間由房主帶領全員一起換圖。</small></div>
+                    <div id="match-result-panel" class="hidden border border-[#00F5D4]/50 bg-black/40 p-3 mb-3"><strong id="match-result-text"></strong><p id="match-result-help" class="text-xs my-2"></p><button id="btn-rematch" onclick="restartRoomMatch()" class="bg-[#00F5D4] text-black font-bold px-3 py-2">重新開局</button></div><div class="map-picker"><label id="map-picker-label" for="map-select">訓練地圖</label><select id="map-select" onchange="changeTrainingMap(this.value)"><option value="ascent">ASCENT · 義境空島</option><option value="haven">HAVEN · 遺落境地 · A / B / C</option><option value="summit">SUMMIT · 天樞雲闕</option><option value="abyss">ABYSS · 深窟幽境</option><option value="sunset">SUNSET · 日落之城</option><option value="split">SPLIT · 雙塔迷城</option><option value="lotus">LOTUS · 蓮華古城</option><option value="bind">BIND · 劫境之地</option><option value="corrode">CORRODE · 鹽海古堡</option></select><small id="map-picker-help">切換會重置訓練；好友房間由房主帶領全員一起換圖。</small></div>
                     <section class="range-hero">
                         <div class="range-hero-copy">
                             <p class="range-eyebrow" data-map-label="FIELD TRAINING">ASCENT / FIELD TRAINING</p>
@@ -712,7 +712,7 @@
         import {BrimstoneKit} from './brimstone-view.js?v=neon2';
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=expansion1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=expansion2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=collection1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
@@ -723,22 +723,24 @@
         import {FirstPersonPass} from './first-person-pass.js?v=visual2';
         import {FirstPersonBody} from './first-person-body.js?v=visual2';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon2';
-        import {SpectatorView} from './spectator-view.js?v=collection1-phoenix1';
+        import {SpectatorView} from './spectator-view.js?v=expansion2';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
-        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=collection1';
-        import {SKINS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=collection1';
+        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
+        import {SKINS,NATIVE_WEAPON_KEYS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=expansion2';
+        import {applySourceSun} from './map-lighting.js?v=expansion2';
+        import {DetainedView} from './detained-view.js?v=expansion2';
         import {installSunsetDrills,preaimSpawns} from './sunset-drills.js?v=expansion1';
         import {smokePhase} from './smoke-envelope.mjs?v=expansion1';
         import {SmokeVision} from './smoke-vision.js?v=expansion1';
         import {MarketDoor} from './market-door.js?v=expansion1';
         import {CollectionAudio,collectionAudioId} from './collection-audio.js?v=expansion1';
-        import {JettSmokeCast} from './jett-cast.js?v=collection1';
-        import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=collection1';
+        import {JettSmokeCast} from './jett-cast.js?v=expansion2';
+        import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=expansion2';
         import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
         import {installTrainingPresets,stepTrainingStrafe} from './training-presets.mjs?v=drill1';
         import {loadGaiaMagazine} from './gaia-magazine.js?v=gaia1';
@@ -768,7 +770,7 @@
         import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
         import {FIREARMS,FIREARM_KEYS,isSidearm,firearmDamage} from './multiplayer/firearms.mjs?v=armory1';
         import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=neon2';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=expansion1-neon2';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=expansion2';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -1487,7 +1489,7 @@
         }
         document.title=`VALO ${mapDefinition.name.toUpperCase()} | ${mapDefinition.title}地圖訓練`;
         document.getElementById('map-hero-title').innerHTML=mapDefinition.title+'。<br><em>從轉角開始。</em>';
-        document.getElementById('map-description').textContent=selectedMap==='sunset'?'探索洛杉磯街區、A／B 據點與中路市場，練習轉點與進攻路線。':selectedMap==='abyss'?'探索深窟雙據點、天橋與高低差；小心邊緣落差，繩索附近按 F 使用。':selectedMap==='summit'?'探索山城雙據點、中路與高低差；繩索附近按 F 使用，W／S 攀爬，F／空白鍵離開。':selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
+        document.getElementById('map-description').textContent=selectedMap==='sunset'?'探索洛杉磯街區、A／B 據點與中路市場，練習轉點與進攻路線。':selectedMap==='abyss'?'探索深窟雙據點、天橋與高低差；小心邊緣落差，繩索附近按 F 使用。':selectedMap==='summit'?'探索山城雙據點、中路與高低差；繩索附近按 F 使用，W／S 攀爬，F／空白鍵離開。':selectedMap==='lotus'?'探索 A／B／C 三個據點、樹根與瀑布通道。':selectedMap==='split'?'探索雙塔、下水道與中路；繩索附近按 F 使用。':selectedMap==='bind'?'探索沙漠雙據點、澡堂與長道。':selectedMap==='corrode'?'探索鹽海古堡、雙據點與中路階梯。':selectedMap==='haven'?'探索 A、B、C 三個據點與車庫，練習長道、轉點與準星定位。完整模型、貼圖、碰撞與小地圖。':'探索 A、B 點與中路，練習準星定位與進點路線。完整模型、貼圖、碰撞與小地圖。';
         for(const el of document.querySelectorAll('[data-map-label]'))el.textContent=mapDefinition.name.toUpperCase()+' / '+el.dataset.mapLabel;
         document.getElementById('btn-start-combat').innerHTML='進入 '+mapDefinition.name+' <span>↗</span>';
         if(selectedMap!=='ascent'){document.getElementById('map-cover').alt=mapDefinition.name+' 場景預覽';document.getElementById('map-cover').src='./assets/'+selectedMap+'/cover.webp';document.getElementById('map-cover').hidden=false;document.getElementById('map-blueprint-svg').hidden=true;}
@@ -1510,7 +1512,7 @@
                 arenaRoot.add(realMap.root);
                 const sky=scene.getObjectByName('fallback-sky');if(sky)scene.remove(sky);
                 scene.background=new THREE.Color(0xb9d5e6);scene.fog=new THREE.FogExp2(0xb9d5e6,.0008);
-                hemiLight.intensity=1.3;sunLight.intensity=1.6;renderer.toneMappingExposure=.95;
+                hemiLight.intensity=realMap.lighting?.45:1.3;sunLight.intensity=1.6;applySourceSun(realMap.lighting,sunLight);renderer.toneMappingExposure=.95;
                 camera.far=900;camera.updateProjectionMatrix();
                 // Loading the map must not cancel purchases already made in the initial menu.
                 const loadout=Object.fromEntries(['creds','primaryWeaponKey','secondaryWeaponKey','weaponKey','shield','armorType','shieldReserve','regenReadyAt','regenTickAt','pendingWeapon','pendingSidearm','pendingShield','hasPlayedThisRound'].map(key=>[key,state[key]]));
@@ -1546,6 +1548,7 @@
         const smokeVision=new SmokeVision();const abilityCast=new AbilityCastView(camera);let jettSmokeCast=null;
         const viewEnvironmentTarget=createViewEnvironment(renderer);
         jettSmokeCast=new JettSmokeCast(camera,viewEnvironmentTarget.texture);
+        const detainedView=new DetainedView(camera,viewEnvironmentTarget.texture);
         let firstPersonHands=null;
         const spectatorView=new SpectatorView(scene,{skinTexture:smiteTexture,environment:viewEnvironmentTarget.texture});
         const firstPersonPass=new FirstPersonPass(camera,spectatorView.camera);
@@ -1708,7 +1711,7 @@
             const placeholder=rig.children.filter(child=>child!==muzzleFlashGroup && !child.userData.keepArm);
             const viewHands=firstPersonHands,viewFlash=muzzleFlashGroup;
             const skin=selectedSkin(state,wpnKey);
-            (skin?loadCollectionModel(skin.id,viewEnvironmentTarget.texture):loadWeaponModel(wpnKey,darkMetal)).then(mesh=>{
+            (skin?loadCollectionModel(skin.id,viewEnvironmentTarget.texture):(NATIVE_WEAPON_KEYS.includes(wpnKey)?loadCollectionModel('native-'+wpnKey,viewEnvironmentTarget.texture):loadWeaponModel(wpnKey,darkMetal))).then(mesh=>{
                 if(!mesh || state.weaponKey!==wpnKey || !gunGroup.children.includes(rig)){if(mesh)disposeViewmodel(mesh);return;}
                 for(const child of placeholder){rig.remove(child);child.geometry?.dispose();if(child.material&&![darkMetal,gunSteel,skinAccent,glowMat].includes(child.material))child.material.dispose();}
                 if(mesh.userData.collectionSkin)for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
@@ -4017,7 +4020,7 @@
             if(tacticalKnifeRoot)tacticalKnifeRoot.position.z=-gunGroup.position.z;
             const nativeArgs={dt,moving:isMoving,camera,fingerRelease:meleeGrip?.fingerRelease||0,ringRotation:meleeGrip?.gripRotation,inspect:state.isInspecting?state.inspectTimer/inspectDuration:0,draw:Math.min(1,weaponDrawElapsed/drawDuration)};
             if(tacticalKnifeRoot?.userData.controller)updateCollectionMelee(tacticalKnifeRoot,nativeArgs);else updateTacticalKnife(tacticalKnifeRoot,nativeArgs);
-            if(nativeWeaponRoot){nativeWeaponRoot.position.copy(gunGroup.position).multiplyScalar(-1);updateNativeWeaponHands(nativeWeaponRoot,{dt,moving:isMoving,reload:reloadProgress,scoped:state.isScoped,camera,inspect:nativeArgs.inspect,draw:nativeArgs.draw});}
+            if(nativeWeaponRoot){nativeWeaponRoot.position.copy(gunGroup.position).multiplyScalar(-1);updateNativeWeaponHands(nativeWeaponRoot,{dt,moving:isMoving,walking:moveState.walk,crouching:state.crouchAmount>.5,reload:reloadProgress,scoped:state.isScoped,camera,inspect:nativeArgs.inspect,draw:nativeArgs.draw});}
             if(!tacticalKnifeRoot?.userData.loaded&&!nativeWeaponRoot?.userData.loaded)firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Floating Blade Storm Daggers hover animation
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
@@ -4034,8 +4037,9 @@
         function updateBotsAndVFX(dt) {
             if(!state.isLocked||state.inBuyMenu||state.hp<=0)skinAudio.cancelMotion();marketDoor.update();sourceHeadshots.update(performance.now());
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
+            const nativeDetained=detainedView.update({agent:state.agent,detained:killjoyKit.detained(),enabled:state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.realm});if(nativeDetained){abilityCast.cancel();jettSmokeCast.cancel();}
             const nativeSmoke=jettSmokeCast.update(state.agent==='jett'&&state.isLocked&&!state.inBuyMenu&&state.hp>0);if(nativeSmoke)abilityCast.cancel();
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!nativeSmoke&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!nativeSmoke&&!nativeDetained&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {

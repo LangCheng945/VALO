@@ -6,7 +6,7 @@ await page.goto('http://127.0.0.1:8000/index.html');await page.waitForFunction((
 
 await page.waitForFunction(()=>__vis.native()?.userData.loaded&&__vis.body.ready);
 
-assert.equal(await page.locator('#map-select option[value="sunset"]').count(),1);assert.equal(await page.locator('#map-choices button').count(),5);
+assert.equal(await page.locator('#map-select option[value="sunset"]').count(),1);assert.equal(await page.locator('#map-choices button').count(),9);
 for(const agent of ['jett','phoenix']){await page.evaluate(a=>selectAgent(a),agent);for(const [key,skin]of [['vandal','rgx-vandal-yellow'],['vandal','gaia-vandal-orange'],['vandal','gaia-vandal-white'],['phantom','blastx-phantom'],['guardian','prime-guardian'],['sheriff','singularity-sheriff'],['ghost','smite-ghost'],['operator','araxys-operator'],['operator','rogue-operator']].filter(([,id])=>!process.env.VALO_VISUAL_SKINS||process.env.VALO_VISUAL_SKINS.split(',').includes(id))){await page.evaluate(([key,skin])=>{setWeaponSkin(key,skin);__vis.equip(key)},[key,skin]);await page.waitForFunction(()=>__vis.native()?.userData.loaded);
 for(const pitch of [0,-Math.PI/2.1]){await page.evaluate(p=>{__vis.pose(p);__vis.render()},pitch);const finite=await page.evaluate(()=>{const s=__vis.native().userData;return s.bones.every(b=>b.position.toArray().concat(b.quaternion.toArray(),b.scale.toArray()).every(Number.isFinite))});assert(finite);}
 if(agent==='jett'&&['rgx-vandal-yellow','blastx-phantom'].includes(skin))await page.screenshot({path:'/tmp/valo-fixed-'+skin+'-down.png'});

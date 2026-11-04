@@ -1,0 +1,14 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "sourcePath": "site/aim-maps/jam",
+  "files": {
+    "minimap.png": "d533af2a6fbc09f12579b2d33438a610d5846db61e56842ad3038087155851c2",
+    "lotus.glb": "b85143a117e2807a57c615ef27f06d3b0102102505a3f718d09bbaf704127a72",
+    "minimap.json": "e6a0ac9de96b84a720b9487a21f52e1f89f1f886025c2d759c4a4a91afeb90ca",
+    "ropes.json": "893ed2bad354b4a1561ceb289e15a8c1f360aa552bf5c309617b8696d05dc07e",
+    "collision.json": "46bbb43bfcef8d397a642a91a56920324c6298a0f20ce0e36ab711409aea4c31",
+    "cover.webp": "782b20d4b137efea6b97c03f396e5f6960be69bebddabb447aa304eb7ac4dc50"
+  },
+  "processing": "Source GLB/materials/UV, minimap, collision and optional ropes. Coordinates scaled 4/3 by runtime. Safe spawn/bot/site positions verified against source triangle collision. Plant polygons reconstructed from gold source minimap footprints and checked against actual floor height. Teleporters/rotating doors are not simulated by these static scene assets. Game assets belong to Riot Games."
+}

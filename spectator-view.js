@@ -1,9 +1,10 @@
+import {NATIVE_WEAPON_KEYS,loadCollectionModel} from './collection.js?v=expansion2';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
 import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=collection1';
 import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
-import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=collection1';
-import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=collection1';
+import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
+import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=expansion2';
 import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;
@@ -23,10 +24,10 @@ export class SpectatorView {
   if(key==='melee'){this.melee=makeKarambit(this.environment);this.weaponRoot.add(this.melee);this.native=createTacticalKnife(this.hands,{karambit:this.melee});this.weaponRoot.add(this.native);return;}
   if(!FIREARMS[key])return;
   const paint=new T.MeshStandardMaterial({color:0xffffff,map:this.skinTexture,emissive:0x60bfff,emissiveMap:this.skinTexture,emissiveIntensity:.055,metalness:.48,roughness:.39,envMap:this.environment,envMapIntensity:.65});
-  loadWeaponModel(key,paint).then(mesh=>{
+  (NATIVE_WEAPON_KEYS.includes(key)?loadCollectionModel('native-'+key,this.environment):loadWeaponModel(key,paint)).then(mesh=>{
    if(generation!==this.generation){disposeViewmodel(mesh);paint.dispose();return;}
    const steel=new T.MeshStandardMaterial({color:0x657986,metalness:.78,roughness:.29,envMap:this.environment}),rubber=new T.MeshStandardMaterial({color:0x02060b,roughness:.9});
-   this.gunMesh=mesh;const box=styleWeaponMesh(mesh,key,{paint,steel,rubber});this.weaponRoot.add(mesh);const magazine=box||createMagazine(key,paint,steel);this.weaponRoot.add(magazine);this.native=createNativeWeaponHands(this.hands,key,mesh,magazine,null,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);}});this.weaponRoot.add(this.native);
+   this.gunMesh=mesh;const collection=!!mesh.userData.collectionData;if(collection){paint.dispose();steel.dispose();rubber.dispose();}const box=collection?null:styleWeaponMesh(mesh,key,{paint,steel,rubber});this.weaponRoot.add(mesh);const magazine=collection?new T.Group():box||createMagazine(key,paint,steel);this.weaponRoot.add(magazine);this.native=createNativeWeaponHands(this.hands,key,mesh,magazine,null,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);}});this.weaponRoot.add(this.native);
   }).catch(()=>paint.dispose());
  }
  update(dt,candidates,enabled){
@@ -39,6 +40,6 @@ export class SpectatorView {
   const blend=this.snap?1:1-Math.exp(-dt*18);this.camera.position.lerp(new T.Vector3(pos.x,pos.y+2.2-eye,pos.z),blend);
   const yawDelta=Math.atan2(Math.sin(target.yaw-this.camera.rotation.y),Math.cos(target.yaw-this.camera.rotation.y));this.camera.rotation.y+=yawDelta*blend;this.camera.rotation.x+=(target.pitch-this.camera.rotation.x)*blend;this.snap=false;this.lastPosition.copy(pos);
   actor.group.visible=false;this.hidden=actor.group;
-  this.buildWeapon(target.agent,target.weapon);this.kick*=Math.exp(-dt*16);this.weaponRoot.rotation.x=this.kick;this.weaponRoot.position.z=-.14+this.kick*.6;const meleeGrip=this.melee?updateKarambit(this.melee,{}):null;if(this.native){this.native.position.copy(this.weaponRoot.position).multiplyScalar(-1);if(this.melee)updateTacticalKnife(this.native,{dt,moving,camera:this.camera,fingerRelease:0,ringRotation:meleeGrip?.gripRotation});else updateNativeWeaponHands(this.native,{dt,moving,camera:this.camera});}if(this.gunMesh)updateMechanism(this.gunMesh,this.gunMesh.userData.firedAt===undefined?Infinity:(performance.now()-this.gunMesh.userData.firedAt)/1000);if(!this.native?.userData.loaded)this.hands?.update({dt,meleeGrip});return target;
+  this.buildWeapon(target.agent,target.weapon);this.kick*=Math.exp(-dt*16);this.weaponRoot.rotation.x=this.kick;this.weaponRoot.position.z=-.14+this.kick*.6;const meleeGrip=this.melee?updateKarambit(this.melee,{}):null;if(this.native){this.native.position.copy(this.weaponRoot.position).multiplyScalar(-1);if(this.melee)updateTacticalKnife(this.native,{dt,moving,camera:this.camera,fingerRelease:0,ringRotation:meleeGrip?.gripRotation});else updateNativeWeaponHands(this.native,{dt,moving,walking:!!target.walking,crouching:!!target.crouching,camera:this.camera});}if(this.gunMesh)updateMechanism(this.gunMesh,this.gunMesh.userData.firedAt===undefined?Infinity:(performance.now()-this.gunMesh.userData.firedAt)/1000);if(!this.native?.userData.loaded)this.hands?.update({dt,meleeGrip});return target;
  }
 }

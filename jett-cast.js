@@ -1,5 +1,5 @@
 import {FirstPersonHands,disposeViewmodel} from './first-person-view.js?v=collection1';
-import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=collection1';
+import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
 let data;
 function source(){return data||=Promise.all([fetch('./assets/collection/jett-smoke/meta.json').then(r=>{if(!r.ok)throw Error('Jett cast');return r.json()}),fetch('./assets/collection/jett-smoke/arms.poses.bin').then(r=>{if(!r.ok)throw Error('Jett cast');return r.arrayBuffer()})]).then(([meta,b])=>({meta,frames:new Float32Array(b)})).catch(e=>{data=null;throw e});}
 export class JettSmokeCast{

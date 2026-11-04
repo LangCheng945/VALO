@@ -1,0 +1,119 @@
+[
+  {
+    "id": "ares",
+    "weapon": "ares",
+    "label": "ARES",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "bucky",
+    "weapon": "bucky",
+    "label": "BUCKY",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "bulldog",
+    "weapon": "bulldog",
+    "label": "BULLDOG",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  },
+  {
+    "id": "judge",
+    "weapon": "judge",
+    "label": "JUDGE",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  },
+  {
+    "id": "odin",
+    "weapon": "odin",
+    "label": "ODIN",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "outlaw",
+    "weapon": "outlaw",
+    "label": "OUTLAW",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "shorty",
+    "weapon": "shorty",
+    "label": "SHORTY",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "spectre",
+    "weapon": "spectre",
+    "label": "SPECTRE",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  },
+  {
+    "id": "stinger",
+    "weapon": "stinger",
+    "label": "STINGER",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  }
+]
