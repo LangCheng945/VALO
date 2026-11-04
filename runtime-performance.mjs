@@ -7,7 +7,7 @@ export class RenderBudget {
  ratio(width,height,dpr=1){
   const pixels=Math.max(1,width*height),device=Math.max(.5,Number(dpr)||1);
   if(this.mode==='quality')return Math.min(device,1.5);
-  const budget=this.mode==='performance'?921600:1800000;
+  const budget=this.mode==='performance'?921600:1200000;
   return Math.min(device,this.mode==='performance'?1:1.5,Math.sqrt(budget/pixels))*this.scale;
  }
  sample(dt,active=true){

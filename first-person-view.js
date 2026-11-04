@@ -141,7 +141,7 @@ export function createMagazine(key,material,steel){
  root.visible=key!=='classic';return root;
 }
 export function updateMagazine(magazine,progress,key){
- if(!magazine)return;const base=magazine.userData.basePosition;magazine.position.copy(base);magazine.rotation.set(0,0,0);
+ if(!magazine||magazine.userData.loadingPlaceholder)return;const base=magazine.userData.basePosition;magazine.position.copy(base);magazine.rotation.set(0,0,0);
  const active=progress>0;
  // The old magazine exits below frame; the fresh one enters from the belt on a new path.
  const [x,y,z,roll]=active?track(progress,[[0,0,0,0,0],[.17,0,0,0,0],[.40,-.08,-.34,.035,.22],[.48,-.13,-.58,.08,.30],[.52,-.13,-.58,.08,-.18],[.60,-.07,-.32,.04,-.12],[.76,0,-.025,0,-.02],[.80,0,.008,0,0],[.84,0,0,0,0],[1,0,0,0,0]]):[0,0,0,0];
@@ -149,4 +149,4 @@ export function updateMagazine(magazine,progress,key){
  magazine.visible=key==='classic'?active&&progress>.17&&progress<.84:!(progress>.46&&progress<.54);
  magazine.userData.reloadStage=!active?'idle':progress<.17?'reach':progress<.46?'remove':progress<.54?'replace':progress<.80?'insert':progress<.96?'settle':'idle';
 }
-export function disposeViewmodel(root){root.traverse(o=>{o.userData.disposed=true;if(o.isSkinnedMesh)o.skeleton?.dispose();});const gs=new Set(),ms=new Set(),owned=new Set();root.traverse(o=>{for(const texture of o.userData.ownedTextures||[])owned.add(texture);for(const m of o.userData.handMaterials||[])ms.add(m);if(o.geometry&&!o.geometry.userData.sharedWeaponGeometry)gs.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])ms.add(m);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());owned.forEach(t=>t.dispose());root.clear();}
+export function disposeViewmodel(root){root.traverse(o=>{o.userData.releaseResources?.();o.userData.disposed=true;if(o.isSkinnedMesh)o.skeleton?.dispose();});const gs=new Set(),ms=new Set(),owned=new Set();root.traverse(o=>{for(const texture of o.userData.ownedTextures||[])owned.add(texture);for(const m of o.userData.handMaterials||[])ms.add(m);if(o.geometry&&!o.geometry.userData.sharedWeaponGeometry)gs.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])ms.add(m);});gs.forEach(g=>g.dispose());ms.forEach(m=>m.dispose());owned.forEach(t=>t.dispose());root.clear();}

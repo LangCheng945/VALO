@@ -39,3 +39,6 @@ conservative stepped polygons. The source callout centres alone are insufficient
 several refer to approaches outside the gold plant footprints. Polygons include
 edges and reject floor 0 below the visible site platforms. See `docs/sunset-map.md`
 and `assets/sunset/provenance.json` for coordinate and source details.
+
+
+Visible-floor correction (2026-11-05): the bundled BVH segment-distance helper missed intersections through triangle interiors. Capsule clearance now tests the segment against the face before edge distance, rejecting hidden lower support planes. Corrode A/B planting floors are 5.7–6.8 source metres, matching the visible floor near 6, rather than the hidden proxy near 5. Lotus/Corrode defender spawn heights and Ascent defender clearance are synchronized with the server.

@@ -1,14 +1,14 @@
 import {ROTORS,collisionCutouts} from './multiplayer/map-mechanism-rules.mjs?v=mechanisms1';
 import {cutDoorCollision} from './map-collision-cutouts.mjs?v=mechanisms1';
 import {loadMapLighting,instanceLightmap,lightmapBatch} from './map-lighting.js?v=sunsetlight1';
-import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=maps4';
-export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=maps4';
+import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=surface2';
+export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=surface2';
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
 export const MAPS=Object.freeze({
     ascent:{id:'ascent',name:'Ascent',title:'義境空島',bytes:13058488,
-        spawns:{attack:[.5,-.6,2,.65],defend:[-97.45,-19.95,3,-1.7]},
+        spawns:{attack:[.5,-.6,2,.65],defend:[-96.65,-19.95,3,-1.7]},
         training:[[-12,-8,2],[-21,-27.5,2],[-30,-44.8,4],[-47,-53,4],[-58,19,1]],
         tactical:[[-47.1,-53.22,4],[-66,-60,5],[-58.4,19.8,1],[-72,25,1],[-45.8,-12.2,2]],
         sites:MAP_SITES.ascent},
@@ -33,9 +33,9 @@ export const MAPS=Object.freeze({
         tactical:[[38,-18,1],[-54,-15,3],[-40,-6,2],[28,-23,3],[-12,6,0]],
         bakedLighting:true,bakedFill:.35,bakedGain:1.15,exposure:1.08,sites:MAP_SITES.sunset},
     split:{doubleSidedGround:true,...{"id":"split","name":"Split","title":"\u96d9\u5854\u8ff7\u57ce","bytes":13395780,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[0.6,-19.02,3,1.57],"defend":[-89.65,-21.42,5,-1.57]},"training":[[-78.58,-73.45,0.001047],[-24.58,-68.14,3],[-44.93,-62.8,2.000577],[-62.58,-54.35,4],[-45.9,-43.3,5]],"tactical":[[-64.898,-77.123,0.001047],[-66.264,17.198,4.0],[-78.58,-73.45,0.001047],[-24.58,-68.14,3],[-44.93,-62.8,2.000577]]},sites:MAP_SITES.split},
-    lotus:{doubleSidedGround:true,...{"id":"lotus","name":"Lotus","title":"\u84ee\u83ef\u53e4\u57ce","bytes":9957832,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[7.77,-14.01,2.9975,0],"defend":[15.848629,-95.738629,4.0,3.141592653589793]},"training":[[50.46,-91.8,6.75],[60.93,-95.16,3.000424],[60.502,-81.609,3.000424],[55.57,-85.17,2.020471],[55.57,-61.5,3.000421]],"tactical":[[59.102,-83.009,3.000424],[4.222,-69.097,2.036127],[-46.198,-64.064,3.047305],[50.46,-91.8,6.75],[60.93,-95.16,3.000424]]},sites:MAP_SITES.lotus},
+    lotus:{doubleSidedGround:true,...{"id":"lotus","name":"Lotus","title":"\u84ee\u83ef\u53e4\u57ce","bytes":9957832,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[7.77,-14.01,2.9975,0],"defend":[15.848629,-95.738629,4.992055,3.141592653589793]},"training":[[50.46,-91.8,6.75],[60.93,-95.16,3.000424],[60.502,-81.609,3.000424],[55.57,-85.17,2.020471],[55.57,-61.5,3.000421]],"tactical":[[59.102,-83.009,3.000424],[4.222,-69.097,2.036127],[-46.198,-64.064,3.047305],[50.46,-91.8,6.75],[60.93,-95.16,3.000424]]},sites:MAP_SITES.lotus},
     bind:{doubleSidedGround:true,groundSpawn:true,...{"id":"bind","name":"Bind","title":"\u52ab\u5883\u4e4b\u5730","bytes":11998136,"separateProjectileCollision":true,"spawns":{"attack":[39.9,-65.5,1.023423314,0],"defend":[-10.18,-146.42,1.000959,3.141592653589793]},"training":[[58.74,-75.5,1.012179],[-12.87,-63.66,2],[31.59,-61.13,1.023423],[8.04,-79.83,2.000957],[26.64,-107.48,1.003959]],"tactical":[[24.784,-108.79,1.003959],[-47.714,-116.149,3.060026],[58.74,-75.5,1.012179],[-12.87,-63.66,2],[31.59,-61.13,1.023423]]},sites:MAP_SITES.bind},
-    corrode:{doubleSidedGround:true,...{"id":"corrode","name":"Corrode","title":"\u9e7d\u6d77\u53e4\u5821","bytes":17268904,"separateProjectileCollision":true,"spawns":{"attack":[56.75,0.25,3.999491,1.57],"defend":[-59.1,-0.08,5.0,-1.57]},"training":[[-17.666,-44.481,5.0],[-20.74,-57.43,5.0],[-16.5,-17.83,4.0],[-18.926,39.369,4.999996],[-59.1,-0.08,5.0]],"tactical":[[-19.066,-43.081,5.0],[-17.526,39.369,4.999996],[-59.1,-0.08,5.0],[-20.74,-57.43,5.0],[-16.5,-17.83,4.0]]},sites:MAP_SITES.corrode}
+    corrode:{doubleSidedGround:true,...{"id":"corrode","name":"Corrode","title":"\u9e7d\u6d77\u53e4\u5821","bytes":17268904,"separateProjectileCollision":true,"spawns":{"attack":[56.75,0.25,3.999491,1.57],"defend":[-59.1,-0.08,5.999491,-1.57]},"training":[[-17.666,-44.481,6.0],[-20.74,-57.43,6.0],[-16.5,-17.83,5.0],[-18.926,39.369,5.999996],[-59.1,-0.08,6.0]],"tactical":[[-19.066,-43.081,6.0],[-17.526,39.369,5.999996],[-59.1,-0.08,6.0],[-20.74,-57.43,6.0],[-16.5,-17.83,5.0]]},sites:MAP_SITES.corrode}
 
 
 });
@@ -105,7 +105,7 @@ export class AscentMapRuntime {
         this.renderer=renderer;this.ready=false;this.root=new T.Group();this.root.name='actual-'+this.id;
         this.scale=MAP_SCALE;this.frustum=new T.Frustum();this.viewMatrix=new T.Matrix4();
         this.raycaster=new T.Raycaster();this.raycaster.firstHitOnly=true;
-        this.segment=new T.Line3();this.capsuleBox=new T.Box3();this.trianglePoint=new T.Vector3();this.capsulePoint=new T.Vector3();
+        this.capsuleRay=new T.Ray();this.capsuleDirection=new T.Vector3();this.capsuleIntersection=new T.Vector3();this.segment=new T.Line3();this.capsuleBox=new T.Box3();this.trianglePoint=new T.Vector3();this.capsulePoint=new T.Vector3();
         this.minimapImage=new Image();
         this.spawnCache=new Map();this.ropes=[];this.projectileCollisionMesh=null;
     }
@@ -191,10 +191,27 @@ export class AscentMapRuntime {
         this.capsuleBox.makeEmpty().expandByPoint(this.segment.start).expandByPoint(this.segment.end).expandByScalar(radius);
         if(this.dynamicColliders?.some(c=>c.enabled!==false&&c.collides(position,crouch)))return true;
         if(this.dynamicSolids?.some(box=>!box.isEmpty()&&box.intersectsBox(this.capsuleBox)))return true;
+        this.capsuleDirection.subVectors(this.segment.end,this.segment.start);const segmentLengthSq=this.capsuleDirection.lengthSq();
+        this.capsuleRay.set(this.segment.start,this.capsuleDirection.normalize());
         return this.collisionMesh.geometry.boundsTree.shapecast({
             intersectsBounds:box=>box.intersectsBox(this.capsuleBox),
-            intersectsTriangle:triangle=>triangle.closestPointToSegment(this.segment,this.trianglePoint,this.capsulePoint)<radius-.025
+            intersectsTriangle:triangle=>{
+                // The bundled BVH distance helper only tests edges/endpoints;
+                // it misses a capsule axis crossing the middle of a large face.
+                const hit=this.capsuleRay.intersectTriangle(triangle.a,triangle.b,triangle.c,false,this.capsuleIntersection);
+                return !!hit&&hit.distanceToSquared(this.segment.start)<=segmentLengthSq||triangle.closestPointToSegment(this.segment,this.trianglePoint,this.capsulePoint)<radius-.025;
+            }
         });
+    }
+    recoverPosition(position,crouch=0,canStand=null) {
+        if(!this.collides(position,crouch))return false;
+        for(const radius of [0,.08,.18,.35,.6,.95])for(let i=0;i<(radius?12:1);i++){
+            const p=position.clone();p.x+=Math.cos(i*Math.PI/6)*radius;p.z+=Math.sin(i*Math.PI/6)*radius;
+            const probe=p.clone();probe.y+=1.6;const floor=this.getGroundHeight(probe);
+            if(floor< -90||Math.abs(floor+2.2-position.y)>1.65)continue;
+            p.y=floor+2.2;if(!this.collides(p,crouch)&&(!canStand||canStand(p))){position.copy(p);return true;}
+        }
+        return false;
     }
     floorCandidates(x,z) {
         const ray=new T.Ray(new T.Vector3(x,100*this.scale,z),new T.Vector3(0,-1,0));
@@ -205,7 +222,7 @@ export class AscentMapRuntime {
     safePoint(sourceX,sourceZ,sourceFloor=1) {
         for(const radius of [0,.8,1.6,2.8,4,6]) for(let i=0;i<(radius?8:1);i++) {
             const x=(sourceX+Math.cos(i*Math.PI/4)*radius)*this.scale,z=(sourceZ+Math.sin(i*Math.PI/4)*radius)*this.scale;
-            const floors=this.floorCandidates(x,z).filter(y=>Math.abs(y-sourceFloor*this.scale)<.8*this.scale).sort((a,b)=>Math.abs(a-sourceFloor*this.scale)-Math.abs(b-sourceFloor*this.scale));
+            const floors=this.floorCandidates(x,z).filter(y=>Math.abs(y-sourceFloor*this.scale)<(this.definition.doubleSidedGround?1.2:.8)*this.scale).sort((a,b)=>Math.abs(a-sourceFloor*this.scale)-Math.abs(b-sourceFloor*this.scale));
             for(const floor of floors) {
                 const point=new T.Vector3(x,floor+2.2,z);
                 if(!this.collides(point))return point;

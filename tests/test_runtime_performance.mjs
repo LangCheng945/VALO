@@ -1,7 +1,7 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {RenderBudget,SoundGroundCache} from '../runtime-performance.mjs';
 test('automatic pixel cap and fixed quality modes resize with the window',()=>{
- const r=new RenderBudget();for(const [w,h,d] of [[1920,1080,1],[3840,2160,2],[1280,720,2]])assert(w*h*r.ratio(w,h,d)**2<=1800001);
+ const r=new RenderBudget();for(const [w,h,d] of [[1920,1080,1],[3840,2160,2],[1280,720,2]])assert(w*h*r.ratio(w,h,d)**2<=1200001);
  r.setMode('performance');assert(3840*2160*r.ratio(3840,2160,2)**2<=921601);
  r.setMode('quality');assert.equal(r.ratio(1920,1080,2),1.5);r.setMode('invalid');assert.equal(r.mode,'auto');
 });

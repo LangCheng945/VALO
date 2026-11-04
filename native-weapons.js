@@ -1,7 +1,7 @@
 import {loadLocomotion} from './weapon-locomotion.js?v=expansion2';
-import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
+import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=surface2';
 import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
-import {collectionArmData,updateCollectionModel} from './collection.js?v=expansion2';
+import {collectionArmData,updateCollectionModel} from './collection.js?v=surface2';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 const T=globalThis.THREE,cache=new Map(),exact=new Set(['vandal','phantom','classic','operator','ghost','guardian','sheriff','marshal']);
 const directSpace=new Set(['vandal','phantom','classic','operator']);

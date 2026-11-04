@@ -43,12 +43,10 @@ export function updateTacticalKnife(root,{dt=0,moving=false,walking=false,crouch
  applyLocomotion(s,{dt,moving,walking,crouching,enabled:!poseClip&&!reload&&!inspect&&draw>=1&&!scoped&&!attack});
  if(s.ringModel&&fingerRelease>0)for(const bone of s.bones)if(/^R_(Middle|Ring|Pinky)[0-3]$|^R_Thumb[1-3]$/.test(bone.name))bone.quaternion.slerp(bone.userData.bindQ,fingerRelease*(bone.name.includes('Thumb')?.4:.85));
  if(s.supportOffset){const clavicle=s.bones.find(b=>b.name==='L_Clavicle');clavicle.position.add(s.supportOffset);}
- if(camera){
-  s.guard ||= {shoulder:new T.Vector3(),elbow:new T.Vector3(),view:new T.Vector3(),delta:new T.Vector3()};const g=s.guard;s.arms.updateWorldMatrix(true,true);
-  for(const side of ['L','R'])for(const [joint,child]of [['Clavicle','Shoulder'],['Shoulder','Elbow']]){const shoulder=s.bones.find(b=>b.name===side+'_'+joint),elbow=s.bones.find(b=>b.name===side+'_'+child);if(!shoulder||!elbow)continue;shoulder.getWorldPosition(g.shoulder);g.view.copy(g.shoulder);camera.worldToLocal(g.view);if(g.view.z>=.025)continue;
-   elbow.getWorldPosition(g.elbow);g.delta.set(0,0,.025-g.view.z).transformDirection(camera.matrixWorld).multiplyScalar(.025-g.view.z);g.shoulder.add(g.delta);shoulder.parent.worldToLocal(g.shoulder);shoulder.position.copy(g.shoulder);shoulder.updateWorldMatrix(true,true);elbow.parent.worldToLocal(g.elbow);elbow.position.copy(g.elbow);
-  }
- }
+ // Preserve source shoulder/elbow transforms. Moving individual joints behind
+ // the near plane stretches skinned forearms during equip and reload; the
+ // separate viewmodel pass already handles camera-local depth precision.
+
  if(s.ringModel){
   s.ringFit ||= {anchor:new T.Vector3(),axis:new T.Vector3(),along:new T.Vector3(),cross:new T.Vector3(),tmp:new T.Vector3(),matrix:new T.Matrix4(),q:new T.Quaternion(),basis:new T.Quaternion(),spin:new T.Quaternion(),target:new T.Quaternion(),delta:new T.Quaternion(),rootQ:new T.Quaternion(),parentQ:new T.Quaternion(),handQ:new T.Quaternion(),inverseRootQ:new T.Quaternion(),euler:new T.Euler(),z:new T.Vector3(0,0,1)};const f=s.ringFit;root.updateWorldMatrix(true,true);const at=(name,out)=>root.worldToLocal(s.bones.find(b=>b.name==='R_'+name).getWorldPosition(out));
   at('Index2',f.anchor);at('Index3',f.axis).sub(f.anchor).normalize();at('Middle1',f.along);f.along.add(at('Ring1',f.tmp)).add(at('Pinky1',f.tmp)).multiplyScalar(1/3).sub(f.anchor);f.along.addScaledVector(f.axis,-f.along.dot(f.axis)).normalize();f.cross.crossVectors(f.along,f.axis).normalize();f.matrix.makeBasis(f.cross,f.along,f.axis);f.q.setFromRotationMatrix(f.matrix);

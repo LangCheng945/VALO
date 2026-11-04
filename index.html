@@ -712,9 +712,9 @@
         import {BrimstoneKit} from './brimstone-view.js?v=neon2';
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=mechanisms1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=surface2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=collection1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=surface2';
         import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=grip2';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
@@ -725,15 +725,15 @@
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon2';
         import {SpectatorView} from './spectator-view.js?v=expansion2';
         import {spectatorCandidates} from './spectator-rules.mjs';
-        import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
+        import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=surface2';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
-        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
-        import {SKINS,NATIVE_WEAPON_KEYS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=expansion2';
+        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=surface2';
+        import {SKINS,NATIVE_WEAPON_KEYS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=surface2';
         import {applySourceSun} from './map-lighting.js?v=sunsetlight1';
-        import {DetainedView} from './detained-view.js?v=expansion2';
+        import {DetainedView} from './detained-view.js?v=surface2';
         import {installSunsetDrills,preaimSpawns} from './sunset-drills.js?v=expansion1';
         import {smokePhase} from './smoke-envelope.mjs?v=expansion1';
         import {SmokeVision} from './smoke-vision.js?v=expansion1';
@@ -741,8 +741,8 @@
         import {MechanismAudio} from './mechanism-audio.js?v=mechanisms1';
         import {MarketDoor} from './market-door.js?v=expansion1';
         import {CollectionAudio,collectionAudioId} from './collection-audio.js?v=expansion1';
-        import {JettSmokeCast} from './jett-cast.js?v=expansion2';
-        import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=expansion2';
+        import {JettSmokeCast} from './jett-cast.js?v=surface2';
+        import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=surface2';
         import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
         import {installTrainingPresets,stepTrainingStrafe} from './training-presets.mjs?v=drill1';
         import {loadGaiaMagazine} from './gaia-magazine.js?v=gaia1';
@@ -1712,6 +1712,8 @@
 
             gunGroup.add(rig);
             const placeholder=rig.children.filter(child=>child!==muzzleFlashGroup && !child.userData.keepArm);
+            // Keep procedural fallback hidden while the selected source model loads.
+            for(const child of placeholder){child.visible=false;child.userData.loadingPlaceholder=true;}
             const viewHands=firstPersonHands,viewFlash=muzzleFlashGroup;
             const skin=selectedSkin(state,wpnKey);
             (skin?loadCollectionModel(skin.id,viewEnvironmentTarget.texture):(NATIVE_WEAPON_KEYS.includes(wpnKey)?loadCollectionModel('native-'+wpnKey,viewEnvironmentTarget.texture):loadWeaponModel(wpnKey,darkMetal))).then(mesh=>{
@@ -1723,7 +1725,7 @@
                 const attachNative=()=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig))return;const controller=createNativeWeaponHands(viewHands,wpnKey,mesh,gunMagazineMesh,viewFlash,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);if(gunMagazineMesh===old)gunMagazineMesh=part;}});nativeWeaponRoot=controller;gunGroup.add(controller);controller.ready.then(ok=>{if(ok&&nativeWeaponRoot===controller){weaponDrawElapsed=0;skinAudio.play('equip');}});};
                 if(wpnKey==='vandal'&&!skin){const fallback=gunMagazineMesh;loadGaiaMagazine(darkMetal).then(part=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig)||gunMagazineMesh!==fallback){disposeViewmodel(part);return;}rig.remove(fallback);disposeViewmodel(fallback);gunMagazineMesh=part;rig.add(part);attachNative();}).catch(error=>{console.warn('Gaia magazine fallback',error);attachNative();});}else attachNative();
                 muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
-            }).catch(error=>console.warn('Weapon model fallback',error));
+            }).catch(error=>{if(state.weaponKey===wpnKey&&gunGroup.children.includes(rig))for(const child of placeholder){delete child.userData.loadingPlaceholder;child.visible=true;}console.warn('Weapon model fallback',error);});
         }
         buildFirstPersonViewmodel();
 
@@ -4471,6 +4473,7 @@
                 nextZ.z += playerVelocity.z * dt;
                 if(canJump) nextZ.y=Math.max(nextZ.y,getGroundHeight(nextZ)+2.2);
                 if (!checkPlayerCollision(nextZ)) {yawObject.position.z=nextZ.z;yawObject.position.y=nextZ.y;}
+                else if(realMap.ready&&!state.realm&&realMap.recoverPosition(yawObject.position,state.crouchAmount,p=>!checkPlayerCollision(p,state.crouchAmount))){playerVelocity.x=0;playerVelocity.z=0;}
 
                 const ground=getGroundHeight(yawObject.position)+2.2;
                 const vertical=yawObject.position.clone();vertical.y+=playerVelocity.y*dt;
