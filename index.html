@@ -712,7 +712,7 @@
         import {BrimstoneKit} from './brimstone-view.js?v=neon2';
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=maps4';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=mechanisms1';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=collection1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
@@ -732,11 +732,13 @@
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
         import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
         import {SKINS,NATIVE_WEAPON_KEYS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=expansion2';
-        import {applySourceSun} from './map-lighting.js?v=expansion2';
+        import {applySourceSun} from './map-lighting.js?v=sunsetlight1';
         import {DetainedView} from './detained-view.js?v=expansion2';
         import {installSunsetDrills,preaimSpawns} from './sunset-drills.js?v=expansion1';
         import {smokePhase} from './smoke-envelope.mjs?v=expansion1';
         import {SmokeVision} from './smoke-vision.js?v=expansion1';
+        import {MapMechanisms} from './map-mechanisms.js?v=mechanisms1';
+        import {MechanismAudio} from './mechanism-audio.js?v=mechanisms1';
         import {MarketDoor} from './market-door.js?v=expansion1';
         import {CollectionAudio,collectionAudioId} from './collection-audio.js?v=expansion1';
         import {JettSmokeCast} from './jett-cast.js?v=expansion2';
@@ -758,7 +760,7 @@
         import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=neon2';
         import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=expansion1';
         import {FollowTrail,BotDefuseController,retakeOrders,SquadTactics} from './bot-tactics.mjs?v=expansion1';
-        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=expansion1-retake1';
+        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=mechanisms1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -1509,10 +1511,11 @@
             document.querySelector('.free-roam-button').disabled=true;
             try {
                 await realMap.load(text=>label.textContent=text);
+                mapMechanisms.initialize();
                 arenaRoot.add(realMap.root);
                 const sky=scene.getObjectByName('fallback-sky');if(sky)scene.remove(sky);
                 scene.background=new THREE.Color(0xb9d5e6);scene.fog=new THREE.FogExp2(0xb9d5e6,.0008);
-                hemiLight.intensity=realMap.lighting?.45:1.3;sunLight.intensity=1.6;applySourceSun(realMap.lighting,sunLight);renderer.toneMappingExposure=.95;
+                hemiLight.intensity=realMap.lighting?.45:1.3;sunLight.intensity=1.6;applySourceSun(realMap.lighting,sunLight);renderer.toneMappingExposure=mapDefinition.exposure??.95;
                 camera.far=900;camera.updateProjectionMatrix();
                 // Loading the map must not cancel purchases already made in the initial menu.
                 const loadout=Object.fromEntries(['creds','primaryWeaponKey','secondaryWeaponKey','weaponKey','shield','armorType','shieldReserve','regenReadyAt','regenTickAt','pendingWeapon','pendingSidearm','pendingShield','hasPlayedThisRound'].map(key=>[key,state[key]]));
@@ -2174,7 +2177,7 @@
                     slowClockOffset=Number.isFinite(message.serverNow)?message.serverNow-Date.now():0;
                     roomMode=message.mode||'practice';receiveRoomRound(message.round);marketDoor.receive(message.marketDoor);roomHostUid=message.hostUid;
 
-                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;updateMapPermissions();state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
+                    currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;mapMechanisms.receive(message.mechanisms,true);updateMapPermissions();state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
                     if(!previousSolo)previousSolo={enableBots:state.enableBots,gameMode:state.gameMode};
                     state.enableBots=false;state.gameMode='tactical';for(const mode of ['stationary','strafing','tactical'])document.getElementById('mode-'+mode).disabled=true;spawnBots();document.body.classList.remove('is-training');
                     document.getElementById('chk-enable-bots').checked=false;document.getElementById('chk-enable-bots').disabled=true;
@@ -2206,6 +2209,7 @@
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
             if(fadeKit.receive(ev)||skyeKit.receive(ev)||razeKit.receive(ev)||astraKit.receive(ev)||viperKit.receive(ev)||breachKit.receive(ev)||neonKit.receive(ev)||cypherKit.receive(ev)||killjoyKit.receive(ev)||sovaKit.receive(ev)||reynaKit.receive(ev)||brimKit.receive(ev)||omenKit.receive(ev)||isoKit.receive(ev)||cloveKit.receive(ev))return;
+            if(mapMechanisms.travelEvent(ev))return;
             if(ev.type==='market_door'){marketDoor.receive(ev.state);return;}
             if(ev.type==='revive'){
                 if(ev.phase==='complete'){removeCorpse(ev.targetUid);return;}
@@ -2452,7 +2456,7 @@
         }
         let shotgunContext=null;
         function fireWeapon(attackVariant=null) {
-            if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()||killjoyKit.blocked()||cypherKit.blocked()||fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()) return;
+            if (mapMechanisms.pending || state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()||killjoyKit.blocked()||cypherKit.blocked()||fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()) return;
             if(fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
             if(jettSmokeCast.active){if(jettSmokeCast.age<.25)return;jettSmokeCast.cancel();}
             abilityCast.cancel();gunGroup.visible=true;
@@ -2980,8 +2984,10 @@
         const reconApi={...killjoyKit.api,ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z)),clearMotion:(a,b)=>{const o=new THREE.Vector3(a.x,a.y+.6,a.z),d=new THREE.Vector3(b.x,b.y+.6,b.z).sub(o),len=d.length();return len<.001||!new THREE.Raycaster(o,d.normalize(),0,len+.25).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;},yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,dartTargets:()=>sovaKit.api.targets(),health:updateHealthHUD,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);setScope(false);},tether:p=>{const next=yawObject.position.clone();next.x=p.x;next.z=p.z;if(!checkPlayerCollision(next)){yawObject.position.x=p.x;yawObject.position.z=p.z;}},tetherBot:(b,p)=>{const next=b.group.position.clone();next.x=p.x;next.z=p.z;if(botNavigation?.step(b.group.position,next,v=>checkPlayerCollision(v,0,true)))b.group.position.copy(next);},clearLine:(a,b)=>{if(neonKit.blocksLine(a,b)||viperKit.blocksLine(a,b)||astraKit.audioScale(a,b)<1)return false;const origin=new THREE.Vector3(a.x,a.y,a.z),end=new THREE.Vector3(b.x,b.y,b.z),delta=end.clone().sub(origin),len=delta.length(),line=new THREE.Line3(origin,end);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceTo(s.mesh.position)<(s.mesh.userData.smokeRadius||4.2)*s.mesh.scale.x))return false;return len<.001||!new THREE.Raycaster(origin,delta.normalize(),0,Math.max(0,len-.3)).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;}};
         const fadeKit=new ReconKit('fade',reconApi),skyeKit=new ReconKit('skye',reconApi);
         function cancelReconInput(){fadeKit.cancel();skyeKit.cancel();if(skyeKit.busy())skyeKit.endControl();}
-        const marketDoor=new MarketDoor({map:realMap,scene,shootable:shootableMeshes,offset:()=>currentRoomId?slowClockOffset:0,position:()=>yawObject.position,active:()=>state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.realm&&!state.roundEnding,network:()=>!!currentRoomId,features:()=>roomSocket?.serverFeatures||[],send:broadcastRoomEvent,notice:abilityNotice,actors:()=>[yawObject.position,...bots.filter(b=>b.alive).map(b=>b.group.position.clone().add(new THREE.Vector3(0,2.2,0)))],sound:kind=>{if(state.isLocked)sfx.playAbilitySound(kind==='break'?'dash':'smoke');}});
-        function clearFieldObjects(){if(!currentRoomId)marketDoor.reset();sourceHeadshots.clear();fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        const marketDoor=new MarketDoor({map:realMap,scene,shootable:shootableMeshes,offset:()=>currentRoomId?slowClockOffset:0,position:()=>yawObject.position,simulating:()=>state.isLocked&&!state.inBuyMenu&&!state.realm&&!state.roundEnding,active:()=>state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.realm&&!state.roundEnding,network:()=>!!currentRoomId,features:()=>roomSocket?.serverFeatures||[],send:broadcastRoomEvent,notice:abilityNotice,actors:()=>[yawObject.position,...bots.filter(b=>b.alive).map(b=>b.group.position.clone().add(new THREE.Vector3(0,2.2,0)))],sound:kind=>{if(state.isLocked)sfx.playAbilitySound(kind==='break'?'dash':'smoke');}});
+        const mechanismAudio=new MechanismAudio(()=>sfx.ctx,()=>spectatorView.active?spectatorView.camera.position:yawObject.position,()=>spectatorView.active?spectatorView.camera.rotation.y:yawObject.rotation.y);
+        const mapMechanisms=new MapMechanisms({map:realMap,scene,canStand:(p,c)=>!checkPlayerCollision(p,c),network:()=>!!currentRoomId,offset:()=>slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>yawObject.position,simulating:()=>state.isLocked&&!state.inBuyMenu&&!state.realm&&!state.roundEnding,active:()=>state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.realm&&!state.roundEnding&&!sovaKit.blocked()&&!omenKit.busy(),send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},notice:abilityNotice,bots:()=>bots,actors:()=>[...(state.hp>0&&!state.realm?[{position:yawObject.position,crouch:state.crouchAmount,set:p=>yawObject.position.copy(p)}]:[]),...(!currentRoomId?bots.filter(b=>b.alive&&!b.realm).map(bot=>({bot,position:bot.group.position.clone().add(new THREE.Vector3(0,2.2,0)),set:p=>{bot.group.position.set(p.x,p.y-2.2,p.z);bot.lastSafePosition=bot.group.position.clone();}})):[])],relocate:p=>{cancelSpikeAction();moveState.holdPlant=false;state.climbingRope=null;playerVelocity.set(0,0,0);yawObject.position.set(p.x,p.y,p.z);canJump=true;pushMyNetworkState(true);},relocateRemote:(uid,p)=>{const rp=remotePlayers.get(uid);if(rp){rp.group.position.set(p.x,p.y-2.2,p.z);rp.targetPos.copy(rp.group.position);Object.assign(rp.data,p);}},sound:(kind,p)=>{if(state.isLocked){sfx.init();mechanismAudio.play(kind,p);}},stopSound:()=>mechanismAudio.stop()});
+        function clearFieldObjects(){if(!currentRoomId){marketDoor.reset();mapMechanisms.reset();}sourceHeadshots.clear();fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -3765,6 +3771,7 @@
             if(state.hp<=0){if(code==='ArrowLeft'||code==='ArrowRight'){e.preventDefault();spectatorView.cycle(code==='ArrowLeft'?-1:1);}return;}
             if(code==='KeyF'&&cypherKit.interact()){e.preventDefault();return;}
             if(code==='KeyF'&&killjoyKit.activateTarget()){e.preventDefault();return;}
+            if(code==='KeyF'&&mapMechanisms.interact()){e.preventDefault();return;}
             if(code==='KeyF'&&marketDoor.interact()){e.preventDefault();return;}
             if(code==='KeyF'&&toggleRope()){e.preventDefault();return;}
             if(code==='Space'&&state.climbingRope){state.climbingRope=null;playerVelocity.y=6;canJump=false;moveState.glide=true;e.preventDefault();return;}
@@ -4035,7 +4042,7 @@
         }
 
         function updateBotsAndVFX(dt) {
-            if(!state.isLocked||state.inBuyMenu||state.hp<=0)skinAudio.cancelMotion();marketDoor.update();sourceHeadshots.update(performance.now());
+            if(!state.isLocked||state.inBuyMenu||state.hp<=0)skinAudio.cancelMotion();marketDoor.update();mapMechanisms.update(dt);sourceHeadshots.update(performance.now());
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
             const nativeDetained=detainedView.update({agent:state.agent,detained:killjoyKit.detained(),enabled:state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.realm});if(nativeDetained){abilityCast.cancel();jettSmokeCast.cancel();}
             const nativeSmoke=jettSmokeCast.update(state.agent==='jett'&&state.isLocked&&!state.inBuyMenu&&state.hp>0);if(nativeSmoke)abilityCast.cancel();
@@ -4380,7 +4387,7 @@
             if(spikeCarryRoot.visible)gunGroup.visible=false;
         }
 
-        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const doorVisible=marketDoor.enabled?marketDoor.root.visible:false;if(marketDoor.enabled)marketDoor.root.visible=!isolated;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(!isolated)scene.fog=smokeVision.view(scene.fog,camera,smokeSpheres);if(scene.fog!==fog)scene.background=scene.fog.color;firstPersonPass.render(renderer,scene,camera);scene.fog=fog;scene.background=background;if(marketDoor.enabled)marketDoor.root.visible=doorVisible;}
+        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const doorVisible=marketDoor.enabled?marketDoor.root.visible:false;if(marketDoor.enabled)marketDoor.root.visible=!isolated;const mechanismsVisible=mapMechanisms.root.visible;mapMechanisms.root.visible=!isolated;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(!isolated)scene.fog=smokeVision.view(scene.fog,camera,smokeSpheres);if(scene.fog!==fog)scene.background=scene.fog.color;firstPersonPass.render(renderer,scene,camera);mapMechanisms.root.visible=mechanismsVisible;scene.fog=fog;scene.background=background;if(marketDoor.enabled)marketDoor.root.visible=doorVisible;}
         function animate() {
             requestAnimationFrame(animate);
             spectatorView.restoreHidden();

@@ -10,5 +10,5 @@
     "collision.json": "46bbb43bfcef8d397a642a91a56920324c6298a0f20ce0e36ab711409aea4c31",
     "cover.webp": "782b20d4b137efea6b97c03f396e5f6960be69bebddabb447aa304eb7ac4dc50"
   },
-  "processing": "Source GLB/materials/UV, minimap, collision and optional ropes. Coordinates scaled 4/3 by runtime. Safe spawn/bot/site positions verified against source triangle collision. Plant polygons reconstructed from gold source minimap footprints and checked against actual floor height. Teleporters/rotating doors are not simulated by these static scene assets. Game assets belong to Riot Games."
+  "processing": "Source GLB/materials/UV, minimap, collision and optional ropes. Coordinates scaled 4/3 by runtime. Safe spawn/bot/site positions verified against source triangle collision. Plant polygons reconstructed from gold source minimap footprints and checked against actual floor height. Static mesh assets supply no gameplay simulation; map-mechanisms.js adds the portal/receiver or rotating-door interactions. Game assets belong to Riot Games."
 }

@@ -10,6 +10,7 @@ class Heap{
 }
 export class BotNavigation{
  constructor(map){this.map=map;this.epoch=map.navigationEpoch;this.cells=new Map();this.jobs=new Map();this.clock=0;}
+ heuristic(a,b){let best=distance(a,b);for(const l of this.map.navigationLinks||[])best=Math.min(best,distance(a,l.from)+1+distance(l.to,b));return best;}
  reset(){this.jobs.clear();}
  node(ix,iz,y){
   const key=ix+','+iz;
@@ -37,12 +38,12 @@ export class BotNavigation{
  request(bot,goal){
   if(this.jobs.has(bot)||this.clock<(bot.navRetryAt||0))return;
   const start=this.nearest(bot.group.position),end=this.nearest(goal);bot.navRetryAt=this.clock+.7;
-  if(!start||!end)return;
-  const heap=new Heap(),record={node:start,g:0,f:distance(start,end),parent:null};heap.push(record);
+  if(!start||!end){this.map.onNavigationBlocked?.(bot,goal);return;}
+  const heap=new Heap(),record={node:start,g:0,f:this.heuristic(start,end),parent:null};heap.push(record);
   this.jobs.set(bot,{heap,seen:new Map([[start.key,record]]),end,best:record,count:0,goal:goal.clone(),extra:bot.navExtra||(()=>false)});
  }
  finish(bot,job,record){
-  const path=[];while(record){path.unshift(new T.Vector3(record.node.x,record.node.y,record.node.z));record=record.parent;}
+  const path=[];while(record){const point=new T.Vector3(record.node.x,record.node.y,record.node.z);if(record.link){point.teleportId=record.link.id;point.entry=record.link.from;}path.unshift(point);record=record.parent;}
   bot.navPath=path;bot.navGoal=job.goal;this.jobs.delete(bot);
  }
  tick(dt){
@@ -58,11 +59,13 @@ export class BotNavigation{
    for(const [dx,dz]of DIRS){
     const n=this.node(r.node.ix+dx,r.node.iz+dz,r.node.y);if(!n||!this.step(r.node,n,j.extra))continue;
     const g=r.g+distance(r.node,n),old=j.seen.get(n.key);if(old&&g>=old.g)continue;
-    const v={node:n,g,f:g+distance(n,j.end)*1.12,parent:r};j.seen.set(n.key,v);j.heap.push(v);
+    const v={node:n,g,f:g+this.heuristic(n,j.end)*1.12,parent:r};j.seen.set(n.key,v);j.heap.push(v);
    }
+   for(const link of this.map.navigationLinks||[]){if(distance(r.node,link.from)>1.7)continue;const n=this.nearest(link.to);if(!n)continue;const g=r.g+distance(r.node,link.from)+1,old=j.seen.get(n.key);if(old&&g>=old.g)continue;const v={node:n,g,f:g+this.heuristic(n,j.end)*1.12,parent:r,link};j.seen.set(n.key,v);j.heap.push(v);}
   }
  }
  move(bot,goal,dt,extra=()=>false,multiplier=1){
+  bot.mechanismGoal=goal;if(bot.navInteractionTarget){this.map.onNavigationBlocked?.(bot,goal);if(bot.navInteractionTarget)goal=bot.navInteractionTarget;}
   bot.navExtra=extra;const p=bot.group.position;if(distance(p,goal)<1.6)return false;
   let target=goal;
   // Nearby clear corridors need no path search. Cache this test for 250 ms.
@@ -70,13 +73,13 @@ export class BotNavigation{
   if(!bot.directClear||distance(bot.directGoal,goal)>2){
    if(!bot.navPath?.length||!bot.navGoal||distance(bot.navGoal,goal)>4)this.request(bot,goal);
    while(bot.navPath?.length&&Math.hypot(p.x-bot.navPath[0].x,p.z-bot.navPath[0].z)<.04&&Math.abs(p.y-bot.navPath[0].y)<.75)bot.navPath.shift();
-   target=bot.navPath?.[0];if(!target)return false;
+   target=bot.navPath?.[0];if(!target){this.map.onNavigationBlocked?.(bot,goal);return false;}if(target.teleportId){if(distance(p,target.entry)<1.5&&this.map.useNavigationLink?.(bot,target.teleportId)){this.jobs.delete(bot);return true;}target=target.entry;}
   }
   const dir=new T.Vector3(target.x-p.x,0,target.z-p.z),length=dir.length();if(length<.01)return false;dir.divideScalar(length);
   const next=p.clone().addScaledVector(dir,Math.min(length,bot.speed*Math.min(dt,.06)*multiplier));
   const eye=next.clone();eye.y+=2.2;next.y=this.map.getGroundHeight(eye);
   if(this.step(p,next,extra)){p.copy(next);bot.roamDirection=dir;bot.blockedFor=0;return true;}
-  bot.blockedFor=(bot.blockedFor||0)+dt;bot.directClear=false;
+  this.map.onNavigationBlocked?.(bot,goal);bot.blockedFor=(bot.blockedFor||0)+dt;bot.directClear=false;
   if(bot.blockedFor>.25){bot.navPath=[];this.jobs.delete(bot);bot.navRetryAt=0;this.request(bot,goal);bot.blockedFor=0;}
   return false;
  }
