@@ -1,4 +1,4 @@
-import {makeMechanismMesh,addOperatorScope} from './gun-mechanisms.js?v=mech1';
+import {makeMechanismMesh,addOperatorScope} from './gun-mechanisms.js?v=mech2';
 // Local geometry adapter. Asset provenance: assets/weapons/README.md.
 const THREE=window.THREE;
 const cache=new Map(),originalTextures=new Map();

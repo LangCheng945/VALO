@@ -1,25 +1,57 @@
 {
   "sourceRepository": "https://github.com/unkwsr/open-aim",
   "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
-  "sourcePath": "site/aim-viewmodel",
   "sourceFiles": {
     "classic.bin": "484ecd429b40eef7712458310db872e37c1701c5b04638c9c61c9a25ad250d73",
     "classic.json": "758bb580302239c34bf69356bc9a9a5b931d0f6f60ad9aacd7d5debfc7542ac9",
     "operator.bin": "1d094dcfd4b39093b0543d2d87c79a2987456d0b9b5979255b3e3e5ad5d55bb3",
     "operator.json": "5d111ed9f28c4f87cd83a3881898390a7890ee47167600ba410e13af9175ab4d",
-    "operator.scope.png": "50dc2f33d057f82cacdf4f5b30e3f6c2bda491d4f0cbbd1a9af86aa82db6f771"
+    "operator.scope.png": "50dc2f33d057f82cacdf4f5b30e3f6c2bda491d4f0cbbd1a9af86aa82db6f771",
+    "phantom.json": "36635d36fc7cceb458739f809104e60a62946410aeee756fc0c35344f9de0bb3",
+    "phantom.bin": "1130c1853a139c0b26be4b493aa646800b43494716f320d2624c553b4dc4c5cd",
+    "ghost.json": "8ea544c1902b42038e482521f54df5a274885d281b324ae08b81371d5049e83e",
+    "ghost.bin": "59512b448edf916474fd51a4110089c561d0283ba46d251493a7c80807b53bb0",
+    "ghost.parts.json": "052a7e41b7bbd97903e6546852f037c2a8e107e4fe1d92c6134f8d544677ecc8",
+    "guardian.json": "c087060e6a66cd6bc77ae07431d7ae6d2f49bd4537ed881745e17aef16aa0271",
+    "guardian.bin": "ed017c03f419739bd9def45f1b2eb095219f548961b3a13f1667604ba25fbb1c",
+    "guardian.parts.json": "73a91c6ffc36e7e8f9342b59ef870b305e8b6c610e371b1a07ee597a8f130ddb",
+    "sheriff.json": "a520a90ed9bc546abaf1108f86d9b97d33bb0dbdc647fcf5b5b98b6271af6009",
+    "sheriff.bin": "7d37cff62bc039c995744c45b58b67bd5c9e66c510783cdd3379e2afa636ff4e",
+    "sheriff.parts.json": "e6a61b26433232e0fd81cef71dcb2148caf8aca0203dab280f4bd47d67f5b6b6",
+    "marshal.json": "0e0964b5af00a12d186809bf950aa390ec41670404c7e169f900fd1016429473",
+    "marshal.bin": "d80dddb5253b274631fe97c63777da61bc0b636db42e0b817033cb3cd907c638",
+    "marshal.parts.json": "149d270680b18aa8b3e3eb23e6de5f4af01db73b8f29319feeed7df540aa1b1c"
   },
   "outputs": {
     "classic.fire.bin": "8d641db1ca0f664c5c7f6fdc20ea4a532f82f708c91e968f965c0b718a41b494",
     "classic.json": "0a20c1b23658c7f7b2250b9d90afafd3f5b714d6b35ed38343f82072c2e2b704",
     "classic.weights.bin": "ccf29923659834c6946f15e734b309629fbc0b5ce20764a34b1f1fe0827075d5",
+    "ghost.fire.bin": "1d4b3d027b5ed56842fd0232b40873d30cafe64ace7ff1c32814abdd47bf069f",
+    "ghost.json": "ba51d77b819f69d6f8dddad17cfee4904cd11bbdbb1277568f17a8a7c0cd5753",
+    "ghost.weights.bin": "ad55903a711aa5f6fae83b3ef421f981b45b6e51fdc7a915567dc60067081b9e",
+    "guardian.fire.bin": "04f39742653465a910efb88bccdb1ef8d5e3928f7c10501e6fad2d7c584ef274",
+    "guardian.json": "923d635db27a4cc1be5acf76e1749434a4b482f64daea724f06d65db4b117e32",
+    "guardian.weights.bin": "5c6020075f614f7fcd9a8e79e8b5115925a19e313659572b4b6a37ab83c249b4",
+    "marshal.fire.bin": "e02879b1ccb73aba6defefd3714e3cdc3076573344bb01c125338c8b148752f1",
+    "marshal.json": "252750a374a1024d69a5c4c7ee4ce360bea3ffc094d1779c17573c1dcbbab8b5",
+    "marshal.weights.bin": "62e4e35db5e8379182ad73b3aadce4a1b27e2fa9b13a2d454960624e8012da09",
     "operator.fire.bin": "3844459bf31cc937e4bd4a79cc008a5769d8e2621e04dba1dd342ec863f65115",
     "operator.json": "f471652950d42f3346c9c0f443858df5d3c996ba4a2c2cf8448404b90afd72cf",
     "operator.scope.bin": "76750551ab06ed0f1488a6062f11f4c4b054a71b441f924a488df7a32d15b2d8",
     "operator.scope.json": "fcc5888b57c7a7249408bccbd8fccf223b6a53153444206634528ece5b29cb4b",
     "operator.scope.png": "50dc2f33d057f82cacdf4f5b30e3f6c2bda491d4f0cbbd1a9af86aa82db6f771",
-    "operator.weights.bin": "9d4ee4d33310d075a806f8e89c6fa8b49c5e09fe6d88d27daab7895e16f6d88f"
+    "operator.weights.bin": "9d4ee4d33310d075a806f8e89c6fa8b49c5e09fe6d88d27daab7895e16f6d88f",
+    "phantom.fire.bin": "d9abd6836abcc334912b5363dff5ffd86b8916abdb585322271bc3df6c0248e2",
+    "phantom.json": "f9ca2b8824bca91faeeebe8bfe3558ffcd3f6d165ec9ac9b7f9e9c6911a0b713",
+    "phantom.weights.bin": "aadf814e9b36a6c14db11556c69af9ed209bc1b2cc4be01e317ed0d5694a0478",
+    "sheriff.fire.bin": "a4c51e811d1128048efc21d16d98f8e1b8abe5dcd17191c0d962b8159d765738",
+    "sheriff.json": "997f56d5dd8b8176844b5d699700926160d01f4f0b04f3a0511c11ad41170e6a",
+    "sheriff.weights.bin": "02edca39f2650964f12705ccca465b421bb8b25e36a32e082b86a1b7b5205c7f"
   },
-  "processing": "Gun skin indices/weights, bind skeleton and full sampled gunFire translations/quaternions retained for Classic and Operator. Operator scope positions/normals/UV/indices and original scope albedo retained. Existing Phoenix arm adapter and local reload controls remain.",
-  "credit": "Underlying game designs and assets belong to Riot Games; community-packed source open-aim. Source MIT licensing does not establish a redistribution license for Riot game assets."
+  "processing": "Seven source gun bind rigs, per-vertex skin weights and full sampled gunFire clips. Composite parts retain installed vertex order/UVs. Ghost, Guardian, Sheriff and Marshal bind/animation transforms are reflected across Y to match installed aim-weapons geometry; vertex correspondence is checked before export. Operator retains its separate source scope. Existing Phoenix hands and local reload control remain.",
+  "credit": "Underlying game designs and assets belong to Riot Games; community-packed source open-aim. Source MIT licensing does not establish a redistribution license for Riot game assets.",
+  "sourcePaths": [
+    "site/aim-viewmodel",
+    "site/aim-weapons"
+  ]
 }
