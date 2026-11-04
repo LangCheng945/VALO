@@ -16,3 +16,6 @@ The earlier mount positioned the wrist independently from the ring and added a f
 Source sleeve geometry retains the original Phoenix jacket/cuff appearance and UVs. It replaces three procedural sleeve/cuff meshes per arm with one textured mesh, with roll fitted to the wrist. Wrist transition triangles exclude triangles already owned by the hand. `tools/export-knife-grip.py <knife-payload-directory>` and `tools/export-phoenix-forearms.py <classic-payload-directory>` reproduce the additional assets. Source/output hashes are recorded in the hand provenance files.
 
 The karambit browser check measures index-to-ring error through multiple inspect phases, verifies source-textured sleeves, and renders draw/idle/inspect/swap states. Existing Phoenix and first-person checks cover firearm mounts, reload, shader validity and rapid swaps. These tests verify functional behavior and rendered poses; they do not establish exact original-game animation equivalence.
+
+
+Complete source arm rigs now cover all firearms and both melee cosmetics for every selectable identity. The normalized mounts described above are retained as loading/ability fallbacks. See `full-first-person-arms.md` for current behavior and validation.

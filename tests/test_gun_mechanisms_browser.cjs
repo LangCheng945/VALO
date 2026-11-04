@@ -4,7 +4,7 @@ await page.route('**/index.html',r=>{let s=fs.readFileSync(path.join(__dirname,'
 await page.goto('http://127.0.0.1:8000/index.html');await page.waitForFunction(()=>window.__fp?.map.ready,null,{timeout:150000});await page.evaluate(()=>{toggleBotsInMatch(false);setTrainerDuration('0');__fp.activate()});
 const keys=['classic','operator','phantom','ghost','guardian','sheriff','marshal'];
 const report=await page.evaluate(async keys=>{
- const{updateMechanism}=await import('./gun-mechanisms.js?v=mech2'),out={};
+ const{updateMechanism}=await import('./gun-mechanisms.js?v=fullarms1'),out={};
  for(const key of keys){
   __fp.equip(key);let mesh;for(let i=0;i<200;i++){mesh=__fp.gun.getObjectByName('detailed-'+key);if(mesh)break;await new Promise(r=>setTimeout(r,50));}
   if(!mesh?.isSkinnedMesh)throw Error('Missing gun rig: '+key);
@@ -28,7 +28,7 @@ for(const key of ['phantom','ghost','guardian','sheriff','marshal']){
 }
 await page.evaluate(()=>{__fp.equip('vandal')});await page.waitForFunction(()=>!!__fp.gun.getObjectByName('detailed-vandal'));
 assert.equal(await page.evaluate(()=>__fp.gun.getObjectByName('detailed-vandal').geometry.attributes.position.count),3856);
-assert.equal(await page.evaluate(()=>!!__fp.gun.getObjectByName('detailed-vandal').isSkinnedMesh),false);
+assert.equal(await page.evaluate(()=>!!__fp.gun.getObjectByName('detailed-vandal').isSkinnedMesh),true);
 await page.evaluate(()=>{__fp.equip('ghost');__fp.equip('sheriff');__fp.equip('marshal');__fp.equip('phantom')});await page.waitForFunction(()=>!!__fp.gun.getObjectByName('detailed-phantom'));await page.evaluate(()=>{__fp.state.mag=1;__fp.reload();__fp.pose(.5);__fp.equip('ghost')});await page.waitForFunction(()=>!!__fp.gun.getObjectByName('detailed-ghost'));assert.equal(await page.evaluate(()=>__fp.state.isReloading),false);await page.evaluate(()=>{__fp.pose(0);__fp.render()});
 assert.deepEqual(errors,[]);console.log('PASS source skins/composite parts, Marshal ADS, fixed Gaia, rapid swaps, reload cancellation and shaders');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

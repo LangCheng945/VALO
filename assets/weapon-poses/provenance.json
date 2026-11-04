@@ -1,0 +1,84 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sources": {
+    "vandal": {
+      "json": "c0a587a961fdf0f8057db413b145195280b254382b338e7bdc9609f65c1a4177",
+      "binary": "8395cec22f16641f47bded751a3afd8c5a4e737b86a67bf525783829c3a121c4"
+    },
+    "classic": {
+      "json": "758bb580302239c34bf69356bc9a9a5b931d0f6f60ad9aacd7d5debfc7542ac9",
+      "binary": "484ecd429b40eef7712458310db872e37c1701c5b04638c9c61c9a25ad250d73"
+    },
+    "phantom": {
+      "json": "36635d36fc7cceb458739f809104e60a62946410aeee756fc0c35344f9de0bb3",
+      "binary": "1130c1853a139c0b26be4b493aa646800b43494716f320d2624c553b4dc4c5cd"
+    },
+    "operator": {
+      "json": "5d111ed9f28c4f87cd83a3881898390a7890ee47167600ba410e13af9175ab4d",
+      "binary": "1d094dcfd4b39093b0543d2d87c79a2987456d0b9b5979255b3e3e5ad5d55bb3"
+    },
+    "ghost": {
+      "json": "8ea544c1902b42038e482521f54df5a274885d281b324ae08b81371d5049e83e",
+      "binary": "59512b448edf916474fd51a4110089c561d0283ba46d251493a7c80807b53bb0"
+    },
+    "guardian": {
+      "json": "c087060e6a66cd6bc77ae07431d7ae6d2f49bd4537ed881745e17aef16aa0271",
+      "binary": "ed017c03f419739bd9def45f1b2eb095219f548961b3a13f1667604ba25fbb1c"
+    },
+    "sheriff": {
+      "json": "a520a90ed9bc546abaf1108f86d9b97d33bb0dbdc647fcf5b5b98b6271af6009",
+      "binary": "7d37cff62bc039c995744c45b58b67bd5c9e66c510783cdd3379e2afa636ff4e"
+    },
+    "marshal": {
+      "json": "0e0964b5af00a12d186809bf950aa390ec41670404c7e169f900fd1016429473",
+      "binary": "d80dddb5253b274631fe97c63777da61bc0b636db42e0b817033cb3cd907c638"
+    }
+  },
+  "paths": [
+    "site/aim-viewmodel",
+    "app/mods/aim-viewmodel (Gaia Vandal)"
+  ],
+  "processing": "Complete sampled canonical weapon arm tracks, source gun tracks and optional magazine geometry. Game timing selects normalized reload progress. Other weapon types may use compatible shared pose profiles; these are adaptations rather than separate source animation sets.",
+  "outputHashes": {
+    "classic.gun-fire.bin": "8d641db1ca0f664c5c7f6fdc20ea4a532f82f708c91e968f965c0b718a41b494",
+    "classic.gun-reload.bin": "afa78a95da89b9d01f2a3e75c21e56505e977f88f075709ebcf89e4086545a49",
+    "classic.json": "31d78875b11c7b5169d534b45107ec009916001ac31d3070c4b77e6fb58d52a2",
+    "classic.magazine.bin": "c18f7d0841a8e9c17f201dd39a59bc254a4edc0be1615e15575a1758bb563368",
+    "classic.poses.bin": "a7a12ffd092c22c52503247e4b5e6821ed1941164f8c82a8257d68fc9011767d",
+    "ghost.gun-fire.bin": "1b3fa2abeff5a455ebbba433f5cb000a533657c26a20ea2f79d1e9e64cbdee03",
+    "ghost.gun-reload.bin": "bbede9576733196acb82af2899b09c3717989663decbd29744dad203a5824cda",
+    "ghost.json": "71920621b5e030619fb6478a37492dc2f50ab62a4569c3deb0b26da1ae436001",
+    "ghost.magazine.bin": "98bdf74b2a70ee7a490567c8339d7460785fd5134696e9bd7bd4660f96e77e69",
+    "ghost.poses.bin": "1e29734025aea1df3745c1eb2f398c66aa9cddb78cc1c0bf127c0340aca79a68",
+    "guardian.gun-fire.bin": "0af83ac24183be79d0cb0e16dfb73a6bf96b472d8a8f4b8843d31e035033f2e2",
+    "guardian.gun-reload.bin": "265173b367fe018b1f76048ebc9809170988b467c8365ed4faa17b9561c0955d",
+    "guardian.json": "b5d1c7b09e95d78ce5324e0ffc9a7bc827db8f17614a8c7f43a0bbcb88953460",
+    "guardian.magazine.bin": "9661bb5dd2763f6fd09f8fe71689f9d64323f472010bad4f749b230a2e363da3",
+    "guardian.poses.bin": "b6ee1a2ddb81b1bfbbd83270b3f5f90502e465214080a990067258a77785d706",
+    "marshal.gun-fire.bin": "ec2fce2256c50aafd51cc22e517aa5ccaf4f64f8ea815291b0d17563699438d9",
+    "marshal.gun-reload.bin": "0542e95275b6f13e7c083e2c08e5c309e234bdbfb7bdf12b5b31b6ef668ea585",
+    "marshal.json": "56d2a58f56459eaed32194da3769c6b8a359f0364d380c108e3f192d43524825",
+    "marshal.poses.bin": "0a716820a969c63c4b62111eed1c620639fc26a00a6a03a672fd6e14091ff422",
+    "operator.gun-fire.bin": "3844459bf31cc937e4bd4a79cc008a5769d8e2621e04dba1dd342ec863f65115",
+    "operator.gun-reload.bin": "f177eebaf42a786a2e91fe41a6764bd80aa86bd53fa0e0deb17c2f51df998d90",
+    "operator.json": "50a5505c34c97a8a6710222ea27d13f12d7065ceddf4342b3dea05f2709c17ab",
+    "operator.magazine.bin": "115da2c84c68d53409f69ef4cbbf169021cba9d6ed752d9aed6b134cafa7d521",
+    "operator.poses.bin": "0533c9a3cd4d2ed20191f1e876d9371a42c54d1ecf5654daa421062a16fdde6c",
+    "phantom.gun-fire.bin": "d9abd6836abcc334912b5363dff5ffd86b8916abdb585322271bc3df6c0248e2",
+    "phantom.gun-reload.bin": "4d7a91fc7380dd14682b6556d9ed73c15280ad95ee5fdba4b0fc660144c9fa99",
+    "phantom.json": "9136ba476665c8325ea46909566d922860f4143e61e49ae0b54b174d662c4d43",
+    "phantom.magazine.bin": "cd7ca2c6bc6d383ce938ffd60ba1be5ff716727796886057ad18668227a8229e",
+    "phantom.poses.bin": "fdaed68eb3224a97ecd54f61614593476af0aaecfbb1e83c308591b6b9c6d887",
+    "sheriff.gun-fire.bin": "9037d1470ff45d0bf68029e24443dcb185feeb9041e9520e9b011b4d7583eb5c",
+    "sheriff.gun-reload.bin": "eb2598a78dc5f03d93507029593a94e26a4e7a9c016754409fae77d8273bf1d7",
+    "sheriff.json": "b8e72256610d678a507b2c2ef048aebe00b73473e2f976a741c828473ea8dacb",
+    "sheriff.poses.bin": "d2352c0c88aa63b53ebeb0cac8c9f21cf46581716daac1af23281c694a756776",
+    "vandal.gun-fire.bin": "0f9c220889eba2e02a4bba7ae950db3af45f89f2a08ff8fd529ffe26e2e5c8b1",
+    "vandal.gun-reload.bin": "6a497d0fb1a4a0696e36062a07ed0584e9fc1a2bedd784f1f3340284cce8f865",
+    "vandal.json": "f6393ecb6ab1ca1e3284b142511143b30787764cab9e95c4f1f231d79e7d9307",
+    "vandal.magazine.bin": "5ecb96ac5ee7ac350af42a325f82a18f84a7a9358791677e60299876cdcd5cd1",
+    "vandal.magazineSpare.bin": "7bf0a31c5cba4e7ecdf0a5dbe54c594f8892d4a6051e79310675e571c0ee1288",
+    "vandal.poses.bin": "9883f18ec84291301c618f007fa9998b6eb4eb1f521b01aa657940fd4f4f9a1c"
+  }
+}
