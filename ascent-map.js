@@ -1,6 +1,6 @@
 import {loadMapLighting,instanceLightmap,lightmapBatch} from './map-lighting.js?v=expansion2';
-import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=expansion3';
-export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=expansion3';
+import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=maps4';
+export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=maps4';
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
