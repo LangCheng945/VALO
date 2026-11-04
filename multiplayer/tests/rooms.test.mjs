@@ -56,3 +56,8 @@ test('Abyss rooms preserve map and use different elevation spawns',async()=>{
  const code=await create('abyss'),a=peer(code,'深窟甲'),b=peer(code,'深窟乙');
  try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');assert.equal(aw.map,'abyss');assert.equal(bw.map,'abyss');const attack=[aw.player,bw.player].find(p=>p.team==='attack'),defend=[aw.player,bw.player].find(p=>p.team==='defend');assert.equal(attack.x,66);assert.equal(defend.x,-70.3333);assert(attack.y>12&&defend.y>15);}finally{a.ws.close();b.ws.close();}
 });
+
+test('Sunset rooms advertise the map and use calibrated opposing spawn points',async()=>{
+ const code=await create('sunset'),a=peer(code,'Sunset甲'),b=peer(code,'Sunset乙');
+ try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');assert.equal(aw.map,'sunset');assert.equal(bw.map,'sunset');const attack=[aw.player,bw.player].find(p=>p.team==='attack'),defend=[aw.player,bw.player].find(p=>p.team==='defend');assert(Math.abs(attack.x-5.333333)<.0001);assert.equal(attack.z,64);assert(Math.abs(attack.y-4.93559)<.0001);assert.equal(defend.x,0);assert.equal(defend.z,-57.6);assert(Math.abs(defend.y-6.195644)<.0001);}finally{a.ws.close();b.ws.close();}
+});

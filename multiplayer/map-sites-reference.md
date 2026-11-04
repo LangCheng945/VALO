@@ -31,3 +31,11 @@ identical floor y everywhere. Client and Worker call the same `spikeSite` functi
 including boundary edges and vertical bands. The client additionally requires a
 supported, stationary player on the ground before starting installation. The
 Worker has no full collision mesh and cannot independently certify floor support.
+
+Sunset uses the newer pinned `807f55721e64ca457d763c64a4a1de7b11e5f3eb`
+`app/mods/aim-maps/juliett` package. Gold minimap regions, `Shell_8_ASiteGroundA/E`
+(floor 1), `Shell_9_BSiteFloorA/B/C` (floors 2/3/4) and their steps define
+conservative stepped polygons. The source callout centres alone are insufficient:
+several refer to approaches outside the gold plant footprints. Polygons include
+edges and reject floor 0 below the visible site platforms. See `docs/sunset-map.md`
+and `assets/sunset/provenance.json` for coordinate and source details.

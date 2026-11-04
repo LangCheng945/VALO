@@ -13,7 +13,7 @@ test('plant boundaries include edges but reject overlapping upper/lower floors a
  for(const [map,sites]of Object.entries(MAP_SITES))for(const site of sites){
   const x=(site.minX+site.maxX)/2*MAP_SCALE,z=(site.minZ+site.maxZ)/2*MAP_SCALE,y=(site.minFloor+site.maxFloor)/2*MAP_SCALE+2.2;
   assert.equal(spikeSite(map,{x,y,z}),site.name);
-  assert.equal(spikeSite(map,{x:site.minX*MAP_SCALE,y,z:site.minZ*MAP_SCALE}),site.name);
+  for(const [px,pz]of site.polygon||[[site.minX,site.minZ]])assert.equal(spikeSite(map,{x:px*MAP_SCALE,y,z:pz*MAP_SCALE}),site.name);
   assert.equal(spikeSite(map,{x,y:(site.maxFloor+1)*MAP_SCALE+2.2,z}),null);
   assert.equal(spikeSite(map,{x,y:(site.minFloor-1)*MAP_SCALE+2.2,z}),null);
  }
@@ -59,3 +59,9 @@ test('equipped Spike and active plant channel cannot also deliver firearm damage
 test('cancelled, completed and expired plant channels release equipped Spike without requiring another weapon state',async()=>{for(const result of ['cancel','complete','expire']){const h=await setup(),{room,a}=h;const p=room.data(a.ws);p.spikeEquipped=true;room.save(a.ws,p);await h.send(a,{type:'spike_action',action:'plant'});assert(room.data(a.ws).spikeEquipped);if(result==='cancel')await h.send(a,{type:'spike_cancel'});else if(result==='complete')await h.hold(a,'plant',4000);else await room.spike.tick(h.now+1000);assert.equal(room.data(a.ws).spikeEquipped,false,result);assert.equal(room.spike.state().action,null,result);const v=room.data(h.b.ws),shooter=room.data(a.ws);await room.webSocketMessage(a.ws,JSON.stringify({type:'shot',sx:shooter.x,sy:shooter.y,sz:shooter.z,ex:v.x,ey:v.y-1,ez:v.z}));await room.webSocketMessage(a.ws,JSON.stringify({type:'hit',targetUid:v.uid,isHead:true}));assert.equal(room.data(h.b.ws).hp,0,'gun stayed blocked after '+result);}});
 
 test('long-distance firearm endpoints still produce server damage at 300 world units',async()=>{const h=await setup(),{room,a,b}=h,p=room.data(a.ws),v=room.data(b.ws);p.weapon='operator';v.z=p.z-300;room.save(a.ws,p);room.save(b.ws,v);await room.webSocketMessage(a.ws,JSON.stringify({type:'shot',sx:p.x,sy:p.y,sz:p.z,ex:v.x,ey:v.y-1,ez:v.z}));await room.webSocketMessage(a.ws,JSON.stringify({type:'hit',targetUid:v.uid,isHead:false,part:'body'}));assert.equal(room.data(b.ws).hp,0);assert.equal(room.data(a.ws).kills,1);});
+
+test('Sunset stepped footprints include their edges and exclude approach notches and underground floors',()=>{
+ const at=(x,z,f)=>({x:x*MAP_SCALE,z:z*MAP_SCALE,y:f*MAP_SCALE+2.2});
+ assert.equal(spikeSite('sunset',at(38,-18,1)),'A');assert.equal(spikeSite('sunset',at(40,-26,1)),'A');assert.equal(spikeSite('sunset',at(35,-25,1)),null);assert.equal(spikeSite('sunset',at(38,-18,0)),null);
+ assert.equal(spikeSite('sunset',at(-54,-15,3)),'B');assert.equal(spikeSite('sunset',at(-40,-6,2)),'B');assert.equal(spikeSite('sunset',at(-46.1,-4,2)),'B');assert.equal(spikeSite('sunset',at(-54,-6,2)),null);assert.equal(spikeSite('sunset',at(-54,-15,0)),null);
+});

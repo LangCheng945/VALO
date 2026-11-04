@@ -1,5 +1,5 @@
-import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=sites2';
-export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=sites2';
+import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=sunset1';
+export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=sunset1';
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
@@ -23,7 +23,12 @@ export const MAPS=Object.freeze({
         spawns:{attack:[49.5,-9.5,8,Math.PI/2],defend:[-52.75,-9.5,10,-Math.PI/2]},
         training:[[34,-32.5,8],[16.5,-38,8],[10.75,17,9],[40.25,36.5,4],[15.25,44.5,4]],
         tactical:[[-2,-43,8],[-24.5,-28,10],[-11.75,44.25,6],[-25,39.25,10],[-6,3.25,8]],
-        sites:MAP_SITES.abyss}
+        sites:MAP_SITES.abyss},
+    sunset:{id:'sunset',name:'Sunset',title:'日落之城',bytes:13544160,separateProjectileCollision:true,
+        spawns:{attack:[4,48,2.02,0],defend:[0,-43.2,3,Math.PI]},
+        training:[[28.4,13,0],[22.6,2,1],[38,-18,1],[-56.5,20,0],[-34,2,0]],
+        tactical:[[38,-18,1],[-54,-15,3],[-40,-6,2],[28,-23,3],[-12,6,0]],
+        sites:MAP_SITES.sunset}
 
 
 });

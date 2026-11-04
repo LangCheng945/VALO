@@ -734,3 +734,7 @@ visuals clear on death, realm changes and disconnect.
 ### Weapon skin collection and cast hands
 
 The buy sidebar now offers nine additional gun skins and six additional melee models, with source rigs, equip/reload/attack clips and melee inspect/heavy actions. Jett Cloudburst uses extracted first-person cast gestures. Local cosmetic preferences persist; weapon rules and multiplayer messages are unchanged. [Available skins, controls, source pins and limits](docs/weapon-collection.md).
+
+### Sunset / 日落之城
+
+Sunset is available in the map picker and with `?map=sunset`, including source scene/textures, collision, minimap, calibrated spawns and shared A/B planting regions. It is also supported by friend-room map changes and public random selection. [Source, calibration, validation and remaining limits](docs/sunset-map.md).

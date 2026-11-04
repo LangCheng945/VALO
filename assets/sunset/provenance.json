@@ -1,0 +1,36 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "sourceMapId": "juliett",
+  "displayName": "Sunset",
+  "nameEvidence": "app/mods/local-api/maps labels juliett as Sunset; README 1.3 and six sunset scenarios use the same map id.",
+  "upstreamCredit": "ishoutu aim trainer; game assets/designs belong to Riot Games. Community code licensing does not establish asset redistribution rights.",
+  "files": {
+    "sunset.glb": {
+      "sourcePath": "app/mods/aim-maps/juliett.glb",
+      "bytes": 13544160,
+      "sha256": "21aaa087711d31dd0e4aed4ee5a77829368f457b98927b8db88226d10f9d3b6c"
+    },
+    "collision.json": {
+      "sourcePath": "app/mods/aim-maps/juliett.collision.json",
+      "bytes": 998914,
+      "sha256": "7031ef8b6db576e5a00c0a46bad85906e20cad3ff454737c6626e035f249a022"
+    },
+    "minimap.json": {
+      "sourcePath": "app/mods/aim-maps/juliett.minimap.json",
+      "bytes": 880,
+      "sha256": "11fbbcd67df440544b91f1c71e06fe9c5409b65fbc5b406547a2e52a11fddcaa"
+    },
+    "minimap.png": {
+      "sourcePath": "app/mods/aim-maps/juliett.minimap.png",
+      "bytes": 27316,
+      "sha256": "1188642e2f94f4fbb17d6c61feb9071d349dec21c9749349db710afbc1bbb228"
+    },
+    "cover.webp": {
+      "sourcePath": "app/mods/aim-maps/juliett.cover.webp",
+      "bytes": 632352,
+      "sha256": "5ccc72816b00cd14f4b25fe890f583c46f6f072bf609b35f7b172949e0e5ac2a"
+    }
+  },
+  "processing": "Source bytes retained; GLB file renamed to sunset.glb. Runtime applies existing MAP_SCALE, meshopt/KTX2 decoding and draw batching; projectile-only barriers stay separate from pawn collision."
+}

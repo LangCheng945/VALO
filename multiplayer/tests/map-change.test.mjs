@@ -26,3 +26,8 @@ test('late join on an old map redirects with a reusable ticket and keeps the sam
  const code=await create(),a=peer(code),clients=[a];
  try{await a.wait(m=>m.type==='welcome');a.send({type:'map_change',map:'abyss'});await a.wait(m=>m.type==='map_changed');const old=peer(code);clients.push(old);const wrong=await old.wait(m=>m.type==='welcome');assert.equal(wrong.map,'abyss');const next=peer(code,{token:wrong.resumeToken,map:'abyss'});clients.push(next);const correct=await next.wait(m=>m.type==='welcome');assert.equal(correct.uid,wrong.uid);assert.equal(correct.player.team,wrong.player.team);assert.equal(correct.player.active,false);await next.wait(m=>m.type==='players'&&m.players.filter(p=>p.uid===correct.uid).length===1);}finally{clients.forEach(c=>c.ws.close());}
 });
+
+test('host can bring both peers to Sunset and resume the same teams',async()=>{
+ const code=await create(),a=peer(code),b=peer(code),clients=[a,b];
+ try{const aw=await a.wait(m=>m.type==='welcome'),bw=await b.wait(m=>m.type==='welcome');const host=aw.uid===aw.hostUid?a:b;host.send({type:'map_change',map:'sunset'});const am=await a.wait(m=>m.type==='map_changed'),bm=await b.wait(m=>m.type==='map_changed');assert.equal(am.map,'sunset');assert.equal(bm.map,'sunset');a.ws.close();b.ws.close();for(const [old,next]of [[aw,am],[bw,bm]]){const c=peer(code,{token:next.resumeToken,map:'sunset'});clients.push(c);const w=await c.wait(m=>m.type==='welcome');assert.equal(w.map,'sunset');assert.equal(w.uid,old.uid);assert.equal(w.player.team,old.player.team);assert.equal(w.player.active,false);}}finally{clients.forEach(c=>c.ws.close());}
+});
