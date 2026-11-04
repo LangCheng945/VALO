@@ -1,1 +1,25 @@
-{"sourceRepository":"https://github.com/unkwsr/open-aim","sourceCommit":"e1e81cf8ea37e5c363d7720c78cb17fedf0edd94","sourceFiles":["site/aim-viewmodel/classic.json","site/aim-viewmodel/classic.bin","site/aim-viewmodel/arms.png"],"credit":"Phoenix character design/game assets belong to Riot Games; community-packed source open-aim. Repository MIT does not cover Riot assets.","processing":"Extract original wrist/finger mesh, skin weights, hierarchy, UV and albedo. Adapt wrist mounts to existing weapons; locally authored finger release poses and sleeve geometry with shared Phoenix-inspired colors. Used as a common first-person appearance for all agents at user request."}
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourceFiles": [
+    "site/aim-viewmodel/classic.json",
+    "site/aim-viewmodel/classic.bin",
+    "site/aim-viewmodel/arms.png"
+  ],
+  "credit": "Phoenix character design/game assets belong to Riot Games; community-packed source open-aim. Repository MIT does not cover Riot assets.",
+  "processing": "Original Phoenix wrist/finger meshes, rig, UV/albedo and textured forearm sleeves extracted from Classic. Forearms use normalized elbow/wrist space with retained source UVs, adapted to local wrist/elbow mounts. All agents share this appearance. Knife grip uses source tactical-knife idle joint rotations and an index-joint anchor fitted to the authored Prime-style ring; this is not original Prime animation.",
+  "additionalSourceFiles": [
+    "site/aim-viewmodel/knife.json",
+    "site/aim-viewmodel/knife.bin"
+  ],
+  "outputHashes": {
+    "mesh.json": "6b904752eadb632ed23deb3006305ba2a26ed277444c35804fb0c1ae95408864",
+    "albedo.png": "0ede1f08b13a82920fbbfaca17005e0377b401e8a3455bb1588dd4e10cbd68f6",
+    "knife-grip.json": "c6151c767ca3af408e945492232eaf2e4dc8c99c9e6e83dcddef60a5e79c27a0",
+    "forearms.json": "1c24d2333de03f805c06ba7117a69226525f517842283d6d3c87d31714b42f2a"
+  },
+  "forearmSourceHashes": {
+    "classic.json": "758bb580302239c34bf69356bc9a9a5b931d0f6f60ad9aacd7d5debfc7542ac9",
+    "classic.bin": "484ecd429b40eef7712458310db872e37c1701c5b04638c9c61c9a25ad250d73"
+  }
+}

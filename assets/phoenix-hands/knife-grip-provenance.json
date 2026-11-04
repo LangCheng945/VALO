@@ -1,0 +1,9 @@
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourceFiles": {
+    "knife.json": "6e0c6874f776d50cec731ebccf945d1f15da9d27c99ef88a551d2affd20a13dc",
+    "knife.bin": "cc8635fa7811f7457725f304f9ab6a36c5f8b4c0916e75ff783976de008a6389"
+  },
+  "processing": "First frame of Phoenix tactical-knife armsIdle, per-joint local rotations conjugated into the existing normalized hand basis. Only the right-hand grip is used for the authored Prime-style karambit; this is an adapted grip, not an original Prime animation."
+}

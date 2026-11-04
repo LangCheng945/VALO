@@ -1,6 +1,6 @@
-import {installPhoenixHands,posePhoenixHand} from './phoenix-hands.js?v=phoenix1';
+import {installPhoenixHands,posePhoenixHand,fitKarambitHand} from './phoenix-hands.js?v=grip2';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
-import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs?v=hands3';
+import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs?v=grip2';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
 const T=globalThis.THREE;
 const up=new T.Vector3(0,1,0),smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
@@ -115,11 +115,12 @@ export class FirstPersonHands{
    if(a.side<0&&inspect>0&&this.key!=='melee'){const release=Math.sin(inspect*Math.PI)**2;opening=Math.max(opening,release*.8);target.x-=release*.07;target.y-=release*.035;}
    if(this.key==='melee'&&a.side>0)opening=(meleeGrip?.fingerRelease||0);
    for(const mesh of a.hand.children)if(mesh.morphTargetInfluences)mesh.morphTargetInfluences[0]=opening;posePhoenixHand(a,opening,this.key);
-   if(this.key==='melee'&&a.side>0&&a.rig){target.x-=.025;target.y-=.04;}
+   if(this.key==='melee'&&a.side>0&&a.rig)fitKarambitHand(a,meleeGrip);
    a.hand.position.copy(target);
    const wrist=a.wrist.set(0,0,a.rig?.03:.095).applyEuler(a.hand.rotation).add(target);
+   if(this.key==='melee'&&a.side>0)a.elbow.set(.52,-.55,-.25);
    const elbow=a.elbow,direction=a.direction.copy(wrist).sub(elbow),length=direction.length();
-   a.arm.position.copy(elbow).add(wrist).multiplyScalar(.5);a.arm.quaternion.setFromUnitVectors(up,direction.normalize());a.sleeveMesh.scale.y=Math.max(.01,length);a.cuff.position.y=length*.5-.018;a.seam.position.y=length*.5-.037;
+   a.arm.position.copy(elbow).add(wrist).multiplyScalar(.5);direction.normalize();if(a.nativeSleeve){a.sleeveAxis.set(1,0,0).applyQuaternion(a.hand.quaternion);a.sleeveAxis.addScaledVector(direction,-a.sleeveAxis.dot(direction)).normalize();a.sleeveCross.crossVectors(a.sleeveAxis,direction).normalize();a.sleeveBasis.makeBasis(a.sleeveAxis,direction,a.sleeveCross);a.arm.quaternion.setFromRotationMatrix(a.sleeveBasis);}else a.arm.quaternion.setFromUnitVectors(up,direction);a.sleeveMesh.scale.y=Math.max(.01,length);a.cuff.position.y=length*.5-.018;a.seam.position.y=length*.5-.037;
   }
  }
 }

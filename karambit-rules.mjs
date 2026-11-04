@@ -5,5 +5,6 @@ export function karambitPose({draw=1,inspect=0}={}){
  return {fingerRelease:ease((inspect-.08)/.12)*(1-ease((inspect-.83)/.13)),extension:extend,hinge:extend===1?0:(1-extend)*-2.25,spin,
   position:[.35-show*.065,-.27+show*.045,-.65],
   rotation:[-.18+show*.12,show*.32,-.55+spin+(1-extend)*.55],
+  gripRotation:[-.18+show*.12,show*.32,-.55+(1-extend)*.55],
   handPosition:[.37-show*.065,-.25+show*.045,-.615],handRotation:[.35,0,-1.15+Math.sin(spin)*.12]};
 }
