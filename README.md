@@ -738,3 +738,7 @@ The buy sidebar now offers nine additional gun skins and six additional melee mo
 ### Sunset / 日落之城
 
 Sunset is available in the map picker and with `?map=sunset`, including source scene/textures, collision, minimap, calibrated spawns and shared A/B planting regions. It is also supported by friend-room map changes and public random selection. [Source, calibration, validation and remaining limits](docs/sunset-map.md).
+
+### Trainer expansion
+
+Available collection fire/kill/knife sounds now accompany the new models. Sunset adds six timed pre-aim routes and an F-operated destructible market door synchronized by the Worker. Smoke gains timed growth/expiry and interior visibility; local bots gain objective splits, defuse cover and audible-footstep investigation. [Controls, sources, validation and limits](docs/trainer-expansion.md).

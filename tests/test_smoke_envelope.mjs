@@ -1,0 +1,2 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{smokePhase}from'../smoke-envelope.mjs';
+test('smoke radius grows smoothly, holds for its active lifetime and expires without a lingering vision wall',()=>{assert.equal(smokePhase(0,2.5).scale,0);assert(smokePhase(.1,2.4).scale>.8);assert.equal(smokePhase(.2,2.3).scale,1);assert.equal(smokePhase(1.5,1).scale,1);assert(smokePhase(2.4,.1).scale<.5);assert.equal(smokePhase(3,0).scale,0);assert.equal(smokePhase(3,-1).opacity,0);});

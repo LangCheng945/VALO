@@ -175,6 +175,7 @@ export class AscentMapRuntime {
         this.segment.start.set(position.x,feet+radius+.025,position.z);
         this.segment.end.set(position.x,position.y+.28-crouch*.75-radius,position.z);
         this.capsuleBox.makeEmpty().expandByPoint(this.segment.start).expandByPoint(this.segment.end).expandByScalar(radius);
+        if(this.dynamicSolids?.some(box=>!box.isEmpty()&&box.intersectsBox(this.capsuleBox)))return true;
         return this.collisionMesh.geometry.boundsTree.shapecast({
             intersectsBounds:box=>box.intersectsBox(this.capsuleBox),
             intersectsTriangle:triangle=>triangle.closestPointToSegment(this.segment,this.trianglePoint,this.capsulePoint)<radius-.025

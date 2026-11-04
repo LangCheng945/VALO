@@ -22,5 +22,14 @@ export class BotDefuseController{
 export function retakeOrders(actors,spike,{defuserIndex=null,canStand=()=>true}={}){
  const defenders=actors.filter(a=>a.alive&&a.team==='defend'&&!a.realm).sort((a,b)=>dist(a.group?.position||a.position,spike)-dist(b.group?.position||b.position,spike)||a.index-b.index);
  const defuser=defenders.find(a=>a.index===defuserIndex)||defenders[0];
- return defenders.map((a,i)=>{let goal={x:spike.x,y:spike.y,z:spike.z};if(a!==defuser){const angle=i*2.39996,radius=3.2+(i%2)*.8,candidate={x:spike.x+Math.cos(angle)*radius,y:spike.y,z:spike.z+Math.sin(angle)*radius};if(canStand(candidate))goal=candidate;}return{index:a.index,role:a===defuser?'defuse':'cover',goal};});
+ return defenders.map((a,i)=>{let goal={x:spike.x,y:spike.y,z:spike.z};if(a!==defuser){for(let attempt=0;attempt<12;attempt++){const angle=i*2.39996+attempt*Math.PI/6,radius=3.2+(i%2)*.8+(attempt>5?1.5:0),candidate={x:spike.x+Math.cos(angle)*radius,y:spike.y,z:spike.z+Math.sin(angle)*radius};if(canStand(candidate)){goal=candidate;break;}}}return{index:a.index,role:a===defuser?'defuse':'cover',goal};});
+}
+
+// Local squad decisions use only objectives, seen contacts and audible events.
+export class SquadTactics {
+ constructor(){this.sounds=[];}
+ clear(){this.sounds=[];}
+ hear(team,position,now,radius=23){this.sounds.push({team,pos:{x:position.x,y:position.y,z:position.z},at:now,radius});this.sounds=this.sounds.filter(s=>now-s.at<1600).slice(-24);}
+ listen(bot,now){if((bot.deafenedUntil||0)>Date.now())return null;const p=bot.group.position;let best=null;for(const sound of this.sounds){if(sound.team===bot.team||now-sound.at>1600||dist(p,sound.pos)>sound.radius)continue;if(!best||sound.at>best.at)best=sound;}if(!best)return null;return{pos:best.pos,at:best.at,heard:true};}
+ assignments(actors,goals,{now=0,round=1,canStand=()=>true}={}){const orders=[];for(const team of ['attack','defend']){const members=actors.filter(a=>a.alive&&a.team===team&&!a.realm).sort((a,b)=>a.index-b.index);if(!goals.length)continue;const chosen=(round-1)%goals.length;members.forEach((a,i)=>{const flank=i%5>=3,site=goals[(chosen+(team==='defend'?i%goals.length:flank?1:0))%goals.length],role=team==='defend'?(i%3===0?'anchor':'support'):(flank?'flank':i%3===0?'entry':'support');let goal=site;const angle=i*2.39996,r=role==='support'?3.4:role==='anchor'?1.8:2.6;for(let k=0;k<8;k++){const point={x:site.x+Math.cos(angle+k*Math.PI/4)*r,y:site.y,z:site.z+Math.sin(angle+k*Math.PI/4)*r};if(canStand(point)){goal=point;break;}}orders.push({index:a.index,role,goal,site:site.name});});}return orders;}
 }

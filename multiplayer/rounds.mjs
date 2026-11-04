@@ -1,3 +1,4 @@
+import{resetMarketDoor}from'./market-door-events.mjs';
 import {resetRecon} from './recon-rules.mjs';
 import {resetRaze} from './raze-rules.mjs';
 import {resetAstra} from './astra-rules.mjs';
@@ -82,7 +83,7 @@ export class RoundRules {
   }else if(r.phase==='ending'){
    pending=true;
    if(now>=r.nextAt){
-    r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
+    await resetMarketDoor(room,now);r.number++;r.phase='waiting';r.endsAt=0;r.nextAt=0;r.winner=null;r.reason='';
     for(const ws of room.sockets()){
      const p=room.data(ws);if(!p?.joined)continue;
      Object.assign(p,{hp:100,shield:50,spikeEquipped:false,active:false,inRound:false,ultUsed:false,reviveAt:0,respawnAt:0,roundNumber:r.number,healRemaining:0,lastHeal:0,smokeFlights:{},cUsed:0,qUsed:0},spawn(p.team,room.meta.map));resetClove(p);resetIso(p);resetOmen(p);resetBrim(p);resetReyna(p);resetSova(p);resetKilljoy(p);resetCypher(p);resetNeon(p);resetBreach(p);resetViper(p);resetRaze(p);resetAstra(p);resetRecon(p);equipArmor(p,p.armorType||'heavy');p.armorBase=null;room.save(ws,p);

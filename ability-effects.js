@@ -10,11 +10,11 @@ function shader(fragment,extra={}){return new T.ShaderMaterial({uniforms:{time:{
 export const abilityIcon=referencedAbilityIcon;
 
 export function makeCloudburst(){
- const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*5.+vec3(time*.22,0.,time*.17));float band=pow(max(0.,sin(p.y*18.+atan(p.z,p.x)*2.7+n*3.-time*2.)),18.);float wisps=noise(p*19.+vec3(time*.5,-time*.15,0.));vec3 col=mix(vec3(.38,.52,.61),vec3(.78,.87,.90),n*.7+band*.15);col+=band*.07+wisps*.045;gl_FragColor=vec4(col,fade);}`,{side:T.DoubleSide,depthWrite:true});
- const mesh=new T.Mesh(new T.SphereGeometry(3.8,48,32),material);mesh.name='cloudburst-wind-shell';return mesh;
+ const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*5.+vec3(time*.22,0.,time*.17));float band=pow(max(0.,sin(p.y*18.+atan(p.z,p.x)*2.7+n*3.-time*2.)),18.);float wisps=noise(p*19.+vec3(time*.5,-time*.15,0.));vec3 col=mix(vec3(.38,.52,.61),vec3(.78,.87,.90),n*.7+band*.15);col+=band*.07+wisps*.045;if(!gl_FrontFacing)col=mix(vec3(.34,.43,.50),col,.32);gl_FragColor=vec4(col,fade);}`,{side:T.DoubleSide,depthWrite:true});
+ const mesh=new T.Mesh(new T.SphereGeometry(3.8,48,32),material);mesh.name='cloudburst-wind-shell';mesh.userData.smokeRadius=3.8;return mesh;
 }
 export function makeBrimSmoke(){
- const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*7.+vec3(time*.13,0.,time*.1));vec3 c=mix(vec3(.22,.19,.14),vec3(.53,.44,.30),n);gl_FragColor=vec4(c,fade);}`,{side:T.DoubleSide,depthWrite:true});
+ const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*7.+vec3(time*.13,0.,time*.1));vec3 c=mix(vec3(.22,.19,.14),vec3(.53,.44,.30),n);if(!gl_FrontFacing)c=mix(c,vec3(.24,.20,.15),.55);gl_FragColor=vec4(c,fade);}`,{side:T.DoubleSide,depthWrite:true});
  const mesh=new T.Mesh(new T.SphereGeometry(4.5,32,20),material);mesh.userData.smokeRadius=4.5;return mesh;
 }
 export function makeBarrier(){

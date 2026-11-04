@@ -711,7 +711,7 @@
         import {BrimstoneKit} from './brimstone-view.js?v=neon2';
         import {BRIM} from './multiplayer/brimstone-rules.mjs?v=neon2';
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
-        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sunset1';
+        import {AscentMapRuntime,MAPS} from './ascent-map.js?v=expansion1';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
         import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=collection1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
@@ -730,6 +730,11 @@
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
         import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=collection1';
         import {SKINS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=collection1';
+        import {installSunsetDrills,preaimSpawns} from './sunset-drills.js?v=expansion1';
+        import {smokePhase} from './smoke-envelope.mjs?v=expansion1';
+        import {SmokeVision} from './smoke-vision.js?v=expansion1';
+        import {MarketDoor} from './market-door.js?v=expansion1';
+        import {CollectionAudio,collectionAudioId} from './collection-audio.js?v=expansion1';
         import {JettSmokeCast} from './jett-cast.js?v=collection1';
         import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=collection1';
         import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
@@ -747,9 +752,9 @@
         import {sameRealm} from './multiplayer/iso-rules.mjs?v=neon2';
         import {CloveKit} from './clove-view.js?v=neon2';
         import {CLOVE,cloveInvulnerable,absorbTempHealth} from './multiplayer/clove-rules.mjs?v=neon2';
-        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=neon2';
-        import {FollowTrail,BotDefuseController,retakeOrders} from './bot-tactics.mjs?v=retake1';
-        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=retake1';
+        import {abilityIcon,makeCloveSmoke,makeCloudburst,makeBarrier,makeBarrierPreview,makeSlowField,makeSlowOrb,updateEffect,disposeEffect,AbilityCastView} from './ability-effects.js?v=expansion1';
+        import {FollowTrail,BotDefuseController,retakeOrders,SquadTactics} from './bot-tactics.mjs?v=expansion1';
+        import {BotNavigation,randomBotSpawn} from './bot-navigation.js?v=expansion1-retake1';
         import {soulMarker,resurrectionEffect,disposeCombatEffect,moveRoamingBot,disposeActor} from './combat-effects.js?v=avatars1';
         import {makeSpray,removeSpray,sprayHiss,preloadSprayArt,sprayAssetState} from './spray.js?v=art1';
         preloadSprayArt();
@@ -761,7 +766,7 @@
         import {isOvertime} from './multiplayer/match-rules.mjs?v=match1';
         import {FIREARMS,FIREARM_KEYS,isSidearm,firearmDamage} from './multiplayer/firearms.mjs?v=armory1';
         import {ARMORS,equipArmor,markArmorDamage,tickArmor,armorAbsorb} from './multiplayer/armor.mjs?v=neon2';
-        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=neon2';
+        import {RoomClient,normalizeServer} from './multiplayer-client.mjs?v=expansion1-neon2';
 
         /********************************************************************
          * 1. LOCAL GUN SAMPLES + SYNTHESIZED ABILITY / HIT EFFECTS
@@ -873,6 +878,7 @@
             }
 
             playHeadshotKill(killStreak) {
+                if(skinAudio.play('kill',{streak:killStreak}))return;
                 // The fifth clip includes the full ACE cue; never replay it for 6+ range kills.
                 const index=killStreak===5?5:Math.min(4,Math.max(1,killStreak>5?1:killStreak));
                 this.playSample(`kill-${index}`,.5);
@@ -928,6 +934,7 @@
             }
         }
         const sfx = new SoundEngine();
+        const skinAudio=new CollectionAudio(()=>sfx.ctx);
 
         /********************************************************************
          * 2. WEAPON & AGENT CONFIGURATION
@@ -1532,7 +1539,7 @@
         const gunGroup = new THREE.Group();gunGroup.position.z=VIEWMODEL_REST_Z;
         const weaponMotionRoot=new THREE.Group();camera.add(weaponMotionRoot);weaponMotionRoot.add(gunGroup);
         let weaponDrawElapsed=1;
-        const abilityCast=new AbilityCastView(camera);let jettSmokeCast=null;
+        const smokeVision=new SmokeVision();const abilityCast=new AbilityCastView(camera);let jettSmokeCast=null;
         const viewEnvironmentTarget=createViewEnvironment(renderer);
         jettSmokeCast=new JettSmokeCast(camera,viewEnvironmentTarget.texture);
         let firstPersonHands=null;
@@ -1560,7 +1567,7 @@
         const WEAPON_LENGTHS={vandal:.79,phantom:.75,classic:.225,operator:1.195,odin:1.21};
         for(const key of FIREARM_KEYS)WEAPON_LENGTHS[key]=FIREARMS[key].modelLength;
         function buildFirstPersonViewmodel() {
-            jettSmokeCast?.cancel();disposeViewmodel(gunGroup);firstPersonHands=null;
+            skinAudio.cancelMotion();if(sfx.ctx)skinAudio.select(collectionAudioId(state));jettSmokeCast?.cancel();disposeViewmodel(gunGroup);firstPersonHands=null;
             gunMagazineMesh = null;
             muzzleFlashGroup = null;
             knifeSpinGroup = null;tacticalKnifeRoot=null;nativeWeaponRoot=null;
@@ -1587,7 +1594,7 @@
             // Gold/black ring-hilt karambit, authored from the user's reference.
             if (wpnKey === 'melee') {
                 if(selectedSkin(state,'melee')){tacticalKnifeRoot=createCollectionMelee(firstPersonHands,state.meleeSkin,viewEnvironmentTarget.texture);gunGroup.add(tacticalKnifeRoot);}else if(state.meleeSkin==='tactical'){tacticalKnifeRoot=createTacticalKnife(firstPersonHands);gunGroup.add(tacticalKnifeRoot);}else{knifeSpinGroup=makeKarambit(viewEnvironmentTarget.texture);gunGroup.add(knifeSpinGroup);tacticalKnifeRoot=createTacticalKnife(firstPersonHands,{karambit:knifeSpinGroup});gunGroup.add(tacticalKnifeRoot);}
-                const knife=tacticalKnifeRoot;knife?.ready.then(ok=>{if(ok&&tacticalKnifeRoot===knife)weaponDrawElapsed=0;});
+                const knife=tacticalKnifeRoot;knife?.ready.then(ok=>{if(ok&&tacticalKnifeRoot===knife){weaponDrawElapsed=0;skinAudio.play('equip');}});
                 for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
                 return;
             }
@@ -1702,7 +1709,7 @@
                 if(mesh.userData.collectionSkin)for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
                 const originalBox=mesh.userData.collectionSkin?null:styleWeaponMesh(mesh,wpnKey,{paint:darkMetal,steel:gunSteel,rubber:rubberMat});
                 if(mesh.geometry.userData.originalSkin){skinAccent.map=darkMetal.map;skinAccent.emissiveMap=null;skinAccent.emissive.setHex(0);skinAccent.needsUpdate=true;}rig.add(mesh);gunMagazineMesh=mesh.userData.collectionSkin?new THREE.Group():originalBox||createMagazine(wpnKey,skinAccent,gunSteel);if(mesh.userData.collectionSkin){gunMagazineMesh.name=wpnKey+'-detachable-magazine';gunMagazineMesh.userData.basePosition=new THREE.Vector3();}rig.add(gunMagazineMesh);
-                const attachNative=()=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig))return;const controller=createNativeWeaponHands(viewHands,wpnKey,mesh,gunMagazineMesh,viewFlash,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);if(gunMagazineMesh===old)gunMagazineMesh=part;}});nativeWeaponRoot=controller;gunGroup.add(controller);controller.ready.then(ok=>{if(ok&&nativeWeaponRoot===controller)weaponDrawElapsed=0;});};
+                const attachNative=()=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig))return;const controller=createNativeWeaponHands(viewHands,wpnKey,mesh,gunMagazineMesh,viewFlash,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);if(gunMagazineMesh===old)gunMagazineMesh=part;}});nativeWeaponRoot=controller;gunGroup.add(controller);controller.ready.then(ok=>{if(ok&&nativeWeaponRoot===controller){weaponDrawElapsed=0;skinAudio.play('equip');}});};
                 if(wpnKey==='vandal'&&!skin){const fallback=gunMagazineMesh;loadGaiaMagazine(darkMetal).then(part=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig)||gunMagazineMesh!==fallback){disposeViewmodel(part);return;}rig.remove(fallback);disposeViewmodel(fallback);gunMagazineMesh=part;rig.add(part);attachNative();}).catch(error=>{console.warn('Gaia magazine fallback',error);attachNative();});}else attachNative();
                 muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
             }).catch(error=>console.warn('Weapon model fallback',error));
@@ -1740,7 +1747,7 @@
                 const target=c.position.clone().add(new THREE.Vector3(0,.35,0)),delta=target.clone().sub(origin),along=delta.dot(direction);
                 if(delta.length()>8||along<0||delta.clone().addScaledVector(direction,-along).length()>.85)continue;
                 const ray=new THREE.Raycaster(origin,delta.clone().normalize(),0,Math.max(0,delta.length()-.45));
-                if(ray.intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length)continue;
+                if(ray.intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length)continue;
                 if(delta.length()<best){best=delta.length();chosen=c;}
             }
             return chosen;
@@ -1788,7 +1795,7 @@
             if(roomRound.phase==='finished'){setHudText('match-result-text',`${roomRound.matchWinner===state.team?'勝利':'戰敗'} · ${roomRound.scoreAttack} : ${roomRound.scoreDefend}`);setHudText('match-result-help',currentRoomId==='PUBLIC'?`約 ${Math.max(0,Math.ceil((roomRound.nextAt-now)/1000))} 秒後隨機選下一張地圖`:'整場結束，由房主重新開局或選擇新地圖。');document.getElementById('btn-rematch').classList.toggle('hidden',currentRoomId==='PUBLIC'||roomHostUid!==currentUser?.uid);}
         }
 
-        const bots = [];const followTrail=new FollowTrail(),botDefuse=new BotDefuseController();let retakeNextAt=0,retakeKey='';
+        const bots = [];const squadTactics=new SquadTactics();let squadNextAt=0;const followTrail=new FollowTrail(),botDefuse=new BotDefuseController();let retakeNextAt=0,retakeKey='';
         let botNavigation=null;
         const BOT_SPAWNS = [
             { x: 34, z: -18, patrol: 2 },
@@ -1912,7 +1919,7 @@
         }
 
         function spawnBots() {
-            followTrail.clear();botDefuse.reset();
+            squadTactics.clear();squadNextAt=0;followTrail.clear();botDefuse.reset();
             bots.forEach(b => {b.nameSprite?.material.map?.dispose();disposeActor(b.group);});clearCorpses();
             bots.length = 0;botNavigation=realMap.ready?new BotNavigation(realMap):null;
             if (!state.enableBots) {
@@ -1921,9 +1928,9 @@
             }
             const spawns = state.gameMode === 'tactical' ? BOT_SPAWNS
                 : [{x:0,z:25,patrol:1.5},{x:-30,z:45,patrol:1.5},{x:30,z:45,patrol:1.5},{x:-40,z:8,patrol:1.5},{x:40,z:8,patrol:1.5}];
-            const points=realMap.ready?realMap.getBotSpawns(state.gameMode==='tactical'):spawns;
+            const preaim=realMap.ready?preaimSpawns(realMap,state.activeDrill):null;const points=preaim|| (realMap.ready?realMap.getBotSpawns(state.gameMode==='tactical'):spawns);
             points.slice(0,state.gameMode!=='tactical'&&state.activeDrill?state.activeDrill.count:points.length).forEach((sp, idx) => {
-                bots.push(createHumanoidBot(idx,realMap.ready?randomBotSpawn(realMap,sp,bots.map(b=>b.group.position)):sp));
+                bots.push(createHumanoidBot(idx,preaim?sp:realMap.ready?randomBotSpawn(realMap,sp,bots.map(b=>b.group.position)):sp));
             });
             if(state.gameMode==='tactical'&&!currentRoomId&&realMap.ready){
                 const [x,z,floor]=realMap.definition.spawns[state.team];
@@ -2157,7 +2164,7 @@
                     const roomMap=message.map||'ascent';
                     if(roomMap!==selectedMap){followRoomMap({...message,map:roomMap});return;}
                     slowClockOffset=Number.isFinite(message.serverNow)?message.serverNow-Date.now():0;
-                    roomMode=message.mode||'practice';receiveRoomRound(message.round);roomHostUid=message.hostUid;
+                    roomMode=message.mode||'practice';receiveRoomRound(message.round);marketDoor.receive(message.marketDoor);roomHostUid=message.hostUid;
 
                     currentUser={uid:message.uid};currentRoomId=roomSocket.desiredRoom;updateMapPermissions();state.spikePlanted=false;state.spikeAction=null;state.holdingSpike=false;spikeGroup.visible=false;spikeCarryRoot.visible=false;document.getElementById('spike-hud-badge').classList.add('hidden');
                     if(!previousSolo)previousSolo={enableBots:state.enableBots,gameMode:state.gameMode};
@@ -2191,6 +2198,7 @@
         function handleNetworkCombatEvent(ev) {
             if (!currentUser) return;
             if(fadeKit.receive(ev)||skyeKit.receive(ev)||razeKit.receive(ev)||astraKit.receive(ev)||viperKit.receive(ev)||breachKit.receive(ev)||neonKit.receive(ev)||cypherKit.receive(ev)||killjoyKit.receive(ev)||sovaKit.receive(ev)||reynaKit.receive(ev)||brimKit.receive(ev)||omenKit.receive(ev)||isoKit.receive(ev)||cloveKit.receive(ev))return;
+            if(ev.type==='market_door'){marketDoor.receive(ev.state);return;}
             if(ev.type==='revive'){
                 if(ev.phase==='complete'){removeCorpse(ev.targetUid);return;}
                 const actor=remotePlayers.get(ev.targetUid);if(!corpses.has(ev.targetUid)&&actor)markCorpse(ev.targetUid,new THREE.Vector3(ev.x,ev.y,ev.z),actor.data.team,actor);
@@ -2467,7 +2475,7 @@
                 if(state.weaponKey==='bladestorm'){if(!volley){state.bladeKnives=Math.max(0,state.bladeKnives-1);state.mag=state.bladeKnives;refreshBladeKnives();}}else state.mag--;
             }
             updateAmmoHUD();
-            sfx.playGunshot(state.weaponKey);
+            skinAudio.cancelMotion();if(!skinAudio.play('fire',{variant:tacticalKnifeRoot?.userData.attackVariant||'attack',duration:tacticalKnifeRoot?.userData.data?.meta.clips[tacticalKnifeRoot?.userData.attackVariant||'attack']?.duration||0}))sfx.playGunshot(state.weaponKey);
 
             // Visual Muzzle Flash + Dynamic Light + Recoil Kick + Shell Ejection
             if (muzzleFlashGroup) {
@@ -2539,7 +2547,8 @@
                     state.training.hits++;
                     if (isHead) state.training.headshots++;
                 }
-                if (isRemotePlayer) {
+                if(hit.object.userData.marketDoor){marketDoor.hit(wpn.bodyDmg,wpn.isMelee);if(showPelletFX)createImpactBurst(hit.point,false,false);}
+                else if (isRemotePlayer) {
                     const targetUid = hit.object.userData.uid;
                     const rp = remotePlayers.get(targetUid);
                     if (rp) {
@@ -2609,7 +2618,7 @@
             if (state.isReloading) return;
             state.isInspecting = true;
             state.inspectTimer = 0;
-            sfx.playAbilitySound('inspect');
+            if(!skinAudio.play('inspect'))sfx.playAbilitySound('inspect');
         }
 
         function reloadWeapon() {
@@ -2623,8 +2632,10 @@
             state.isReloading = true;
             state.isInspecting = false;
             state.reloadTimer = 0;
+            skinAudio.cancelMotion();
             state.reloadDuration=(wpn.reloadTimeMs||1350)/Math.max(brimKit.buff()?BRIM.reloadRate:1,reynaKit.buff()?REYNA.reloadRate:1);
             setScope(false);
+            skinAudio.play('reload',{duration:state.reloadDuration/1000});
             document.getElementById('hud-ammo-mag').textContent = 'RLD';
 
             state.reloadTimeout = setTimeout(() => {
@@ -2679,7 +2690,7 @@
             updateAliveHUD();
             updateShopUI();
             pushMyNetworkState(true);
-            if (isTraining()) {
+            if(state.activeDrill?.preaim&&isTraining()){if(!bots.some(b=>b.alive&&b.team!==state.team)){state.training.finished=true;state.roundEnding=true;state.trainingSessions++;state.trainingBest=Math.max(state.trainingBest||0,state.training.kills);saveTrainingData();document.getElementById('trainer-result-title').textContent=state.activeDrill.label+' · 完成';document.getElementById('trainer-result-detail').textContent=`${state.training.elapsed.toFixed(1)} 秒 · ${state.training.kills} 擊殺 · ${state.training.shots} 發射擊`;document.getElementById('trainer-result').classList.remove('hidden');showBuyMenu();safeExitPointerLock();}}else if (isTraining()) {
                 setTimeout(() => {
                     if(!bots.includes(bot)||state.roundEnding)return;removeCorpse('bot:'+bot.index);bot.hpBg.visible=bot.hpFill.visible=true;
                     bot.hp = 100;bot.fadeTether=null;bot.fadeTrailUntil=bot.skyeConcussUntil=bot.skyeFlashUntil=0;bot.astraPull=null;bot.astraConcussUntil=0;bot.viperPoisonUntil=bot.viperLastPoisonAt=0;bot.breachConcussUntil=bot.breachFlashUntil=bot.breachLiftAt=0;bot.neonConcussUntil=0;bot.detainedUntil=0;bot.sovaRevealUntil=0;bot.leerUntil=0;bot.stimUntil=0;bot.nearsightUntil=bot.deafenedUntil=0;
@@ -2822,7 +2833,7 @@
             if(!state.barrierEquipped)return;if(!state.isLocked||state.inBuyMenu||state.hp<=0||state.roundEnding){cancelBarrierPlacement();return;}
             const now=performance.now();if(!force&&now-barrierPreviewTick<60)return;barrierPreviewTick=now;
             scene.updateMatrixWorld(true);const origin=camera.getWorldPosition(new THREE.Vector3()),dir=camera.getWorldDirection(new THREE.Vector3());
-            const ray=new THREE.Raycaster(origin,dir,0,BARRIER.range),hit=ray.intersectObjects([realMap.collisionMesh,...temporaryWalls],false)[0];
+            const ray=new THREE.Raycaster(origin,dir,0,BARRIER.range),hit=ray.intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false)[0];
             const p=hit?hit.point.clone().addScaledVector(dir,-.04):origin.clone().addScaledVector(dir,BARRIER.range-.2);
             const w={x:p.x,z:p.z,y:0,yaw:yawObject.rotation.y+barrierRotation};let valid=realMap.ready;
             // Sample from the aimed surface, so boxes, ledges and lower floors
@@ -2917,7 +2928,7 @@
             if(state.slowEquipped&&(!state.isLocked||state.inBuyMenu||state.hp<=0||state.roundEnding))cancelSlowEquip();
             for(const [id,f]of [...slowFlights]){
                 if(now-f.createdAt>SLOW.flightMs+300){removeSlowFlight(id);continue;}
-                if(f.awaiting)continue;const before=f.bounces,hit=stepSlowProjectile(f,dt,[realMap.collisionMesh,...temporaryWalls]);
+                if(f.awaiting)continue;const before=f.bounces,hit=stepSlowProjectile(f,dt,[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])]);
                 f.mesh.rotation.x+=dt*4;f.mesh.rotation.z+=dt*3;updateEffect(f.mesh,(now-f.createdAt)/1000);
                 if(f.bounces>before){const distance=f.mesh.position.distanceTo(yawObject.position);if(distance<30){sfx.init();playIce(sfx.ctx,'bounce',.16*(1-distance/30));}}
                 if(hit){
@@ -2927,16 +2938,16 @@
                 }
                 if(!f.remote&&currentRoomId&&(f.bounces>before||now-f.lastNet>=120)){f.lastNet=now;const p=f.mesh.position,v=f.velocity;broadcastRoomEvent({type:'slow_step',id,x:p.x,y:p.y,z:p.z,vx:v.x,vy:v.y,vz:v.z});}
             }
-            for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life=(f.expiresAt-now)/1000;f.age=Math.max(0,(now-f.createdAt)/1000);if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);continue;}const growth=Math.max(.01,fieldRadius(f,now)/SLOW.fieldRadius);f.mesh.scale.setScalar(growth);if(!f.draped||f.lastGrowth<1&&now-(f.drapedAt||0)>70){drapeSlowField(f.mesh,f,growth,[realMap.collisionMesh,...temporaryWalls]);f.draped=true;f.lastGrowth=growth;f.drapedAt=now;}updateEffect(f.mesh,f.age,Math.min(1,f.life*2));}
+            for(let i=slowFields.length-1;i>=0;i--){const f=slowFields[i];f.life=(f.expiresAt-now)/1000;f.age=Math.max(0,(now-f.createdAt)/1000);if(f.life<=0){disposeEffect(f.mesh);slowFields.splice(i,1);continue;}const growth=Math.max(.01,fieldRadius(f,now)/SLOW.fieldRadius);f.mesh.scale.setScalar(growth);if(!f.draped||f.lastGrowth<1&&now-(f.drapedAt||0)>70){drapeSlowField(f.mesh,f,growth,[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])]);f.draped=true;f.lastGrowth=growth;f.drapedAt=now;}updateEffect(f.mesh,f.age,Math.min(1,f.life*2));}
         }
         const cloudFlights=new Map(),cloudIds=new Set(),sprays=new Map();let lastSpray=0;
         const isoKit=new IsoKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>yawObject.position.clone(),yaw:()=>yawObject.rotation.y,bots:()=>bots,remotes:()=>remotePlayers,hiddenActor:()=>spectatorView.hidden,notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},cast:()=>beginAbilityCast('orb',.55),relocate:p=>{yawObject.position.set(p.x,p.y,p.z);yawObject.rotation.y=p.yaw||0;pitchObject.rotation.x=p.pitch||0;playerVelocity.set(0,0,0);state.climbingRope=null;resetMovementInput();setScope(false);state.hp=p.hp;state.shield=p.shield;updateHealthHUD();},enterInventory:weapon=>{const saved={weaponKey:state.weaponKey,mag:state.mag,reserve:state.reserve,weaponAmmo:structuredClone(state.weaponAmmo),bladeStormActive:state.bladeStormActive,bladeKnives:state.bladeKnives};state.bladeStormActive=false;state.healingEquipped=false;cancelSlowEquip();cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();equipWeaponSlot(weapon==='bladestorm'?state.primaryWeaponKey:weapon,{fresh:true});return saved;},restoreInventory:saved=>{Object.assign(state,saved);buildFirstPersonViewmodel();updateAmmoHUD();},fatal:reason=>applyDamageToPlayer(10000,reason,'ISO'),killBot:bot=>handleBotKilled(bot,false,false,'決鬥時間結束','ISO'),botShot:bot=>{const origin=bot.group.position.clone().add(new THREE.Vector3(0,2,0));createBulletTracer(origin,yawObject.position,0xc39bf5);applyDamageToPlayer(26,bot.name,'VANDAL',false);}});
-        const cloveKit=new CloveKit({state,map:realMap,camera,scene,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid,position:()=>yawObject.position.clone(),bots:()=>bots,obstacles:()=>[realMap.collisionMesh,...temporaryWalls],send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,elimination:checkSoloElimination,prepare:()=>{isMouseDown=false;resetMovementInput();setScope(false);abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:held=>{beginAbilityCast('orb',.6);if(held)abilityCast.holdOrb();},cancelCast:()=>abilityCast.cancel(),smoke:ev=>{if(smokeSpheres.some(s=>s.id===ev.id))return;const mesh=makeCloveSmoke();mesh.position.set(ev.x,ev.y,ev.z);mesh.scale.setScalar(.1);scene.add(mesh);smokeSpheres.push({mesh,id:ev.id,kind:'clove',life:CLOVE.smokeMs/1000,createdAt:ev.createdAt-slowClockOffset,expiresAt:ev.expiresAt-slowClockOffset});},revive:pos=>{removeCorpse('self');yawObject.position.set(pos.x,pos.y,pos.z);playerVelocity.set(0,0,0);resetMovementInput();equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();updateAliveHUD();},fatal:reason=>applyDamageToPlayer(10000,reason,'CLOVE')});
-        const omenKit=new OmenKit({state,camera,scene,map:realMap,canStand:p=>!checkPlayerCollision(new THREE.Vector3(p.x,p.y,p.z),0),shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>yawObject.position.clone(),bots:()=>bots,remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,obstacles:()=>[realMap.collisionMesh,...temporaryWalls],notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},prepare:()=>{isMouseDown=false;resetMovementInput();setScope(false);cancelSlowEquip();cancelBarrierPlacement();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();abilityCast.cancel();clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();state.climbingRope=null;},cast:()=>beginAbilityCast('orb',.55),relocate:p=>{yawObject.position.set(p.x,p.y,p.z);playerVelocity.set(0,0,0);resetMovementInput();state.climbingRope=null;setScope(false);},smoke:e=>{if(smokeSpheres.some(s=>s.id===e.id))return;const mesh=makeOmenSmoke();mesh.position.set(e.x,e.y,e.z);mesh.scale.setScalar(.1);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'omen',life:OMEN.smokeMs/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});}});
-        const brimKit=new BrimstoneKit({state,camera,scene,map:realMap,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,obstacles:()=>[realMap.collisionMesh,...temporaryWalls],notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.55),smoke:e=>{e.mesh.position.set(e.x,e.y,e.z);scene.add(e.mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh:e.mesh,id:e.id,kind:'brimstone',life:BRIM.smokeMs/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});},hurt:(a,damage,e)=>{if(a.self){if(cloveInvulnerable(state,Date.now())||state.omen?.channel?.kind==='ultimate')return;applyDamageToPlayer(damage,'Brimstone',e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY');}else{a.bot.lastDamage=performance.now();if(a.bot.team!==state.team)a.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(a.bot,damage,'brim:'+e.id+':'+Date.now());a.bot.hpFill.scale.x=Math.max(.01,a.bot.hp/100);if(a.bot.hp<=0)handleBotKilled(a.bot,false,e.ownerUid==='self'&&a.bot.team!==state.team,e.ownerUid==='self'?state.playerName:'Brimstone',e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY');}}});
-        const reynaKit=new ReynaKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,remotes:()=>remotePlayers,notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},clearLine:(a,b)=>{if(viperKit.blocksLine(a,b)||neonKit.blocksLine(a,b))return false;const origin=new THREE.Vector3(a.x,a.y,a.z),target=new THREE.Vector3(b.x,b.y,b.z),d=target.clone().sub(origin),length=d.length();if(length<.01)return true;const line=new THREE.Line3(origin,target);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<((s.mesh.userData.smokeRadius||3.8)*s.mesh.scale.x)**2))return false;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length-.35)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0xf087cf),prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.4),hold:()=>{beginAbilityCast('orb',.5);abilityCast.holdOrb();},cancelCast:()=>abilityCast.cancel()});
-        const sovaKit=new SovaKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},obstacles:()=>[realMap.collisionMesh,...temporaryWalls],clearLine:(a,b,padding=0)=>{if(viperKit.blocksLine(a,b)||neonKit.blocksLine(a,b))return false;const origin=new THREE.Vector3(a.x,a.y,a.z),target=new THREE.Vector3(b.x,b.y,b.z),d=target.clone().sub(origin),length=d.length();if(length<.001)return true;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length+(padding||-.12))).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.3),targets:()=>[...bots.filter(b=>b.alive&&b.team!==state.team&&!b.realm).map(b=>({uid:'bot:'+b.index,actor:b,position:{x:b.group.position.x,y:b.group.position.y+1.8,z:b.group.position.z},meshes:[b.headMesh,b.bodyMesh,b.leftLeg,b.rightLeg]})),...[...remotePlayers.values()].filter(rp=>rp.data.hp>0&&rp.data.team!==state.team&&!rp.data.realm).map(rp=>({uid:rp.uid,actor:rp.data,position:{x:rp.data.x,y:rp.data.y-.4,z:rp.data.z},meshes:[rp.headMesh,rp.bodyMesh,rp.leftLeg,rp.rightLeg]}))],damageTargets:()=>[{self:true,actor:state,position:{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z}},...bots.filter(b=>b.alive&&!b.realm).map(b=>({actor:b,bot:b,position:{x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z}}))],hurt:(t,damage,e)=>{if(t.self){if(omenShadow(state))return;applyDamageToPlayer(damage,e.ownerName,e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT');}else{t.bot.lastDamage=performance.now();if(t.bot.team!==state.team)t.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(t.bot,damage,e.id);t.bot.hpFill.scale.x=Math.max(.01,t.bot.hp/100);if(t.bot.hp<=0)handleBotKilled(t.bot,false,t.bot.team!==state.team,state.playerName,e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT');}},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0x77eaff),contact:t=>{for(const ally of bots)if(ally.alive&&ally.team===state.team&&!ally.realm)ally.contact={pos:new THREE.Vector3(t.position.x,t.position.y-1.8,t.position.z),at:performance.now()};}});
-        const killjoyKit=new KilljoyKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},obstacles:()=>[realMap.collisionMesh,...temporaryWalls],canPlace:p=>!checkPlayerCollision(new THREE.Vector3(p.x,p.y+2.2,p.z),0),ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+3,p.z)),clearLine:(a,b,padding=0)=>{if(viperKit.blocksLine(a,b)||neonKit.blocksLine(a,b))return false;const origin=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(origin),length=d.length();if(length<.001)return true;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length+(padding||-.12))).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},hold:()=>{beginAbilityCast('orb',.5);abilityCast.holdOrb();},cast:()=>beginAbilityCast('wind',.3),disarm:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();if(state.sova)state.sova.control=null;state.healingEquipped=false;state.holdingSpike=false;moveState.holdPlant=false;cancelSpikeAction();},targets:()=>[{uid:currentUser?.uid||'self',self:true,actor:state,position:{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z}},...bots.filter(b=>b.alive&&!b.realm).map(b=>({uid:'bot:'+b.index,bot:b,actor:b,position:{x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z}})),...[...remotePlayers.values()].filter(rp=>rp.data.hp>0&&!rp.data.realm).map(rp=>({uid:rp.uid,actor:rp.data,position:{x:rp.data.x,y:rp.data.y-1,z:rp.data.z}}))],hurt:(t,damage,e)=>{if(t.self){if(omenShadow(state))return;applyDamageToPlayer(damage,e.ownerName||'Killjoy',e.weaponName);}else if(t.bot){t.bot.lastDamage=performance.now();if(t.bot.team!==e.team)t.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(t.bot,damage,e.id);t.bot.hpFill.scale.x=Math.max(.01,t.bot.hp/100);if(t.bot.hp<=0)handleBotKilled(t.bot,false,e.ownerUid===(currentUser?.uid||'self')&&t.bot.team!==state.team,e.ownerName||'Killjoy',e.weaponName);}},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0xffd66b)});
+        const cloveKit=new CloveKit({state,map:realMap,camera,scene,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid,position:()=>yawObject.position.clone(),bots:()=>bots,obstacles:()=>[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,elimination:checkSoloElimination,prepare:()=>{isMouseDown=false;resetMovementInput();setScope(false);abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:held=>{beginAbilityCast('orb',.6);if(held)abilityCast.holdOrb();},cancelCast:()=>abilityCast.cancel(),smoke:ev=>{if(smokeSpheres.some(s=>s.id===ev.id))return;const mesh=makeCloveSmoke();mesh.position.set(ev.x,ev.y,ev.z);mesh.scale.setScalar(.1);scene.add(mesh);smokeSpheres.push({mesh,id:ev.id,kind:'clove',life:CLOVE.smokeMs/1000,createdAt:ev.createdAt-slowClockOffset,expiresAt:ev.expiresAt-slowClockOffset});},revive:pos=>{removeCorpse('self');yawObject.position.set(pos.x,pos.y,pos.z);playerVelocity.set(0,0,0);resetMovementInput();equipWeaponSlot(state.primaryWeaponKey,{fresh:true});updateHealthHUD();updateAliveHUD();},fatal:reason=>applyDamageToPlayer(10000,reason,'CLOVE')});
+        const omenKit=new OmenKit({state,camera,scene,map:realMap,canStand:p=>!checkPlayerCollision(new THREE.Vector3(p.x,p.y,p.z),0),shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>yawObject.position.clone(),bots:()=>bots,remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,obstacles:()=>[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},prepare:()=>{isMouseDown=false;resetMovementInput();setScope(false);cancelSlowEquip();cancelBarrierPlacement();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();abilityCast.cancel();clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();state.climbingRope=null;},cast:()=>beginAbilityCast('orb',.55),relocate:p=>{yawObject.position.set(p.x,p.y,p.z);playerVelocity.set(0,0,0);resetMovementInput();state.climbingRope=null;setScope(false);},smoke:e=>{if(smokeSpheres.some(s=>s.id===e.id))return;const mesh=makeOmenSmoke();mesh.position.set(e.x,e.y,e.z);mesh.scale.setScalar(.1);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'omen',life:OMEN.smokeMs/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});}});
+        const brimKit=new BrimstoneKit({state,camera,scene,map:realMap,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,obstacles:()=>[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.55),smoke:e=>{e.mesh.position.set(e.x,e.y,e.z);scene.add(e.mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh:e.mesh,id:e.id,kind:'brimstone',life:BRIM.smokeMs/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});},hurt:(a,damage,e)=>{if(a.self){if(cloveInvulnerable(state,Date.now())||state.omen?.channel?.kind==='ultimate')return;applyDamageToPlayer(damage,'Brimstone',e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY');}else{a.bot.lastDamage=performance.now();if(a.bot.team!==state.team)a.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(a.bot,damage,'brim:'+e.id+':'+Date.now());a.bot.hpFill.scale.x=Math.max(.01,a.bot.hp/100);if(a.bot.hp<=0)handleBotKilled(a.bot,false,e.ownerUid==='self'&&a.bot.team!==state.team,e.ownerUid==='self'?state.playerName:'Brimstone',e.kind==='strike'?'ORBITAL STRIKE':'INCENDIARY');}}});
+        const reynaKit=new ReynaKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,remotes:()=>remotePlayers,notice:abilityNotice,hud:updateAbilityHUD,health:updateHealthHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},clearLine:(a,b)=>{if(viperKit.blocksLine(a,b)||neonKit.blocksLine(a,b))return false;const origin=new THREE.Vector3(a.x,a.y,a.z),target=new THREE.Vector3(b.x,b.y,b.z),d=target.clone().sub(origin),length=d.length();if(length<.01)return true;const line=new THREE.Line3(origin,target);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceToSquared(s.mesh.position)<((s.mesh.userData.smokeRadius||3.8)*s.mesh.scale.x)**2))return false;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length-.35)).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0xf087cf),prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.4),hold:()=>{beginAbilityCast('orb',.5);abilityCast.holdOrb();},cancelCast:()=>abilityCast.cancel()});
+        const sovaKit=new SovaKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),bots:()=>bots,remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},obstacles:()=>[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],clearLine:(a,b,padding=0)=>{if(viperKit.blocksLine(a,b)||neonKit.blocksLine(a,b))return false;const origin=new THREE.Vector3(a.x,a.y,a.z),target=new THREE.Vector3(b.x,b.y,b.z),d=target.clone().sub(origin),length=d.length();if(length<.001)return true;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length+(padding||-.12))).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;},stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},cast:()=>beginAbilityCast('wind',.3),targets:()=>[...bots.filter(b=>b.alive&&b.team!==state.team&&!b.realm).map(b=>({uid:'bot:'+b.index,actor:b,position:{x:b.group.position.x,y:b.group.position.y+1.8,z:b.group.position.z},meshes:[b.headMesh,b.bodyMesh,b.leftLeg,b.rightLeg]})),...[...remotePlayers.values()].filter(rp=>rp.data.hp>0&&rp.data.team!==state.team&&!rp.data.realm).map(rp=>({uid:rp.uid,actor:rp.data,position:{x:rp.data.x,y:rp.data.y-.4,z:rp.data.z},meshes:[rp.headMesh,rp.bodyMesh,rp.leftLeg,rp.rightLeg]}))],damageTargets:()=>[{self:true,actor:state,position:{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z}},...bots.filter(b=>b.alive&&!b.realm).map(b=>({actor:b,bot:b,position:{x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z}}))],hurt:(t,damage,e)=>{if(t.self){if(omenShadow(state))return;applyDamageToPlayer(damage,e.ownerName,e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT');}else{t.bot.lastDamage=performance.now();if(t.bot.team!==state.team)t.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(t.bot,damage,e.id);t.bot.hpFill.scale.x=Math.max(.01,t.bot.hp/100);if(t.bot.hp<=0)handleBotKilled(t.bot,false,t.bot.team!==state.team,state.playerName,e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT');}},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0x77eaff),contact:t=>{for(const ally of bots)if(ally.alive&&ally.team===state.team&&!ally.realm)ally.contact={pos:new THREE.Vector3(t.position.x,t.position.y-1.8,t.position.z),at:performance.now()};}});
+        const killjoyKit=new KilljoyKit({state,camera,scene,shootable:shootableMeshes,network:()=>!!currentRoomId,now:()=>Date.now()+slowClockOffset,features:()=>roomSocket?.serverFeatures||[],uid:()=>currentUser?.uid||'self',position:()=>({x:yawObject.position.x,y:yawObject.position.y,z:yawObject.position.z}),remotes:()=>remotePlayers,viewer:()=>spectatorView.active?remotePlayers.get(spectatorView.uid)?.data||state:state,notice:abilityNotice,hud:updateAbilityHUD,send:m=>{pushMyNetworkState(true);broadcastRoomEvent(m);},obstacles:()=>[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],canPlace:p=>!checkPlayerCollision(new THREE.Vector3(p.x,p.y+2.2,p.z),0),ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+3,p.z)),clearLine:(a,b,padding=0)=>{if(viperKit.blocksLine(a,b)||neonKit.blocksLine(a,b))return false;const origin=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(origin),length=d.length();if(length<.001)return true;return !new THREE.Raycaster(origin,d.normalize(),0,Math.max(0,length+(padding||-.12))).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;},prepare:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();state.healingEquipped=false;state.holdingSpike=false;cancelSpikeAction();},hold:()=>{beginAbilityCast('orb',.5);abilityCast.holdOrb();},cast:()=>beginAbilityCast('wind',.3),disarm:()=>{isMouseDown=false;setScope(false);clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;abilityCast.cancel();cancelSlowEquip();cancelBarrierPlacement();omenKit.cancelAim();cloveKit.cancelEquip();brimKit.cancel();reynaKit.cancel();sovaKit.cancelEquip();if(state.sova)state.sova.control=null;state.healingEquipped=false;state.holdingSpike=false;moveState.holdPlant=false;cancelSpikeAction();},targets:()=>[{uid:currentUser?.uid||'self',self:true,actor:state,position:{x:yawObject.position.x,y:yawObject.position.y-1,z:yawObject.position.z}},...bots.filter(b=>b.alive&&!b.realm).map(b=>({uid:'bot:'+b.index,bot:b,actor:b,position:{x:b.group.position.x,y:b.group.position.y+1.2,z:b.group.position.z}})),...[...remotePlayers.values()].filter(rp=>rp.data.hp>0&&!rp.data.realm).map(rp=>({uid:rp.uid,actor:rp.data,position:{x:rp.data.x,y:rp.data.y-1,z:rp.data.z}}))],hurt:(t,damage,e)=>{if(t.self){if(omenShadow(state))return;applyDamageToPlayer(damage,e.ownerName||'Killjoy',e.weaponName);}else if(t.bot){t.bot.lastDamage=performance.now();if(t.bot.team!==e.team)t.bot.lastPlayerDamage=Date.now();isoKit.hurtBot(t.bot,damage,e.id);t.bot.hpFill.scale.x=Math.max(.01,t.bot.hp/100);if(t.bot.hp<=0)handleBotKilled(t.bot,false,e.ownerUid===(currentUser?.uid||'self')&&t.bot.team!==state.team,e.ownerName||'Killjoy',e.weaponName);}},tracer:(a,b)=>createBulletTracer(new THREE.Vector3(a.x,a.y,a.z),new THREE.Vector3(b.x,b.y,b.z),0xffd66b)});
 
 
 
@@ -2953,15 +2964,16 @@
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
         const cypherKit=new CypherKit({...killjoyKit.api,corpses:()=>corpses,dartTargets:()=>sovaKit.api.targets(),stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},tether:p=>{yawObject.position.x=p.x;yawObject.position.z=p.z;},smoke:(e,mesh)=>{if(smokeSpheres.some(s=>s.id===e.id)){disposeEffect(mesh);return;}mesh.position.set(e.x,e.y+2.3,e.z);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'cypher',life:7.25,createdAt:e.activeUntil-7250-offset,expiresAt:e.activeUntil-offset});}});
-        const neonKit=new NeonKit({...killjoyKit.api,hitDevice:(mesh,damage)=>fadeKit.hitObject(mesh,damage)||skyeKit.hitObject(mesh,damage)||razeKit.hitObject(mesh,damage)||cypherKit.hitObject(mesh,damage)||killjoyKit.hitObject(mesh,damage)||sovaKit.hitObject(mesh,damage)||reynaKit.hitObject(mesh,damage)||(mesh.userData.barrierId?(damageBarrier(mesh,damage),true):false),ammo:updateAmmoHUD,dartTargets:()=>sovaKit.api.targets(),grounded:()=>canJump&&!state.climbingRope,moveDirection:()=>{const x=Number(moveState.right)-Number(moveState.left),z=Number(moveState.backward)-Number(moveState.forward),d=new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);if(d.length()<.01)return null;return d.normalize();},clearStatic:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),length=d.length();return length<.001||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,length-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
-        const breachKit=new BreachKit({...killjoyKit.api,yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,lift:t=>{if(t.self){if(state.hp>0&&!state.realm){playerVelocity.y=Math.max(playerVelocity.y,8);canJump=false;}}else if(t.bot){t.bot.breachLiftAt=Date.now();}},clearLine:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),len=d.length();return len<.01||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,len-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
+        const neonKit=new NeonKit({...killjoyKit.api,hitDevice:(mesh,damage)=>fadeKit.hitObject(mesh,damage)||skyeKit.hitObject(mesh,damage)||razeKit.hitObject(mesh,damage)||cypherKit.hitObject(mesh,damage)||killjoyKit.hitObject(mesh,damage)||sovaKit.hitObject(mesh,damage)||reynaKit.hitObject(mesh,damage)||(mesh.userData.barrierId?(damageBarrier(mesh,damage),true):false),ammo:updateAmmoHUD,dartTargets:()=>sovaKit.api.targets(),grounded:()=>canJump&&!state.climbingRope,moveDirection:()=>{const x=Number(moveState.right)-Number(moveState.left),z=Number(moveState.backward)-Number(moveState.forward),d=new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);if(d.length()<.01)return null;return d.normalize();},clearStatic:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),length=d.length();return length<.001||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,length-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;}});
+        const breachKit=new BreachKit({...killjoyKit.api,yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,lift:t=>{if(t.self){if(state.hp>0&&!state.realm){playerVelocity.y=Math.max(playerVelocity.y,8);canJump=false;}}else if(t.bot){t.bot.breachLiftAt=Date.now();}},clearLine:(a,b)=>{const o=new THREE.Vector3(a.x,a.y,a.z),d=new THREE.Vector3(b.x,b.y,b.z).sub(o),len=d.length();return len<.01||!new THREE.Raycaster(o,d.normalize(),0,Math.max(0,len-.1)).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;}});
         const viperKit=new ViperKit({...killjoyKit.api,health:updateHealthHUD});
         const razeKit=new RazeKit({...killjoyKit.api,dartTargets:()=>sovaKit.api.targets(),sound:()=>sfx.playAbilitySound('dash'),impulse:(t,v)=>{if(t.self){if(state.hp<=0||state.realm)return;astraKit.close();const old=state.razeImpulse?.until>performance.now()?state.razeImpulse:{x:0,z:0};state.razeImpulse={x:Math.max(-25,Math.min(25,old.x+v.x)),z:Math.max(-25,Math.min(25,old.z+v.z)),until:performance.now()+550};playerVelocity.y=Math.min(20,Math.max(0,playerVelocity.y)+v.y);canJump=false;}else if(t.bot){t.bot.breachLiftAt=Date.now();const next=t.bot.group.position.clone().add(new THREE.Vector3(v.x*.12,0,v.z*.12));next.y=realMap.getGroundHeight(next.clone().add(new THREE.Vector3(0,2.2,0)));if(botNavigation?.step(t.bot.group.position,next,p=>checkPlayerCollision(p,0,true)))t.bot.group.position.copy(next);}}});
         const astraKit=new AstraKit({...killjoyKit.api,map:realMap,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);},pullBot:(b,e,dt)=>{const d=new THREE.Vector3(e.x-b.group.position.x,0,e.z-b.group.position.z),len=d.length();if(len<.15)return;const next=b.group.position.clone().addScaledVector(d.normalize(),Math.min(len,ASTRA.pullSpeed*Math.min(.06,dt)));next.y=realMap.getGroundHeight(next.clone().add(new THREE.Vector3(0,2.2,0)));if(botNavigation?.step(b.group.position,next,p=>checkPlayerCollision(p,0,true)))b.group.position.copy(next);},smoke:(e,mesh)=>{if(smokeSpheres.some(s=>s.id===e.id)){disposeEffect(mesh);return;}mesh.position.set(e.x,e.y+2.2,e.z);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'astra',life:(e.expiresAt-e.createdAt)/1000,createdAt:e.createdAt-offset,expiresAt:e.expiresAt-offset});}});
-        const reconApi={...killjoyKit.api,ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z)),clearMotion:(a,b)=>{const o=new THREE.Vector3(a.x,a.y+.6,a.z),d=new THREE.Vector3(b.x,b.y+.6,b.z).sub(o),len=d.length();return len<.001||!new THREE.Raycaster(o,d.normalize(),0,len+.25).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;},yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,dartTargets:()=>sovaKit.api.targets(),health:updateHealthHUD,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);setScope(false);},tether:p=>{const next=yawObject.position.clone();next.x=p.x;next.z=p.z;if(!checkPlayerCollision(next)){yawObject.position.x=p.x;yawObject.position.z=p.z;}},tetherBot:(b,p)=>{const next=b.group.position.clone();next.x=p.x;next.z=p.z;if(botNavigation?.step(b.group.position,next,v=>checkPlayerCollision(v,0,true)))b.group.position.copy(next);},clearLine:(a,b)=>{if(neonKit.blocksLine(a,b)||viperKit.blocksLine(a,b)||astraKit.audioScale(a,b)<1)return false;const origin=new THREE.Vector3(a.x,a.y,a.z),end=new THREE.Vector3(b.x,b.y,b.z),delta=end.clone().sub(origin),len=delta.length(),line=new THREE.Line3(origin,end);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceTo(s.mesh.position)<(s.mesh.userData.smokeRadius||4.2)*s.mesh.scale.x))return false;return len<.001||!new THREE.Raycaster(origin,delta.normalize(),0,Math.max(0,len-.3)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}};
+        const reconApi={...killjoyKit.api,ground:p=>realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z)),clearMotion:(a,b)=>{const o=new THREE.Vector3(a.x,a.y+.6,a.z),d=new THREE.Vector3(b.x,b.y+.6,b.z).sub(o),len=d.length();return len<.001||!new THREE.Raycaster(o,d.normalize(),0,len+.25).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;},yaw:()=>yawObject.rotation.y,pitch:()=>pitchObject.rotation.x,dartTargets:()=>sovaKit.api.targets(),health:updateHealthHUD,holdBody:()=>{isMouseDown=false;Object.keys(moveState).forEach(k=>moveState[k]=false);playerVelocity.set(0,0,0);setScope(false);},tether:p=>{const next=yawObject.position.clone();next.x=p.x;next.z=p.z;if(!checkPlayerCollision(next)){yawObject.position.x=p.x;yawObject.position.z=p.z;}},tetherBot:(b,p)=>{const next=b.group.position.clone();next.x=p.x;next.z=p.z;if(botNavigation?.step(b.group.position,next,v=>checkPlayerCollision(v,0,true)))b.group.position.copy(next);},clearLine:(a,b)=>{if(neonKit.blocksLine(a,b)||viperKit.blocksLine(a,b)||astraKit.audioScale(a,b)<1)return false;const origin=new THREE.Vector3(a.x,a.y,a.z),end=new THREE.Vector3(b.x,b.y,b.z),delta=end.clone().sub(origin),len=delta.length(),line=new THREE.Line3(origin,end);if(smokeSpheres.some(s=>line.closestPointToPoint(s.mesh.position,true,new THREE.Vector3()).distanceTo(s.mesh.position)<(s.mesh.userData.smokeRadius||4.2)*s.mesh.scale.x))return false;return len<.001||!new THREE.Raycaster(origin,delta.normalize(),0,Math.max(0,len-.3)).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;}};
         const fadeKit=new ReconKit('fade',reconApi),skyeKit=new ReconKit('skye',reconApi);
         function cancelReconInput(){fadeKit.cancel();skyeKit.cancel();if(skyeKit.busy())skyeKit.endControl();}
-        function clearFieldObjects(){sourceHeadshots.clear();fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
+        const marketDoor=new MarketDoor({map:realMap,scene,shootable:shootableMeshes,offset:()=>currentRoomId?slowClockOffset:0,position:()=>yawObject.position,active:()=>state.isLocked&&!state.inBuyMenu&&state.hp>0&&!state.realm&&!state.roundEnding,network:()=>!!currentRoomId,features:()=>roomSocket?.serverFeatures||[],send:broadcastRoomEvent,notice:abilityNotice,actors:()=>[yawObject.position,...bots.filter(b=>b.alive).map(b=>b.group.position.clone().add(new THREE.Vector3(0,2.2,0)))],sound:kind=>{if(state.isLocked)sfx.playAbilitySound(kind==='break'?'dash':'smoke');}});
+        function clearFieldObjects(){if(!currentRoomId)marketDoor.reset();sourceHeadshots.clear();fadeKit.clear();skyeKit.clear();razeKit.clear();astraKit.clear();viperKit.clear();breachKit.clear();neonKit.clear();cypherKit.clear();killjoyKit.clear();sovaKit.clear();reynaKit.clear();brimKit.clear();omenKit.clear();botDefuse.reset();followTrail.clear();for(const b of bots)b.defusing=false;isoKit.clear();cloveKit.clear();clearSlowObjects();clearIceBarriers();for(const s of smokeSpheres)disposeEffect(s.mesh);smokeSpheres.length=0;for(const id of [...cloudFlights.keys()])removeCloudFlight(id);cloudIds.clear();for(const s of sprays.values())removeSpray(s.mesh);sprays.clear();}
         function receiveSpray(event){
             const old=sprays.get(event.ownerUid);if(old)removeSpray(old.mesh);const mesh=makeSpray(event);scene.add(mesh);sprays.set(event.ownerUid,{mesh,expiresAt:event.expiresAt});
             if(event.ownerUid===(currentUser?.uid||'solo')){lastSpray=Date.now();sfx.init();sprayHiss(sfx.ctx);}
@@ -2985,7 +2997,7 @@
             scene.updateMatrixWorld(true);const origin=camera.getWorldPosition(new THREE.Vector3()),direction=camera.getWorldDirection(new THREE.Vector3());
             const options=bots.filter(b=>b.alive&&b.team===state.team&&b.hp<100).map(b=>({id:'bot:'+b.index,actor:b,position:b.group.position.clone().add(new THREE.Vector3(0,1.35,0)),hp:b.hp}));
             for(const rp of remotePlayers.values())if(rp.data.team===state.team&&rp.data.hp>0&&rp.data.hp<100)options.push({id:rp.uid,actor:rp,position:rp.targetPos.clone().add(new THREE.Vector3(0,1.35,0)),hp:rp.data.hp});
-            return options.filter(t=>{const d=t.position.clone().sub(origin),along=d.dot(direction);if(d.length()>40||along<0||d.clone().addScaledVector(direction,-along).length()>.8)return false;const r=new THREE.Raycaster(origin,d.clone().normalize(),0,Math.max(0,d.length()-.5));return !r.intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}).sort((a,b)=>a.position.distanceToSquared(origin)-b.position.distanceToSquared(origin))[0];
+            return options.filter(t=>{const d=t.position.clone().sub(origin),along=d.dot(direction);if(d.length()>40||along<0||d.clone().addScaledVector(direction,-along).length()>.8)return false;const r=new THREE.Raycaster(origin,d.clone().normalize(),0,Math.max(0,d.length()-.5));return !r.intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;}).sort((a,b)=>a.position.distanceToSquared(origin)-b.position.distanceToSquared(origin))[0];
         }
         function castHealing(self=false){
             if(!state.healingEquipped||state.eCooldown>0||state.hp<=0||Date.now()<(state.healPendingUntil||0))return;
@@ -3004,7 +3016,7 @@
                 if(f.remote){f.mesh.position.addScaledVector(f.velocity,dt);if(f.syncPosition)f.mesh.position.lerp(f.syncPosition,Math.min(1,dt*15));if(f.age>2.5)removeCloudFlight(id);continue;}
                 const guided=moveState.guideSmoke&&state.isLocked&&!state.inBuyMenu&&state.hp>0;
                 if(guided){const desired=camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(24);f.velocity.lerp(desired,Math.min(1,dt*8)).normalize().multiplyScalar(24);}else f.velocity.y-=3.5*dt;
-                const step=f.velocity.clone().multiplyScalar(dt),ray=new THREE.Raycaster(f.mesh.position,step.clone().normalize(),0,step.length()+.17),hit=ray.intersectObjects([realMap.collisionMesh,...temporaryWalls],false)[0];
+                const step=f.velocity.clone().multiplyScalar(dt),ray=new THREE.Raycaster(f.mesh.position,step.clone().normalize(),0,step.length()+.17),hit=ray.intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false)[0];
                 if(hit){const n=hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();if(n.dot(f.velocity)>0)n.negate();f.mesh.position.copy(hit.point).addScaledVector(n,.18);}else f.mesh.position.add(step);
                 if(hit||f.age>=1.2){const p=f.mesh.position.clone();removeCloudFlight(id);deployCloud(p,id);broadcastRoomEvent({type:'smoke_land',id,x:p.x,y:p.y,z:p.z});continue;}
                 if(currentRoomId&&f.age-f.lastNet>=.15){f.lastNet=f.age;const p=f.mesh.position,d=f.velocity.clone().normalize();broadcastRoomEvent({type:'smoke_guide',id,x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z});}
@@ -3243,7 +3255,7 @@
         window.setGameMode = function(mode) {
             if(currentRoomId){networkFeedback('請先離開好友房間，再選擇單人訓練');return;}
             if (!['tactical','strafing','stationary'].includes(mode)) return;
-            if(!state.applyingDrill){state.activeDrill=null;const select=document.getElementById('training-preset');if(select)select.value='';}
+            if(!state.applyingDrill){state.activeDrill=null;const sunsetSelect=document.getElementById('sunset-drill');if(sunsetSelect)sunsetSelect.value='';const select=document.getElementById('training-preset');if(select)select.value='';}
             state.gameMode = mode;
             if(state.freeRoam) {state.enableBots=true;document.getElementById('chk-enable-bots').checked=true;state.freeRoam=false;}
             document.body.classList.toggle('is-training',mode!=='tactical');
@@ -3508,6 +3520,7 @@
                 placePlayerAtSpawn('defend');
             }
             pitchObject.rotation.x = 0;
+            if(state.activeDrill?.preaim&&realMap.ready){const source=state.activeDrill.player;try{yawObject.position.copy(realMap.safePoint(source.position.x,source.position.z,source.position.y));yawObject.rotation.y=source.yaw||0;playerVelocity.set(0,0,0);}catch{}}
 
             spawnBots();
             updateHealthHUD();
@@ -3577,7 +3590,7 @@
             if(!realMap.ready)return;
             if(selectedEntryScope!==agentEntryScope()){openAgentPicker({startGame:true});return;}
             if (state.training.finished) resetRound();
-            sfx.init();sfx.preloadSamples();
+            sfx.init();sfx.preloadSamples();skinAudio.select(collectionAudioId(state));
             resetMovementInput();immersiveEntryPending=true;immersiveEntryCancelled=false;
             const result=await enterGameSession(document,renderer.domElement);
             const cancelled=immersiveEntryCancelled;immersiveEntryPending=false;
@@ -3744,6 +3757,7 @@
             if(state.hp<=0){if(code==='ArrowLeft'||code==='ArrowRight'){e.preventDefault();spectatorView.cycle(code==='ArrowLeft'?-1:1);}return;}
             if(code==='KeyF'&&cypherKit.interact()){e.preventDefault();return;}
             if(code==='KeyF'&&killjoyKit.activateTarget()){e.preventDefault();return;}
+            if(code==='KeyF'&&marketDoor.interact()){e.preventDefault();return;}
             if(code==='KeyF'&&toggleRope()){e.preventDefault();return;}
             if(code==='Space'&&state.climbingRope){state.climbingRope=null;playerVelocity.y=6;canJump=false;moveState.glide=true;e.preventDefault();return;}
             if (code === 'KeyW') moveState.forward = true;
@@ -3983,7 +3997,7 @@
                     gunGroup.rotation.x=-p*.08;gunGroup.rotation.z=p*.20;gunGroup.rotation.y=p*.48;gunGroup.position.x=(state.isScoped?-.25:0)-p*.04;gunGroup.position.y=(state.isScoped?.095:0)+p*.025;
                 }
                 if (state.inspectTimer >= inspectDuration) {
-                    state.isInspecting = false;
+                    skinAudio.cancelMotion();state.isInspecting = false;
                     gunGroup.rotation.set(0, 0, 0);
                 }
             } else {
@@ -4013,7 +4027,7 @@
         }
 
         function updateBotsAndVFX(dt) {
-            sourceHeadshots.update(performance.now());
+            if(!state.isLocked||state.inBuyMenu||state.hp<=0)skinAudio.cancelMotion();marketDoor.update();sourceHeadshots.update(performance.now());
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
             const nativeSmoke=jettSmokeCast.update(state.agent==='jett'&&state.isLocked&&!state.inBuyMenu&&state.hp>0);if(nativeSmoke)abilityCast.cancel();
             abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!nativeSmoke&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
@@ -4021,9 +4035,7 @@
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
                 const s = smokeSpheres[i];
-                s.life=Math.max(0,(s.expiresAt-Date.now())/1000);s.age=s.createdAt?Math.max(0,(Date.now()-s.createdAt)/1000):2.5-s.life;updateEffect(s.mesh,s.age,Math.min(1,s.life*4));
-                const targetScale = s.life > 1.0 ? 1.0 : Math.max(0.01, s.life);
-                s.mesh.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), dt * 6);
+                s.life=Math.max(0,(s.expiresAt-Date.now())/1000);s.age=s.createdAt?Math.max(0,(Date.now()-s.createdAt)/1000):2.5-s.life;const phase=smokePhase(s.age,s.life);updateEffect(s.mesh,s.age,phase.opacity);s.mesh.scale.setScalar(Math.max(.001,phase.scale));
                 s.mesh.rotation.y += dt * 0.4;
                 if (s.life <= 0) {
                     disposeEffect(s.mesh);
@@ -4048,6 +4060,7 @@
 
             // Navigation jobs share a small per-frame CPU budget.
             if(state.isLocked&&!state.inBuyMenu&&!state.roundEnding){botNavigation?.tick(dt);if(!currentRoomId&&state.gameMode==='tactical'&&state.hp>0&&!state.realm&&realMap.ready){const feet=yawObject.position.clone();feet.y-=2.2;if(Math.abs(realMap.getGroundHeight(yawObject.position)-feet.y)<.6)followTrail.record(feet);}}
+            if(!currentRoomId&&state.gameMode==='tactical'&&!state.spikePlanted&&realMap.ready&&performance.now()>=squadNextAt){squadNextAt=performance.now()+2200;const sites=mapDefinition.sites.map(s=>{const x=(s.minX+s.maxX)/2,z=(s.minZ+s.maxZ)/2,floor=(s.minFloor+s.maxFloor)/2;try{const p=realMap.safePoint(x,z,floor);return{x:p.x,y:p.y-2.2,z:p.z,name:s.name};}catch{return null;}}).filter(Boolean);const stand=p=>{const floor=realMap.getGroundHeight(new THREE.Vector3(p.x,p.y+2.2,p.z));return Math.abs(floor-p.y)<.5&&!checkPlayerCollision(new THREE.Vector3(p.x,floor+2.2,p.z));};for(const order of squadTactics.assignments(bots.filter(b=>b.team!==state.team||state.hp<=0),sites,{round:state.scoreAlly+state.scoreEnemy+1,canStand:stand})){const b=bots[order.index];b.squadRole=order.role;b.squadGoal=new THREE.Vector3(order.goal.x,order.goal.y,order.goal.z);}}
             // Update Bots
             if(state.spikePlanted&&!currentRoomId){
               const key=state.spikeSite+':'+spikeGroup.position.x+':'+spikeGroup.position.z;
@@ -4068,6 +4081,7 @@
                     return;
                 }
 
+                const heard=squadTactics.listen(b,performance.now());if(heard&&(!b.contact||heard.at>b.contact.at)&&!b.combatVisible)b.contact={...heard,pos:new THREE.Vector3(heard.pos.x,heard.pos.y,heard.pos.z)};
                 b.hpBg.lookAt(playerPos);
                 b.hpFill.lookAt(playerPos);b.hpFill.scale.x=Math.max(.01,b.hp/100);
 
@@ -4087,12 +4101,13 @@
                             b.orderTime=.7+Math.random()*.4;
                             const playerFeet=yawObject.position.clone().add(new THREE.Vector3(0,-2.2,0)),farFromLeader=b.group.position.distanceTo(playerFeet)>14;
                             if(b.retakeGoal)b.orderGoal=b.retakeGoal.clone();
-                            else if(b.team===state.team&&state.hp>0&&!state.realm&&(farFromLeader||!b.contact||performance.now()-b.contact.at>=4500)){
+                            else if(b.team===state.team&&state.hp>0&&!state.realm&&(farFromLeader||!b.contact||performance.now()-b.contact.at>=(b.contact.heard?1800:4500))){
                                 const point=followTrail.goal(b,playerFeet);b.orderGoal=new THREE.Vector3(point.x,point.y,point.z);
                                 if(b.group.position.distanceTo(playerFeet)<7){const angle=(b.index-5)*Math.PI/2+yawObject.rotation.y,offset=playerFeet.clone().add(new THREE.Vector3(Math.cos(angle)*2.2,0,Math.sin(angle)*2.2));offset.y=realMap.getGroundHeight(offset.clone().add(new THREE.Vector3(0,2.2,0)));if(botNavigation.step(playerFeet,offset))b.orderGoal=offset;}
                             }
-                            else if(b.contact&&performance.now()-b.contact.at<4500)b.orderGoal=b.contact.pos.clone();
+                            else if(b.contact&&performance.now()-b.contact.at<(b.contact.heard?1800:4500))b.orderGoal=b.contact.pos.clone();
                             else if(state.spikePlanted){const angle=b.index*2.3,guard=spikeGroup.position.clone().add(new THREE.Vector3(Math.cos(angle)*7,0,Math.sin(angle)*7));guard.y=realMap.getGroundHeight(guard.clone().add(new THREE.Vector3(0,2.2,0)));b.orderGoal=guard.y> -80?guard:spikeGroup.position.clone();}
+                            else if(b.squadGoal)b.orderGoal=b.squadGoal.clone();
                             else{const sites=realMap.getBotSpawns(true);const p=sites[b.index%sites.length];b.orderGoal=new THREE.Vector3(p.x,p.y,p.z);}
                         }
                         if(b.orderGoal&&!b.defusing&&(b.retakeGoal||!b.combatVisible||b.team===state.team&&!state.realm&&b.group.position.distanceTo(yawObject.position)>16))moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b)));
@@ -4105,6 +4120,7 @@
                         }
                         moved=botNavigation.move(b,b.orderGoal,dt,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b)));
                     }else moved=moveRoamingBot(b,dt,realMap,p=>checkPlayerCollision(p,0,true),(slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b)));
+                    if(b.retakeRole==='cover'&&!b.combatVisible&&b.retakeGoal&&b.group.position.distanceTo(b.retakeGoal)<2){const look=b.contact&&performance.now()-b.contact.at<4500?b.contact.pos:b.group.position.clone().multiplyScalar(2).sub(spikeGroup.position);b.group.lookAt(look.x,b.group.position.y,look.z);}
                     b.moving=moved;if(moved)b.lastSafePosition=b.group.position.clone();
                     if(moved){b.walkCycle+=dt*7;b.leftLeg.rotation.x=Math.sin(b.walkCycle)*.5;b.rightLeg.rotation.x=-Math.sin(b.walkCycle)*.5;if(b.roamDirection)b.group.rotation.y=Math.atan2(b.roamDirection.x,b.roamDirection.z);}
                     else b.leftLeg.rotation.x=b.rightLeg.rotation.x=0;
@@ -4114,8 +4130,8 @@
                 b.poseTime=(b.poseTime||0)+dt;if(b.poseTime>=.05){b.appearance?.update(b.poseTime,{moving:!!b.moving,crouching:!!b.defusing});b.poseTime=0;}
                 b.footsteps ||= new FootstepTracker();
                 const footfall=b.footsteps.update(b.group.position,{active:state.isLocked&&!state.inBuyMenu,grounded:true,quiet:false});
-                if(footfall){const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);const pan=delta.normalize().dot(right),volume=.35*(1-distance/36)**2*astraKit.audioScale(b.group.position,playerPos);sfx.playFootstep(false,volume,pan);if((slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b))<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
-                if (!detained(b,Date.now())&&state.gameMode==='tactical'&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
+                if(footfall){squadTactics.hear(b.team,b.group.position,performance.now());const delta=b.group.position.clone().sub(playerPos),distance=delta.length();if(distance<36){const right=new THREE.Vector3(1,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),yawObject.rotation.y);const pan=delta.normalize().dot(right),volume=.35*(1-distance/36)**2*astraKit.audioScale(b.group.position,playerPos);sfx.playFootstep(false,volume,pan);if((slowMultiplier(b.group.position,0)*((b.stimUntil||0)>Date.now()?BRIM.moveRate:1)*killjoyKit.movement(b)*cypherKit.movement(b))<1)playIce(sfx.ctx,'step',volume*.7,pan);}}
+                if (!detained(b,Date.now())&&(state.gameMode==='tactical'||state.activeDrill?.preaim&&state.activeDrill.shootBack)&&state.isLocked&&!state.inBuyMenu&&!state.roundEnding) {
                     b.sightTime=(b.sightTime||0)-dt;let visible=b.visibleTarget;
                     if(b.sightTime<=0){b.sightTime=.18+Math.random()*.06;
                     const targets=bots.filter(t=>t.alive&&t.team!==b.team&&sameRealm(b,t)).map(t=>({pos:t.group.position.clone().add(new THREE.Vector3(0,2,0)),bot:t}));
@@ -4131,8 +4147,8 @@
                     if(visible){visible.pos=visible.bot?visible.bot.group.position.clone().add(new THREE.Vector3(0,2,0)):visible.shade?new THREE.Vector3(state.omen.channel.destination.x,state.omen.channel.destination.y-1,state.omen.channel.destination.z):yawObject.position.clone();b.contact={pos:visible.pos.clone().add(new THREE.Vector3(0,-2,0)),at:performance.now()};
                         // Nearby teammates advance toward a shared last-seen contact.
                         for(const ally of bots)if(ally!==b&&ally.alive&&ally.team===b.team&&ally.group.position.distanceToSquared(b.group.position)<35*35)ally.contact=b.contact;
-                        b.group.lookAt(visible.pos.x,b.group.position.y,visible.pos.z);b.reactionTimer+=dt*cypherKit.fireRate(b)*((b.stimUntil||0)>Date.now()?BRIM.fireRate:1);if(b.reactionTimer>.9+Math.random()*.2){b.reactionTimer=0;if(!botCanSee(botEye,visible.pos,b)){b.visibleTarget=null;b.combatVisible=false;return;}createBulletTracer(botEye,visible.pos,b.team===state.team?0x00f5d4:0xff4655);
-                        if(visible.shade){omenKit.cancelUltimate();}else if(visible.bot){isoKit.hurtBot(visible.bot,18,b.name+':'+Date.now());visible.bot.hp=Math.max(0,visible.bot.hp);visible.bot.lastDamage=performance.now();visible.bot.hpFill.scale.x=Math.max(.01,visible.bot.hp/100);if(visible.bot.hp<=0)handleBotKilled(visible.bot,false,false,b.name);}else applyDamageToPlayer(14,b.name,'VANDAL',false);}}
+                        b.group.lookAt(visible.pos.x,b.group.position.y,visible.pos.z);b.reactionTimer+=dt*cypherKit.fireRate(b)*((b.stimUntil||0)>Date.now()?BRIM.fireRate:1);if(b.reactionTimer>(state.activeDrill?.preaim&&state.activeDrill.shootBack? .25+Math.random()*.15:.9+Math.random()*.2)){b.reactionTimer=0;if(!botCanSee(botEye,visible.pos,b)){b.visibleTarget=null;b.combatVisible=false;return;}const aim=visible.pos.clone();let hardHit=true;if(state.activeDrill?.preaim&&state.activeDrill.shootBack&&!visible.bot&&!visible.shade){const delta=aim.clone().sub(botEye),spread=Math.tan(4*Math.PI/180)*delta.length()*Math.sqrt(Math.random()),theta=Math.random()*Math.PI*2,ox=Math.cos(theta)*spread,oy=Math.sin(theta)*spread,right=new THREE.Vector3().crossVectors(delta,new THREE.Vector3(0,1,0)).normalize();aim.addScaledVector(right,ox);aim.y+=oy-.8;hardHit=Math.abs(ox)<.55&&oy>=-1.1&&oy<=1;}createBulletTracer(botEye,aim,b.team===state.team?0x00f5d4:0xff4655);
+                        if(visible.shade){omenKit.cancelUltimate();}else if(visible.bot){isoKit.hurtBot(visible.bot,18,b.name+':'+Date.now());visible.bot.hp=Math.max(0,visible.bot.hp);visible.bot.lastDamage=performance.now();visible.bot.hpFill.scale.x=Math.max(.01,visible.bot.hp/100);if(visible.bot.hp<=0)handleBotKilled(visible.bot,false,false,b.name);}else if(hardHit)applyDamageToPlayer(14,b.name,'VANDAL',false);}}
                     else{b.reactionTimer=0;if(b.roamDirection)b.group.rotation.y=Math.atan2(b.roamDirection.x,b.roamDirection.z);}
                 }
             });
@@ -4194,11 +4210,12 @@
             if (state.hp <= 0) {
                 state.hp = 0;neonDeath(state);state.fadeTether=null;state.fadeTrailUntil=state.skyeConcussUntil=state.skyeFlashUntil=0;razeDeath(state);state.astraConcussUntil=0;state.astraPull=null;stopViper(state);cypherDeath(state);killjoyDeath(state);sovaDeath(state);reynaDeath(state);state.stimUntil=0;state.nearsightUntil=state.deafenedUntil=0;
                 state.deaths++;
+                if(state.activeDrill?.preaim){state.training.finished=true;state.roundEnding=true;document.getElementById('trainer-result-title').textContent=state.activeDrill.label+' · 挑戰失敗';document.getElementById('trainer-result-detail').textContent=`${state.training.kills} 擊殺 · ${state.training.elapsed.toFixed(1)} 秒`;document.getElementById('trainer-result').classList.remove('hidden');showBuyMenu();safeExitPointerLock();}
                 updateHealthHUD();
                 updateAliveHUD();
                 pushMyNetworkState(true);
 
-                isoKit.beforePlayerDeath();cloveKit.death();ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);resetMovementInput();setScope(false);showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();
+                isoKit.beforePlayerDeath();cloveKit.death();ensureOwnCorpse();state.bladeStormActive=false;state.bladeKnives=0;clearTimeout(bladeEmptyTimer);resetMovementInput();setScope(false);if(!state.activeDrill?.preaim){showCenterBanner('遭到擊斃',`${attackerName} · 等待隊友與下一回合`,1800);checkSoloElimination();}
             }
         }
 
@@ -4230,9 +4247,9 @@
             if(!state.isLocked||state.inBuyMenu){botDefuse.reset(state.defuseCheckpoint);for(const b of bots)b.defusing=false;cancelSpikeAction();if(state.spikePlanted)advanceSpikeFuse(dt);return;}
 
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right||Math.hypot(playerVelocity.x,playerVelocity.z)>.25||state.astraPull?.until>astraKit.now()||state.razeImpulse?.until>performance.now();
-            const canPlant = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && spikeGrounded(yawObject.position,playerVelocity.y,[realMap.collisionMesh,...temporaryWalls]) && !state.spikePlanted && state.team==='attack' && !moving;
+            const canPlant = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && getPlantSite()!==null && spikeGrounded(yawObject.position,playerVelocity.y,[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])]) && !state.spikePlanted && state.team==='attack' && !moving;
             const canDefuse = state.hp>0 && !fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked() && !cypherKit.blocked() && !killjoyKit.detained() && state.spikePlanted && state.team==='defend' && !moving && yawObject.position.distanceTo(spikeGroup.position)<SPIKE_RULES.defuseRadius;
-            const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical'||state.spikePlanted,planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls],false).length;}});
+            const aiDefuse=botDefuse.update(dt,{active:state.gameMode==='tactical'||state.spikePlanted,planted:state.spikePlanted,checkpoint:state.defuseCheckpoint,actors:bots.filter(b=>!detained(b,Date.now())),spike:spikeGroup.position,timeLeft:state.spikeTimer,playerDefusing:canDefuse&&moveState.holdPlant,canReach:b=>{const eye=b.group.position.clone().add(new THREE.Vector3(0,1.3,0)),target=spikeGroup.position.clone().add(new THREE.Vector3(0,.3,0)),delta=target.sub(eye);return !new THREE.Raycaster(eye,delta.clone().normalize(),0,Math.max(0,delta.length()-.2)).intersectObjects([realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])],false).length;}});
             for(const b of bots)b.defusing=b.alive&&b.index===aiDefuse.index;state.defuseCheckpoint=Math.max(state.defuseCheckpoint,aiDefuse.checkpoint);
             if(aiDefuse.complete){const defuser=bots.find(b=>b.index===aiDefuse.index);state.spikePlanted=false;spikeGroup.visible=false;cancelSpikeAction();document.getElementById('spike-hud-badge').classList.add('hidden');endRound(state.team==='defend',`${defuser?.name||'防守方'} 成功拆除 SPIKE`);return;}
             if(aiDefuse.index!==null){cancelSpikeAction();if(bots.find(b=>b.index===aiDefuse.index)?.team===state.team){document.getElementById('spike-progress-box').classList.remove('hidden');document.getElementById('spike-action-label').textContent='隊友正在拆除 SPIKE · 7 秒';document.getElementById('spike-progress-bar').style.width=`${aiDefuse.progress*100}%`;}advanceSpikeFuse(dt);return;}
@@ -4301,7 +4318,7 @@
             badge.classList.toggle('hidden',!['carried','dropped','planted'].includes(s.phase));setHudText('spike-hud-badge',s.phase==='planted'?'SPIKE 已安裝':s.phase==='dropped'?'SPIKE 已掉落':s.carrierUid===currentUser?.uid?'攜帶 SPIKE · [4] 裝備 · [G] 丟下':state.team==='attack'?'SPIKE · '+(remotePlayers.get(s.carrierUid)?.data.name||'隊友')+' 攜帶中':'SPIKE 未安裝');
             const active=live&&state.hp>0&&state.isLocked&&!state.inBuyMenu;
             const moving=moveState.forward||moveState.backward||moveState.left||moveState.right||Math.hypot(playerVelocity.x,playerVelocity.z)>.25||state.astraPull?.until>astraKit.now()||state.razeImpulse?.until>performance.now();
-            const plant=active&&s.phase==='carried'&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&spikeGrounded(yawObject.position,playerVelocity.y,[realMap.collisionMesh,...temporaryWalls])&&!moving;
+            const plant=active&&s.phase==='carried'&&state.team==='attack'&&s.carrierUid===currentUser?.uid&&getPlantSite()!==null&&spikeGrounded(yawObject.position,playerVelocity.y,[realMap.collisionMesh,...temporaryWalls,...(marketDoor.enabled?[marketDoor.panel]:[])])&&!moving;
             const defuse=active&&state.team==='defend'&&s.phase==='planted'&&networkSpikeDistance()<3.3&&!moving;
             const pickup=state.hp>0&&state.isLocked&&!state.inBuyMenu&&state.team==='attack'&&s.phase==='dropped'&&networkSpikeDistance()<3.3;
             prompt.classList.toggle('hidden',!(plant||defuse||pickup));setHudText('site-prompt',pickup?'[F] 撿取 SPIKE':defuse?'按住 [4] 或 [F] 拆除 Spike · 半程保存':'按住 [4] 或 [F] 安裝 Spike · 4 秒');
@@ -4354,7 +4371,7 @@
             if(spikeCarryRoot.visible)gunGroup.visible=false;
         }
 
-        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(scene.fog!==fog)scene.background=scene.fog.color;renderer.render(scene,camera);scene.fog=fog;scene.background=background;}
+        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const doorVisible=marketDoor.enabled?marketDoor.root.visible:false;if(marketDoor.enabled)marketDoor.root.visible=!isolated;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(!isolated)scene.fog=smokeVision.view(scene.fog,camera,smokeSpheres);if(scene.fog!==fog)scene.background=scene.fog.color;renderer.render(scene,camera);scene.fog=fog;scene.background=background;if(marketDoor.enabled)marketDoor.root.visible=doorVisible;}
         function animate() {
             requestAnimationFrame(animate);
             spectatorView.restoreHidden();
@@ -4449,7 +4466,7 @@
             }
 
             const footfall=playerFootsteps.update(yawObject.position,{active:state.isLocked&&!state.inBuyMenu&&state.hp>0,grounded:canJump,quiet:moveState.walk||state.crouchAmount>.5,verticalSpeed:playerVelocity.y});
-            if(footfall){sfx.playFootstep(footfall==='land',footfall==='land'?.5:.38);if(slowMultiplier(yawObject.position)<1)playIce(sfx.ctx,'step',.28);}
+            if(footfall){squadTactics.hear(state.team,{x:yawObject.position.x,y:yawObject.position.y-2.2,z:yawObject.position.z},performance.now());sfx.playFootstep(footfall==='land',footfall==='land'?.5:.38);if(slowMultiplier(yawObject.position)<1)playIce(sfx.ctx,'step',.28);}
 
             // Dynamic Crosshair Expansion
             const gap = (state.isScoped ? 3 : state.crouchAmount > 0.5 ? 4 : 7)
@@ -4494,6 +4511,7 @@
             installTrainingPresets({state,inRoom:()=>!!currentRoomId,notice:abilityNotice,reset:resetRound,mode:window.setGameMode,duration:window.setTrainerDuration,weapon:equipWeaponSlot});
             animate();
             await loadActualMap();
+            await installSunsetDrills({state,map:realMap,inRoom:()=>!!currentRoomId,notice:abilityNotice,reset:resetRound,mode:window.setGameMode,duration:window.setTrainerDuration,weapon:equipWeaponSlot});
             const room=new URLSearchParams(location.search).get('room');
             if(realMap.ready&&/^(?:[A-Z2-9]{6}|PUBLIC)$/.test(room||'')){openNetworkMenu();await connectToMultiplayerRoom(room);}
         };

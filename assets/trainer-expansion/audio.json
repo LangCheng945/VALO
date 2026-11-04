@@ -1,0 +1,80 @@
+{
+  "araxys-operator": {
+    "fire": "araxys-operator/fire.wav",
+    "kill1": "araxys-operator/kill1.mp3",
+    "kill2": "araxys-operator/kill2.mp3",
+    "kill3": "araxys-operator/kill3.mp3",
+    "kill4": "araxys-operator/kill4.mp3",
+    "kill5": "araxys-operator/kill5.mp3"
+  },
+  "blackmarket-butterfly": {
+    "recovery": "blackmarket-butterfly/attack1-recovery.wav",
+    "attack": "blackmarket-butterfly/attack1.wav",
+    "heavy": "blackmarket-butterfly/attack2-rightclick.wav",
+    "equip": "blackmarket-butterfly/equip.wav",
+    "inspect": "blackmarket-butterfly/inspect.wav"
+  },
+  "blastx-phantom": {
+    "fire": "blastx-phantom/fire.wav",
+    "kill1": "blastx-phantom/kill1.mp3",
+    "kill2": "blastx-phantom/kill2.mp3",
+    "kill3": "blastx-phantom/kill3.mp3",
+    "kill4": "blastx-phantom/kill4.mp3",
+    "kill5": "blastx-phantom/kill5.mp3"
+  },
+  "gaia-vandal-orange": {
+    "fire": "gaia-vandal-orange/fire.wav",
+    "kill1": "gaia-vandal-orange/kill1.mp3",
+    "kill2": "gaia-vandal-orange/kill2.mp3",
+    "kill3": "gaia-vandal-orange/kill3.mp3",
+    "kill4": "gaia-vandal-orange/kill4.mp3",
+    "kill5": "gaia-vandal-orange/kill5.mp3"
+  },
+  "prime-axe": {
+    "attack": "prime-axe/attack1.wav",
+    "attack2": "prime-axe/attack2.wav",
+    "attack3": "prime-axe/attack3.wav",
+    "equip": "prime-axe/equip.wav",
+    "heavy": "prime-axe/attack3.wav"
+  },
+  "prime-guardian": {
+    "fire": "prime-guardian/fire.wav",
+    "kill1": "prime-guardian/kill1.mp3",
+    "kill2": "prime-guardian/kill2.mp3",
+    "kill3": "prime-guardian/kill3.mp3",
+    "kill4": "prime-guardian/kill4.mp3",
+    "kill5": "prime-guardian/kill5.mp3",
+    "reload": "prime-guardian/reload.wav"
+  },
+  "rgx-vandal-yellow": {
+    "fire": "rgx-vandal-yellow/fire.wav",
+    "kill1": "rgx-vandal-yellow/kill1.wav",
+    "kill2": "rgx-vandal-yellow/kill2.wav",
+    "kill3": "rgx-vandal-yellow/kill3.wav",
+    "kill4": "rgx-vandal-yellow/kill4.wav",
+    "kill5": "rgx-vandal-yellow/kill5.wav"
+  },
+  "rogue-operator": {
+    "fire": "rogue-operator/fire.wav",
+    "kill1": "rogue-operator/kill1.mp3",
+    "kill2": "rogue-operator/kill2.mp3",
+    "kill3": "rogue-operator/kill3.mp3",
+    "kill4": "rogue-operator/kill4.mp3",
+    "kill5": "rogue-operator/kill5.mp3"
+  },
+  "silkleaf-fan": {
+    "attack": "silkleaf-fan/attack1.wav",
+    "attack2": "silkleaf-fan/attack2.wav",
+    "equip": "silkleaf-fan/equip.wav",
+    "inspect": "silkleaf-fan/inspect.wav",
+    "heavy": "silkleaf-fan/attack2.wav"
+  },
+  "singularity-sheriff": {
+    "fire": "singularity-sheriff/fire.wav",
+    "kill1": "singularity-sheriff/kill1.mp3",
+    "kill2": "singularity-sheriff/kill2.mp3",
+    "kill3": "singularity-sheriff/kill3.mp3",
+    "kill4": "singularity-sheriff/kill4.mp3",
+    "kill5": "singularity-sheriff/kill5.mp3"
+  }
+}

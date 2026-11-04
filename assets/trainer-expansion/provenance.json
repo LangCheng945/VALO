@@ -1,0 +1,383 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "files": [
+    {
+      "path": "app/mods/media/araxys-operator/fire.wav",
+      "local": "audio/araxys-operator/fire.wav",
+      "bytes": 426062,
+      "sha256": "9b4dfc78279ab03ececb336bbc295d251e35b125363717d82010dac150023a4f"
+    },
+    {
+      "path": "app/mods/media/araxys-operator/kill1.mp3",
+      "local": "audio/araxys-operator/kill1.mp3",
+      "bytes": 65325,
+      "sha256": "141304188f1c64f68cf839bf075893bf3142db41484931c017fe4b347782aa5c"
+    },
+    {
+      "path": "app/mods/media/araxys-operator/kill2.mp3",
+      "local": "audio/araxys-operator/kill2.mp3",
+      "bytes": 63405,
+      "sha256": "80e903714c2c21b923fbc2504d2e897d2bdeb98b34c7f5dab72a4b205345217a"
+    },
+    {
+      "path": "app/mods/media/araxys-operator/kill3.mp3",
+      "local": "audio/araxys-operator/kill3.mp3",
+      "bytes": 54765,
+      "sha256": "9feeec397294f841b81465f3d4d143b7cc65c58df21c33563ead8f606ced9370"
+    },
+    {
+      "path": "app/mods/media/araxys-operator/kill4.mp3",
+      "local": "audio/araxys-operator/kill4.mp3",
+      "bytes": 62445,
+      "sha256": "9b36fced73c685b296cbf4b9ed980b48b3dbd6b92374c0c6378cc08f2f346c8c"
+    },
+    {
+      "path": "app/mods/media/araxys-operator/kill5.mp3",
+      "local": "audio/araxys-operator/kill5.mp3",
+      "bytes": 172845,
+      "sha256": "5fbfe3d3748ac8ede528a285d1abe937471d7b79efc4bb0c0de57876c1622140"
+    },
+    {
+      "path": "app/mods/media/blackmarket-butterfly/attack1-recovery.wav",
+      "local": "audio/blackmarket-butterfly/attack1-recovery.wav",
+      "bytes": 213070,
+      "sha256": "1bb9fd6e4d35ef990611217a6b37e01159d73527f42246cef451bdb1e125bcd9"
+    },
+    {
+      "path": "app/mods/media/blackmarket-butterfly/attack1.wav",
+      "local": "audio/blackmarket-butterfly/attack1.wav",
+      "bytes": 102478,
+      "sha256": "fd21b80e1b98dc22a26380f3ef57060b78bf194e79d6c6f9af0ba252b5072394"
+    },
+    {
+      "path": "app/mods/media/blackmarket-butterfly/attack2-rightclick.wav",
+      "local": "audio/blackmarket-butterfly/attack2-rightclick.wav",
+      "bytes": 65614,
+      "sha256": "6f3e491e55ba53e888a040a5fa8da2ddf54132d75b9b6cb4eaf156429079fdb4"
+    },
+    {
+      "path": "app/mods/media/blackmarket-butterfly/equip.wav",
+      "local": "audio/blackmarket-butterfly/equip.wav",
+      "bytes": 249934,
+      "sha256": "5a405c76693771589828b9b7d8ecb2654e7ceb230ebbb0a9872817194f1d29ea"
+    },
+    {
+      "path": "app/mods/media/blackmarket-butterfly/inspect.wav",
+      "local": "audio/blackmarket-butterfly/inspect.wav",
+      "bytes": 983118,
+      "sha256": "8e25ccc280415ea24a126d39e44d37be4a3d9d9f7daa7e84e3b0e6a7d1ef4d06"
+    },
+    {
+      "path": "app/mods/media/blastx-phantom/fire.wav",
+      "local": "audio/blastx-phantom/fire.wav",
+      "bytes": 131150,
+      "sha256": "48b259857fe7959681e5d17428d6691533bfcaf820400e708e07de64251bcfc9"
+    },
+    {
+      "path": "app/mods/media/blastx-phantom/kill1.mp3",
+      "local": "audio/blastx-phantom/kill1.mp3",
+      "bytes": 62445,
+      "sha256": "11496d3edbdcc47904c5ae9a7564e7375e46485f6754cbb563ff44e5fdaeb219"
+    },
+    {
+      "path": "app/mods/media/blastx-phantom/kill2.mp3",
+      "local": "audio/blastx-phantom/kill2.mp3",
+      "bytes": 69165,
+      "sha256": "dfc7fb2f5721e788f426b8e949a0db06b563def2a4eaca3cc672d439769a3560"
+    },
+    {
+      "path": "app/mods/media/blastx-phantom/kill3.mp3",
+      "local": "audio/blastx-phantom/kill3.mp3",
+      "bytes": 66285,
+      "sha256": "41737b83dd948a9981de14f22cb5b9b06cab6730e29ee175974874a894efa673"
+    },
+    {
+      "path": "app/mods/media/blastx-phantom/kill4.mp3",
+      "local": "audio/blastx-phantom/kill4.mp3",
+      "bytes": 66285,
+      "sha256": "0125cb24fda1c0b573e230269f674b27092237e25347ba7a59bebb5cd4df84e0"
+    },
+    {
+      "path": "app/mods/media/blastx-phantom/kill5.mp3",
+      "local": "audio/blastx-phantom/kill5.mp3",
+      "bytes": 171885,
+      "sha256": "8e2073f2d833d01d7fe6ea5c0cdff44a3cb288ef9bd5d567f2c545330d90fbdc"
+    },
+    {
+      "path": "app/mods/media/gaia-vandal-orange/fire.wav",
+      "local": "audio/gaia-vandal-orange/fire.wav",
+      "bytes": 237646,
+      "sha256": "713ba3f67921cdd5640897a80feb7ba7757af68eeead3c739c6f6405c7b6265b"
+    },
+    {
+      "path": "app/mods/media/gaia-vandal-orange/kill1.mp3",
+      "local": "audio/gaia-vandal-orange/kill1.mp3",
+      "bytes": 165165,
+      "sha256": "0f6cff1b47038eeb09e5f3f8e31bae824d43ec73fe0cab621feaf56a90c29382"
+    },
+    {
+      "path": "app/mods/media/gaia-vandal-orange/kill2.mp3",
+      "local": "audio/gaia-vandal-orange/kill2.mp3",
+      "bytes": 165165,
+      "sha256": "fac5196948769de57683eb520a7a3f19bada3918a1e6e81f0a350561ba4608a3"
+    },
+    {
+      "path": "app/mods/media/gaia-vandal-orange/kill3.mp3",
+      "local": "audio/gaia-vandal-orange/kill3.mp3",
+      "bytes": 165165,
+      "sha256": "c819c24679904eb3a80a3a9cc4df45f61f0b2f8f69bccd4f73bfb107ce74950e"
+    },
+    {
+      "path": "app/mods/media/gaia-vandal-orange/kill4.mp3",
+      "local": "audio/gaia-vandal-orange/kill4.mp3",
+      "bytes": 165165,
+      "sha256": "d9f978fc0f710bc5a91f8b86b16b81d14b1fb1987ea9b6b0d0702b7b66b9a018"
+    },
+    {
+      "path": "app/mods/media/gaia-vandal-orange/kill5.mp3",
+      "local": "audio/gaia-vandal-orange/kill5.mp3",
+      "bytes": 304365,
+      "sha256": "2b7e7ba54b7b6102ce0912f1228f9e6da9e3f24d0f29d93ffbb09ea8fe59063c"
+    },
+    {
+      "path": "app/mods/media/prime-axe/attack1.wav",
+      "local": "audio/prime-axe/attack1.wav",
+      "bytes": 90190,
+      "sha256": "7d51e4d616b195763dd385616acbcb5f3e8264f483bafd595d32d91630a2cce1"
+    },
+    {
+      "path": "app/mods/media/prime-axe/attack2.wav",
+      "local": "audio/prime-axe/attack2.wav",
+      "bytes": 147534,
+      "sha256": "ec92b719bae6d0e3e51299883cbad984ed9094815bd8d7ccf0ca2ef74624755d"
+    },
+    {
+      "path": "app/mods/media/prime-axe/attack3.wav",
+      "local": "audio/prime-axe/attack3.wav",
+      "bytes": 90190,
+      "sha256": "7d51e4d616b195763dd385616acbcb5f3e8264f483bafd595d32d91630a2cce1"
+    },
+    {
+      "path": "app/mods/media/prime-axe/equip.wav",
+      "local": "audio/prime-axe/equip.wav",
+      "bytes": 200782,
+      "sha256": "8875d6534f9f56647332daa3072ce44ed081bb3236fb51f1403ecc9cf9efcbbd"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/fire.wav",
+      "local": "audio/prime-guardian/fire.wav",
+      "bytes": 241742,
+      "sha256": "65db6fa8839d1d39ce775ac957485553c6fbed44918f18f1e408e7c4f18800d6"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/kill1.mp3",
+      "local": "audio/prime-guardian/kill1.mp3",
+      "bytes": 82605,
+      "sha256": "3e1f54702ab6b6b326f9aa51f05528affc154fd0486259ab9f3773d3d3c844db"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/kill2.mp3",
+      "local": "audio/prime-guardian/kill2.mp3",
+      "bytes": 90285,
+      "sha256": "ba3fb0cea9075cc410eae3a7bdb2edf4644f3a5f7ed712854d24236e9e23e586"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/kill3.mp3",
+      "local": "audio/prime-guardian/kill3.mp3",
+      "bytes": 90285,
+      "sha256": "f6be7feb9964ceaebb1df41aa121cd4d4048bb29216938e3f1401bd156048dbb"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/kill4.mp3",
+      "local": "audio/prime-guardian/kill4.mp3",
+      "bytes": 96045,
+      "sha256": "9ba5c9db9ef2944582abfca49bd7790cb45ffd9bb6e2742dd26e65750fccf4f9"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/kill5.mp3",
+      "local": "audio/prime-guardian/kill5.mp3",
+      "bytes": 222765,
+      "sha256": "03d5275e6f9ba329032eef4851949a4c18e1a25567a9846e27066efb81121c6b"
+    },
+    {
+      "path": "app/mods/media/prime-guardian/reload.wav",
+      "local": "audio/prime-guardian/reload.wav",
+      "bytes": 430158,
+      "sha256": "c9d4f35cc8c34b2eb1c6737052d42d31a6a49769d557e781f5d37b348c2be324"
+    },
+    {
+      "path": "app/mods/media/rgx-vandal-yellow/fire.wav",
+      "local": "audio/rgx-vandal-yellow/fire.wav",
+      "bytes": 155726,
+      "sha256": "b2aa08c772d636151fc06b2471de6606a20c74077a39562671efc8549fdff961"
+    },
+    {
+      "path": "app/mods/media/rgx-vandal-yellow/kill1.wav",
+      "local": "audio/rgx-vandal-yellow/kill1.wav",
+      "bytes": 249934,
+      "sha256": "1268a9a87bd3e8cbb597002d7cded24fc5f57b4c9eb7394d507377caa5c78fef"
+    },
+    {
+      "path": "app/mods/media/rgx-vandal-yellow/kill2.wav",
+      "local": "audio/rgx-vandal-yellow/kill2.wav",
+      "bytes": 278606,
+      "sha256": "c033bb1bfc4b1dfe8b67e812d5225829746c261bbe6917e3eb03d86956b456b6"
+    },
+    {
+      "path": "app/mods/media/rgx-vandal-yellow/kill3.wav",
+      "local": "audio/rgx-vandal-yellow/kill3.wav",
+      "bytes": 266318,
+      "sha256": "c2168412bb2427fae8637127d94ed05821c84a8f9565f5ed87ef7c4925b7e5ad"
+    },
+    {
+      "path": "app/mods/media/rgx-vandal-yellow/kill4.wav",
+      "local": "audio/rgx-vandal-yellow/kill4.wav",
+      "bytes": 249934,
+      "sha256": "4db2cde435ff5f14ebce78a442455e6b5843f0662fc6706f1bd51980ee4eba56"
+    },
+    {
+      "path": "app/mods/media/rgx-vandal-yellow/kill5.wav",
+      "local": "audio/rgx-vandal-yellow/kill5.wav",
+      "bytes": 536654,
+      "sha256": "d488cc6f9eb53b46e58528331feae7e2300e82a2d22d5f446cf3c3b974cd2796"
+    },
+    {
+      "path": "app/mods/media/rogue-operator/fire.wav",
+      "local": "audio/rogue-operator/fire.wav",
+      "bytes": 532558,
+      "sha256": "4728aed4144a9e399fbce824f910e28f26c3ea62d4047c85ca738842d395eb6a"
+    },
+    {
+      "path": "app/mods/media/rogue-operator/kill1.mp3",
+      "local": "audio/rogue-operator/kill1.mp3",
+      "bytes": 124845,
+      "sha256": "447f3718749ae53e343341e4d9427c177201e9df7efd997c5fdfe71cb871250d"
+    },
+    {
+      "path": "app/mods/media/rogue-operator/kill2.mp3",
+      "local": "audio/rogue-operator/kill2.mp3",
+      "bytes": 125805,
+      "sha256": "04abc7972d65a796ea9ffea0c80e69560b04e9b04eebc4e2a7c71ce989fbba6e"
+    },
+    {
+      "path": "app/mods/media/rogue-operator/kill3.mp3",
+      "local": "audio/rogue-operator/kill3.mp3",
+      "bytes": 125805,
+      "sha256": "f5f0d700a777a7a240f39d6662446760c375a70a24f229450108cbe88e9e3b11"
+    },
+    {
+      "path": "app/mods/media/rogue-operator/kill4.mp3",
+      "local": "audio/rogue-operator/kill4.mp3",
+      "bytes": 124845,
+      "sha256": "b3209f63929ce0f11678a2cce174c1587746ffa7fc5cffc46cd7ef9caa1a0df2"
+    },
+    {
+      "path": "app/mods/media/rogue-operator/kill5.mp3",
+      "local": "audio/rogue-operator/kill5.mp3",
+      "bytes": 248685,
+      "sha256": "0ad39d26bcb5ad72a1c03b1ae14b01d0bdc7504a1e435e0ddf3365155a4ee043"
+    },
+    {
+      "path": "app/mods/media/silkleaf-fan/attack1.wav",
+      "local": "audio/silkleaf-fan/attack1.wav",
+      "bytes": 102478,
+      "sha256": "252abad5fbd411e565d5e57d926f4e63c51631c3c846832c51e1de3045c4a310"
+    },
+    {
+      "path": "app/mods/media/silkleaf-fan/attack2.wav",
+      "local": "audio/silkleaf-fan/attack2.wav",
+      "bytes": 102478,
+      "sha256": "7c1905e17f11ba01470c986a6a7f43844fdde3761ac77f2a88c7f71890f5665e"
+    },
+    {
+      "path": "app/mods/media/silkleaf-fan/equip.wav",
+      "local": "audio/silkleaf-fan/equip.wav",
+      "bytes": 184398,
+      "sha256": "38edebdf40c5c6a4f229c1efa68b3d6f3353aebb9391beeb36ff651592654daa"
+    },
+    {
+      "path": "app/mods/media/silkleaf-fan/inspect.wav",
+      "local": "audio/silkleaf-fan/inspect.wav",
+      "bytes": 733262,
+      "sha256": "c95594f9297ea2bb550fcc4c41aaeed53d0e865474021a02075d3896e15e82a3"
+    },
+    {
+      "path": "app/mods/media/singularity-sheriff/fire.wav",
+      "local": "audio/singularity-sheriff/fire.wav",
+      "bytes": 139342,
+      "sha256": "21874e75532880c95a21f4454a5473f3ad86c9cd97d45215c8da99851a1cc8eb"
+    },
+    {
+      "path": "app/mods/media/singularity-sheriff/kill1.mp3",
+      "local": "audio/singularity-sheriff/kill1.mp3",
+      "bytes": 125805,
+      "sha256": "8678fabb0fc68e26b8fb9e2db2a487beccc176e29ee7be8e5a2f8301b957f42e"
+    },
+    {
+      "path": "app/mods/media/singularity-sheriff/kill2.mp3",
+      "local": "audio/singularity-sheriff/kill2.mp3",
+      "bytes": 127725,
+      "sha256": "652974f48e91eb6cf014fc303a8ff4b266c3d7bdb7e7aa7074603643f7c3954a"
+    },
+    {
+      "path": "app/mods/media/singularity-sheriff/kill3.mp3",
+      "local": "audio/singularity-sheriff/kill3.mp3",
+      "bytes": 125805,
+      "sha256": "2e9419860a918b7d6a90bda21966d0a5ceb93c21e9c7783056f9ab767c63f83b"
+    },
+    {
+      "path": "app/mods/media/singularity-sheriff/kill4.mp3",
+      "local": "audio/singularity-sheriff/kill4.mp3",
+      "bytes": 125805,
+      "sha256": "91fe12f39f1cbb5ca3f41faf41e1300454ed330dae9ad6d0219a1d7746bbf582"
+    },
+    {
+      "path": "app/mods/media/singularity-sheriff/kill5.mp3",
+      "local": "audio/singularity-sheriff/kill5.mp3",
+      "bytes": 252525,
+      "sha256": "ce43d4214d21af7786b3c7589e0cd00df76b31adc2b1b3e3b795ed945cd51919"
+    },
+    {
+      "path": "scenarios/sunset-a-short-easy-preaim.json",
+      "local": "scenarios/sunset-a-short-easy-preaim.json",
+      "bytes": 8047,
+      "sha256": "de2d87ab9721f27c60628c3e50c7482465c7310eb3c7e78fe67f247fa5f72568"
+    },
+    {
+      "path": "scenarios/sunset-a-short-hard-preaim.json",
+      "local": "scenarios/sunset-a-short-hard-preaim.json",
+      "bytes": 8459,
+      "sha256": "92ed25c65393406f28f0258e94a6d0cc037579d7a582dd1047ab46cf4f69ecb8"
+    },
+    {
+      "path": "scenarios/sunset-a-tube-easy-preaim.json",
+      "local": "scenarios/sunset-a-tube-easy-preaim.json",
+      "bytes": 8618,
+      "sha256": "ba7809810577438722bd8740ff3465eaba63affd2c294051f77b1ec6debe9f7c"
+    },
+    {
+      "path": "scenarios/sunset-a-tube-hard-preaim.json",
+      "local": "scenarios/sunset-a-tube-hard-preaim.json",
+      "bytes": 9009,
+      "sha256": "7a4af9e9ee2fadfe7981148e25650aeca3a3b01b41f78031227fa6de4ad2825f"
+    },
+    {
+      "path": "scenarios/sunset-b-main-easy-preaim.json",
+      "local": "scenarios/sunset-b-main-easy-preaim.json",
+      "bytes": 8151,
+      "sha256": "6a02683c2d7105d83fa86338c58e10dfddc7c834066d904ca7453927dc1a4a57"
+    },
+    {
+      "path": "scenarios/sunset-b-main-hard-preaim.json",
+      "local": "scenarios/sunset-b-main-hard-preaim.json",
+      "bytes": 8542,
+      "sha256": "60edceab1a065537fce931312d38770d9bc51be290df594195b3e09b46798335"
+    }
+  ],
+  "processing": "Source audio and scenario bytes retained; source spawner pools/player poses, 90-second duration, target counts and easy/hard shooter distinction normalized to local training. Source actor looks, area-spawner sampling and temporary workshop boundary blocks are not reproduced.",
+  "generatedFiles": {
+    "audio.json": "1cc9dbfe4aaea3ea98cfed75d7b028d570feaa9ca23657e971a3e6990aa5dc09",
+    "sunset-drills.json": "bdf5c62d51f2cf80c2cd3c3fc997ed41dfc98813e57eb3332556b1193637ced3"
+  }
+}

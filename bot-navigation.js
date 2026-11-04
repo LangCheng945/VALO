@@ -9,7 +9,7 @@ class Heap{
  pop(){const a=this.a,r=a[0],v=a.pop();if(a.length){let i=0;while(i*2+1<a.length){let c=i*2+1;if(c+1<a.length&&a[c+1].f<a[c].f)c++;if(a[c].f>=v.f)break;a[i]=a[c];i=c;}a[i]=v;}return r;}
 }
 export class BotNavigation{
- constructor(map){this.map=map;this.cells=new Map();this.jobs=new Map();this.clock=0;}
+ constructor(map){this.map=map;this.epoch=map.navigationEpoch;this.cells=new Map();this.jobs=new Map();this.clock=0;}
  reset(){this.jobs.clear();}
  node(ix,iz,y){
   const key=ix+','+iz;
@@ -46,6 +46,7 @@ export class BotNavigation{
   bot.navPath=path;bot.navGoal=job.goal;this.jobs.delete(bot);
  }
  tick(dt){
+  if(this.epoch!==this.map.navigationEpoch){this.epoch=this.map.navigationEpoch;this.cells.clear();this.jobs.clear();}
   this.clock+=dt;const until=performance.now()+2.5;let budget=80;
   while(budget-->0&&this.jobs.size&&performance.now()<until){
    const [bot,j]=this.jobs.entries().next().value;this.jobs.delete(bot);
