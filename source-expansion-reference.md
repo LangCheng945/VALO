@@ -8,7 +8,9 @@ Pinned source: [unkwsr/open-aim at 807f557](https://github.com/unkwsr/open-aim/t
 - Sunset receives the pinned irradiance/SH atlas and source directional light. Instance UV transforms are retained without splitting every object into a draw call. The baked shader replaces generic hemisphere GI for mapped geometry; world and first-person render passes remain separate.
 - Split/bonsai, Lotus/jam, Bind/duality and Corrode/rook source scenes, collision, minimaps, covers and available ropes are installed. All nine maps appear in selection, friend-host transfers, room creation and public match rotation. Public match rules remain first to 13 with a two-round overtime lead.
 
-Plant polygons follow the source minimap's gold footprints, with actual source floor bands. Callout labels are not necessarily inside the plant zone. Spawn heights and tactical anchors were sampled against the actual collision BVH. Bind's uneven spawn surface uses a final ground snap, with matching server coordinates. Source scene geometry alone does not implement Bind teleporters or Lotus rotating-door gameplay.
+Plant polygons follow the source minimap's gold footprints, with actual source floor bands. Callout labels are not necessarily inside the plant zone. Spawn heights and tactical anchors were sampled against the actual collision BVH. Bind's uneven spawn surface uses a final ground snap, with matching server coordinates. The four new maps use double-sided ground sampling because exported collision faces can have reversed winding. Spawn/bot/site anchors are also checked in actual rendered frames: a collision-only check can accept a hidden floor beneath the scene. Split uses the visible upper street/B-site floors; Lotus B uses its visible floor around source height 2.03; Bind starts at the verified playable A-lobby position. Existing five maps keep their original ground selection.
+
+Source scene geometry alone does not implement Bind teleporters or Lotus rotating-door gameplay.
 
 Asset hashes/source details live in the corresponding provenance JSON files. The upstream repository's code license does not independently license Riot's game assets.
 

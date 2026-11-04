@@ -1,6 +1,6 @@
 import {loadMapLighting,instanceLightmap,lightmapBatch} from './map-lighting.js?v=expansion2';
-import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=expansion2';
-export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=expansion2';
+import {MAP_SITES,MAP_SCALE,spikeSite} from './multiplayer/map-sites.mjs?v=expansion3';
+export {MAP_SCALE} from './multiplayer/map-sites.mjs?v=expansion3';
 import {KTX2Loader} from './vendor/three/loaders/KTX2Loader.js';
 
 const T=globalThis.THREE;
@@ -30,10 +30,10 @@ export const MAPS=Object.freeze({
         training:[[28.4,13,0],[22.6,2,1],[38,-18,1],[-56.5,20,0],[-34,2,0]],
         tactical:[[38,-18,1],[-54,-15,3],[-40,-6,2],[28,-23,3],[-12,6,0]],
         bakedLighting:true,sites:MAP_SITES.sunset},
-    split:{...{"id":"split","name":"Split","title":"\u96d9\u5854\u8ff7\u57ce","bytes":13395780,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[0.6,-19.02,-1.0,1.57],"defend":[-89.65,-21.42,1.0,-1.57]},"training":[[-78.58,-73.45,0.001047],[-24.58,-68.14,-1.0],[-44.93,-62.8,2.000577],[-62.58,-54.35,0.0],[-45.9,-43.3,2.0]],"tactical":[[-64.898,-77.123,0.001047],[-66.264,17.198,0.0],[-78.58,-73.45,0.001047],[-24.58,-68.14,-1.0],[-44.93,-62.8,2.000577]]},sites:MAP_SITES.split},
-    lotus:{...{"id":"lotus","name":"Lotus","title":"\u84ee\u83ef\u53e4\u57ce","bytes":9957832,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[7.77,-14.01,2.9975,1.57],"defend":[15.848629,-95.738629,4.0,-1.57]},"training":[[50.46,-91.8,2.708233],[60.93,-95.16,3.000424],[55.004315,-76.794315,2.998622],[55.57,-85.17,2.020471],[55.57,-61.5,3.000421]],"tactical":[[59.102,-83.009,3.000424],[4.122,-69.397,-1.97],[-46.198,-64.064,3.047305],[50.46,-91.8,2.708233],[60.93,-95.16,3.000424]]},sites:MAP_SITES.lotus},
-    bind:{groundSpawn:true,...{"id":"bind","name":"Bind","title":"\u52ab\u5883\u4e4b\u5730","bytes":11998136,"separateProjectileCollision":true,"spawns":{"attack":[-0.02,-1.62,0.284886,1.57],"defend":[-10.18,-146.42,1.000959,-1.57]},"training":[[58.74,-75.5,1.012179],[-12.87,-63.66,-0.5],[31.59,-61.13,1.023423],[8.04,-79.83,2.000957],[26.64,-107.48,1.003959]],"tactical":[[24.784,-108.79,1.003959],[-47.714,-118.949,2.998463],[58.74,-75.5,1.012179],[-12.87,-63.66,-0.5],[31.59,-61.13,1.023423]]},sites:MAP_SITES.bind},
-    corrode:{...{"id":"corrode","name":"Corrode","title":"\u9e7d\u6d77\u53e4\u5821","bytes":17268904,"separateProjectileCollision":true,"spawns":{"attack":[56.75,0.25,3.999491,1.57],"defend":[-59.1,-0.08,5.0,-1.57]},"training":[[-39.65,-42.36,3.000001],[-20.74,-57.43,5.0],[-16.5,-17.83,4.0],[24.4,-43.33,3.000005],[12.25,-55.33,3.000005]],"tactical":[[-19.066,-43.081,5.0],[-17.526,39.369,4.999996],[-39.65,-42.36,3.000001],[-20.74,-57.43,5.0],[-16.5,-17.83,4.0]]},sites:MAP_SITES.corrode}
+    split:{doubleSidedGround:true,...{"id":"split","name":"Split","title":"\u96d9\u5854\u8ff7\u57ce","bytes":13395780,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[0.6,-19.02,3,1.57],"defend":[-89.65,-21.42,5,-1.57]},"training":[[-78.58,-73.45,0.001047],[-24.58,-68.14,3],[-44.93,-62.8,2.000577],[-62.58,-54.35,4],[-45.9,-43.3,5]],"tactical":[[-64.898,-77.123,0.001047],[-66.264,17.198,4.0],[-78.58,-73.45,0.001047],[-24.58,-68.14,3],[-44.93,-62.8,2.000577]]},sites:MAP_SITES.split},
+    lotus:{doubleSidedGround:true,...{"id":"lotus","name":"Lotus","title":"\u84ee\u83ef\u53e4\u57ce","bytes":9957832,"separateProjectileCollision":true,"ropes":true,"spawns":{"attack":[7.77,-14.01,2.9975,0],"defend":[15.848629,-95.738629,4.0,3.141592653589793]},"training":[[50.46,-91.8,6.75],[60.93,-95.16,3.000424],[60.502,-81.609,3.000424],[55.57,-85.17,2.020471],[55.57,-61.5,3.000421]],"tactical":[[59.102,-83.009,3.000424],[4.222,-69.097,2.036127],[-46.198,-64.064,3.047305],[50.46,-91.8,6.75],[60.93,-95.16,3.000424]]},sites:MAP_SITES.lotus},
+    bind:{doubleSidedGround:true,groundSpawn:true,...{"id":"bind","name":"Bind","title":"\u52ab\u5883\u4e4b\u5730","bytes":11998136,"separateProjectileCollision":true,"spawns":{"attack":[39.9,-65.5,1.023423314,0],"defend":[-10.18,-146.42,1.000959,3.141592653589793]},"training":[[58.74,-75.5,1.012179],[-12.87,-63.66,2],[31.59,-61.13,1.023423],[8.04,-79.83,2.000957],[26.64,-107.48,1.003959]],"tactical":[[24.784,-108.79,1.003959],[-47.714,-116.149,3.060026],[58.74,-75.5,1.012179],[-12.87,-63.66,2],[31.59,-61.13,1.023423]]},sites:MAP_SITES.bind},
+    corrode:{doubleSidedGround:true,...{"id":"corrode","name":"Corrode","title":"\u9e7d\u6d77\u53e4\u5821","bytes":17268904,"separateProjectileCollision":true,"spawns":{"attack":[56.75,0.25,3.999491,1.57],"defend":[-59.1,-0.08,5.0,-1.57]},"training":[[-17.666,-44.481,5.0],[-20.74,-57.43,5.0],[-16.5,-17.83,4.0],[-18.926,39.369,4.999996],[-59.1,-0.08,5.0]],"tactical":[[-19.066,-43.081,5.0],[-17.526,39.369,4.999996],[-59.1,-0.08,5.0],[-20.74,-57.43,5.0],[-16.5,-17.83,4.0]]},sites:MAP_SITES.corrode}
 
 
 });
@@ -50,6 +50,7 @@ function worldPositions(mesh,target,offset) {
     }
     return offset;
 }
+
 
 function volumePositions(data,types=['pawn','projectile']) {
     const result=[];
@@ -189,7 +190,7 @@ export class AscentMapRuntime {
     floorCandidates(x,z) {
         const ray=new T.Ray(new T.Vector3(x,100*this.scale,z),new T.Vector3(0,-1,0));
         const hits=this.collisionMesh.geometry.boundsTree.raycast(ray,T.DoubleSide);
-        const ys=[];for(const hit of hits)if(hit.face.normal.y>.5&&!ys.some(y=>Math.abs(y-hit.point.y)<.08))ys.push(hit.point.y);
+        const ys=[];for(const hit of hits)if((this.definition.doubleSidedGround?Math.abs(hit.face.normal.y):hit.face.normal.y)>.5&&!ys.some(y=>Math.abs(y-hit.point.y)<.08))ys.push(hit.point.y);
         return ys;
     }
     safePoint(sourceX,sourceZ,sourceFloor=1) {
