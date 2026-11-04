@@ -107,6 +107,7 @@
             pointer-events: none;
             background:transparent;
         }
+        .map-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 18px}.map-choices button{position:relative;padding:0;border:1px solid #456064;background:#12252c;color:#d7e6e6;text-align:left;overflow:hidden;cursor:pointer}.map-choices img{display:block;width:100%;height:64px;object-fit:cover;opacity:.7}.map-choices span{display:block;padding:7px;font-size:10px}.map-choices button[aria-pressed="true"]{border-color:#6ae6bc;box-shadow:0 0 0 1px #6ae6bc}.map-choices button[aria-pressed="true"] img,.map-choices button:hover img{opacity:1}.map-choices button:disabled{opacity:.45;cursor:default}@media(max-width:640px){.map-choices{grid-template-columns:repeat(3,minmax(0,1fr))}.map-choices img{height:48px}}
         .melee-skin-picker{display:flex;align-items:center;gap:12px;color:#b9c6ce;font-size:11px;margin:14px 0}.melee-skin-picker select{flex:1;min-width:0;background:#15242d;color:#e0e9e9;border:1px solid #617078;padding:9px}
         .skin-collection-panel{border:1px solid #3c555b;padding:10px;margin:12px 0;color:#b9d0cf;font-size:11px}.skin-collection-panel summary{cursor:pointer;color:#8de4cc}.skin-collection-panel .melee-skin-picker{margin:8px 0}.skin-collection-panel select{padding:6px}.scope-lens{position:relative;width:82vmin;height:82vmin;border-radius:50%;box-shadow:0 0 0 160vmax #030405;border:2px solid #101216;overflow:hidden}.scope-h,.scope-v{position:absolute;background:#161718;left:50%;top:50%;transform:translate(-50%,-50%)}.scope-h{width:100%;height:1px}.scope-v{height:100%;width:1px}.scope-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;background:#f64a44;border-radius:50%;transform:translate(-50%,-50%)}.scope-label{position:absolute;bottom:5vh;color:#d9e0df;background:#000b;padding:4px 8px;font:11px monospace}
         .custom-scroll::-webkit-scrollbar {
@@ -719,7 +720,8 @@
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
         import {BLADE_CAPACITY,bladeRefill,bladeFan} from './blade-storm-rules.mjs';
         import {AgentPreview} from './agent-preview.js?v=neon2';
-        import {FirstPersonBody} from './first-person-body.js?v=body1';
+        import {FirstPersonPass} from './first-person-pass.js?v=visual2';
+        import {FirstPersonBody} from './first-person-body.js?v=visual2';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon2';
         import {SpectatorView} from './spectator-view.js?v=collection1-phoenix1';
         import {spectatorCandidates} from './spectator-rules.mjs';
@@ -1286,6 +1288,7 @@
         scene.add(yawObject);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+        renderer.localClippingEnabled=true;
         renderer.setSize(window.innerWidth, window.innerHeight);
         let savedQuality='auto';try{savedQuality=localStorage.getItem('valo-render-quality')||'auto';}catch{}
         const renderBudget=new RenderBudget(savedQuality),soundGroundCache=new SoundGroundCache();
@@ -1454,7 +1457,7 @@
         const selectedMap=Object.hasOwn(MAPS,requestedMap)?requestedMap:'ascent';
         const mapDefinition=MAPS[selectedMap];
         const realMap = new AscentMapRuntime(renderer,selectedMap);
-        const mapSelect=document.getElementById('map-select');mapSelect.value=selectedMap;
+        const mapSelect=document.getElementById('map-select');mapSelect.replaceChildren(...Object.values(MAPS).map(map=>{const option=document.createElement('option');option.value=map.id;option.textContent=map.name.toUpperCase()+' · '+map.title;return option;}));mapSelect.value=selectedMap;const mapChoices=document.createElement('div');mapChoices.id='map-choices';mapChoices.className='map-choices';mapChoices.setAttribute('aria-label','選擇地圖');for(const map of Object.values(MAPS)){const button=document.createElement('button');button.type='button';button.dataset.map=map.id;button.setAttribute('aria-pressed',String(map.id===selectedMap));const image=document.createElement('img');image.src='./assets/'+map.id+'/cover.webp';image.alt='';image.loading='lazy';const label=document.createElement('span');label.textContent=map.name.toUpperCase()+' · '+map.title;button.append(image,label);button.onclick=()=>changeTrainingMap(map.id);mapChoices.append(button);}mapSelect.parentElement.after(mapChoices);
         window.changeTrainingMap=function(id){
             if(!Object.hasOwn(MAPS,id)||id===selectedMap)return;
             if(currentRoomId){
@@ -1462,14 +1465,15 @@
                 if(roomHostUid!==currentUser?.uid){networkFeedback('只有房主可以更換地圖');return;}
                 if(!roomSocket?.serverFeatures?.includes('map-change')){networkFeedback('連線後端尚未支援整隊換圖，請等待 Cloudflare 最新部署完成後重新加入');return;}
                 pushMyNetworkState(true);
-                if(roomSocket.send({type:'map_change',map:id})){mapSelect.disabled=true;networkFeedback('正在通知全員換圖…');clearTimeout(mapChangeTimer);mapChangeTimer=setTimeout(()=>{updateMapPermissions();networkFeedback('換圖尚未完成，請檢查連線後再試');},8000);}
+                if(roomSocket.send({type:'map_change',map:id})){mapSelect.disabled=true;for(const button of mapChoices.children)button.disabled=true;networkFeedback('正在通知全員換圖…');clearTimeout(mapChangeTimer);mapChangeTimer=setTimeout(()=>{updateMapPermissions();networkFeedback('換圖尚未完成，請檢查連線後再試');},8000);}
                 return;
             }
-            const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('room');location.assign(url.href);
+            const url=new URL(location.href);url.searchParams.set('map',id);url.searchParams.delete('drill');url.searchParams.delete('room');location.assign(url.href);
         };
         function updateMapPermissions(){
             const host=!!currentRoomId&&roomHostUid===currentUser?.uid;
             mapSelect.disabled=!!currentRoomId&&(!host||currentRoomId==='PUBLIC'||!roomSocket?.serverFeatures?.includes('map-change'));
+            for(const button of mapChoices.children)button.disabled=mapSelect.disabled;
             document.getElementById('map-picker-label').textContent=currentRoomId?'房間地圖':'訓練地圖';
             document.getElementById('map-picker-help').textContent=!currentRoomId?'切換會重置訓練；好友房間由房主帶領全員一起換圖。':currentRoomId==='PUBLIC'?'公開房由系統隨機選圖；整場結束後會自動載入下一張。':!roomSocket?.serverFeatures?.includes('map-change')?'後端尚未支援整隊換圖，請等待最新部署後重新加入。':host?'你是房主：換圖會帶全員重新載入，保留房號與陣營，重置比分與回合。':'由房主切換地圖；全員會自動跟隨，保留房號與陣營。';
         }
@@ -1544,6 +1548,7 @@
         jettSmokeCast=new JettSmokeCast(camera,viewEnvironmentTarget.texture);
         let firstPersonHands=null;
         const spectatorView=new SpectatorView(scene,{skinTexture:smiteTexture,environment:viewEnvironmentTarget.texture});
+        const firstPersonPass=new FirstPersonPass(camera,spectatorView.camera);
         preloadAgentAvatars();
         const firstPersonBody=new FirstPersonBody(scene,state.agent);
         let spectatorUiState=false;
@@ -4371,7 +4376,7 @@
             if(spikeCarryRoot.visible)gunGroup.visible=false;
         }
 
-        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const doorVisible=marketDoor.enabled?marketDoor.root.visible:false;if(marketDoor.enabled)marketDoor.root.visible=!isolated;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(!isolated)scene.fog=smokeVision.view(scene.fog,camera,smokeSpheres);if(scene.fog!==fog)scene.background=scene.fog.color;renderer.render(scene,camera);scene.fog=fog;scene.background=background;if(marketDoor.enabled)marketDoor.root.visible=doorVisible;}
+        function renderGameplayFrame(camera){realMap.updateCulling(camera);const isolated=isoKit.arena?.visible;if(isolated)for(const mesh of realMap.batches)mesh.visible=false;const doorVisible=marketDoor.enabled?marketDoor.root.visible:false;if(marketDoor.enabled)marketDoor.root.visible=!isolated;const background=scene.background;if(isolated)scene.background=new THREE.Color(0x170e26);const fog=scene.fog;const droneView=camera===skyeKit.camera||camera===sovaKit.camera||camera===cypherKit.camera;const gasFog=viperKit.fog(fog,camera);scene.fog=droneView?gasFog:omenKit.fog(gasFog);if(!isolated)scene.fog=smokeVision.view(scene.fog,camera,smokeSpheres);if(scene.fog!==fog)scene.background=scene.fog.color;firstPersonPass.render(renderer,scene,camera);scene.fog=fog;scene.background=background;if(marketDoor.enabled)marketDoor.root.visible=doorVisible;}
         function animate() {
             requestAnimationFrame(animate);
             spectatorView.restoreHidden();

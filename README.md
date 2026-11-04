@@ -742,3 +742,7 @@ Sunset is available in the map picker and with `?map=sunset`, including source s
 ### Trainer expansion
 
 Available collection fire/kill/knife sounds now accompany the new models. Sunset adds six timed pre-aim routes and an F-operated destructible market door synchronized by the Worker. Smoke gains timed growth/expiry and interior visibility; local bots gain objective splits, defuse cover and audible-footstep investigation. [Controls, sources, validation and limits](docs/trainer-expansion.md).
+
+### First-person clipping repair
+
+Sunset is visible alongside all maps in thumbnail selection cards. Camera-local weapon/arm rendering now has independent depth and near clipping; cosmetic bodies retain source clothing with a closed, pose-following waist. [Details and visual regression checks](docs/first-person-clipping-fixes.md).
