@@ -107,6 +107,7 @@
             pointer-events: none;
             background:transparent;
         }
+        .melee-skin-picker{display:flex;align-items:center;gap:12px;color:#b9c6ce;font-size:11px;margin:14px 0}.melee-skin-picker select{flex:1;min-width:0;background:#15242d;color:#e0e9e9;border:1px solid #617078;padding:9px}
         .scope-lens{position:relative;width:82vmin;height:82vmin;border-radius:50%;box-shadow:0 0 0 160vmax #030405;border:2px solid #101216;overflow:hidden}.scope-h,.scope-v{position:absolute;background:#161718;left:50%;top:50%;transform:translate(-50%,-50%)}.scope-h{width:100%;height:1px}.scope-v{height:100%;width:1px}.scope-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;background:#f64a44;border-radius:50%;transform:translate(-50%,-50%)}.scope-label{position:absolute;bottom:5vh;color:#d9e0df;background:#000b;padding:4px 8px;font:11px monospace}
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
@@ -631,6 +632,7 @@
                     <div class="section-heading"><h2>購買階段</h2><small>左鍵購買 · 右鍵退還本次購買</small></div>
                     <div class="loadout-credits"><div class="shop-agent-emblem" aria-hidden="true">J</div><b id="shop-agent-name">JETT</b><small>單人訓練</small><hr><span>可用信用點</span><strong>¤ <span id="shop-creds">9000</span></strong><p id="shop-owned-label"></p><p id="shop-refund-label"></p><button id="shop-sell-weapon" onclick="sellShopItem('weapon')" disabled>退還武器</button><button id="shop-sell-shield" onclick="sellShopItem('shield')" disabled>退還護盾</button></div>
                     <p class="skin-badge"><i></i> WEAPON COLLECTION <span>原版外觀</span></p>
+                    <label class="melee-skin-picker">近戰外觀<select id="melee-skin" onchange="setMeleeSkin(this.value)"><option value="prime">紫金爪刀 PRIME//2.0</option><option value="tactical">原版戰術刀 TACTICAL</option></select></label>
                     <div class="loadout-weapons">
                         <section class="weapon-column" id="shop-sidearms"><h3>隨身武器</h3></section>
                         <section class="weapon-column" id="shop-smgs"><h3>衝鋒槍</h3><div id="shop-smgs-list"></div><h3>霰彈槍</h3><div id="shop-shotguns-list"></div></section>
@@ -711,7 +713,7 @@
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=mech2';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=grip2';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=agent2';
         import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=grip2';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
@@ -726,6 +728,7 @@
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
+        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=native1';
         import {updateMechanism} from './gun-mechanisms.js?v=mech2';
         import {installTrainingPresets,stepTrainingStrafe} from './training-presets.mjs?v=drill1';
         import {loadGaiaMagazine} from './gaia-magazine.js?v=gaia1';
@@ -1186,6 +1189,8 @@
         const trainingData = readTrainingData();
         state.sensitivity = Number.isFinite(trainingData.sensitivity) ? Math.max(.1,Math.min(1,trainingData.sensitivity)) : .35;
         state.trainingDuration = savedGameDuration(trainingData);
+        state.meleeSkin='prime';try{if(localStorage.getItem('valo-melee-v1')==='tactical')state.meleeSkin='tactical';}catch{}
+        WEAPONS.melee.name=state.meleeSkin==='tactical'?'戰術刀 TACTICAL KNIFE':'紫金爪刀 PRIME//2.0 KARAMBIT';
         state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
         state.trainingSessions = Number.isInteger(trainingData.sessions) ? Math.max(0,trainingData.sessions) : 0;
         state.trainingBest = Number.isFinite(trainingData.best) ? Math.max(0,trainingData.best) : null;
@@ -1545,7 +1550,7 @@
 
         let gunMagazineMesh = null;
         let muzzleFlashGroup = null;
-        let knifeSpinGroup = null;
+        let knifeSpinGroup = null;let tacticalKnifeRoot=null;
         let bladeStormGroup = null;
 
         const WEAPON_LENGTHS={vandal:.79,phantom:.75,classic:.225,operator:1.195,odin:1.21};
@@ -1554,7 +1559,7 @@
             disposeViewmodel(gunGroup);firstPersonHands=null;
             gunMagazineMesh = null;
             muzzleFlashGroup = null;
-            knifeSpinGroup = null;
+            knifeSpinGroup = null;tacticalKnifeRoot=null;
             bladeStormGroup = null;
 
             const wpnKey = state.weaponKey;
@@ -1577,7 +1582,7 @@
 
             // Gold/black ring-hilt karambit, authored from the user's reference.
             if (wpnKey === 'melee') {
-                knifeSpinGroup=makeKarambit(viewEnvironmentTarget.texture);gunGroup.add(knifeSpinGroup);
+                if(state.meleeSkin==='tactical'){tacticalKnifeRoot=createTacticalKnife(firstPersonHands);gunGroup.add(tacticalKnifeRoot);}else{knifeSpinGroup=makeKarambit(viewEnvironmentTarget.texture);gunGroup.add(knifeSpinGroup);}
                 for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
                 return;
             }
@@ -2441,6 +2446,7 @@
 
             weaponDrawElapsed=weaponDrawDuration(state.weaponKey);weaponMotionRoot.position.set(0,0,0);weaponMotionRoot.rotation.set(0,0,0);
             state.hasPlayedThisRound=true;state.lastShotTime = now;
+            if(state.weaponKey==='melee'&&tacticalKnifeRoot)tacticalKnifeRoot.userData.firedAt=now;
             const firedMesh=gunGroup.getObjectByName('detailed-'+state.weaponKey);if(firedMesh)firedMesh.userData.firedAt=now;
             state.consecutiveShots++;
             state.isInspecting = false;
@@ -3215,6 +3221,12 @@
             updateShopUI();shopFeedback(`已退還 ${receipt.cost} 信用點`);
         };
 
+        window.setMeleeSkin=function(value){
+            if(!['prime','tactical'].includes(value))return;
+            state.meleeSkin=value;try{localStorage.setItem('valo-melee-v1',value);}catch{}
+            WEAPONS.melee.name=value==='tactical'?'戰術刀 TACTICAL KNIFE':'紫金爪刀 PRIME//2.0 KARAMBIT';document.getElementById('melee-skin').value=value;
+            if(state.weaponKey==='melee'){state.isInspecting=false;state.inspectTimer=0;weaponDrawElapsed=0;buildFirstPersonViewmodel();updateAmmoHUD();}
+        };
         window.setGameMode = function(mode) {
             if(currentRoomId){networkFeedback('請先離開好友房間，再選擇單人訓練');return;}
             if (!['tactical','strafing','stationary'].includes(mode)) return;
@@ -3966,7 +3978,9 @@
             const meleeGrip=knifeSpinGroup?updateKarambit(knifeSpinGroup,{draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration('melee')),inspect:state.isInspecting?state.inspectTimer/KARAMBIT_INSPECT_SECONDS:0}):null;
             const mechanismMesh=gunGroup.getObjectByName('detailed-'+state.weaponKey);
             updateMechanism(mechanismMesh,mechanismMesh?.userData.firedAt===undefined?Infinity:(performance.now()-mechanismMesh.userData.firedAt)/1000);
-            firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
+            if(tacticalKnifeRoot)tacticalKnifeRoot.position.z=-gunGroup.position.z;
+            updateTacticalKnife(tacticalKnifeRoot,{dt,moving:isMoving,camera});
+            if(!tacticalKnifeRoot?.userData.loaded)firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Floating Blade Storm Daggers hover animation
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
         }
@@ -4455,6 +4469,7 @@
             renderTrainingStats();
             updateShopUI();
             installSettingsImporter({state,setSensitivity:window.setTrainerSensitivity});
+            document.getElementById('melee-skin').value=state.meleeSkin;
             installTrainingPresets({state,inRoom:()=>!!currentRoomId,notice:abilityNotice,reset:resetRound,mode:window.setGameMode,duration:window.setTrainerDuration,weapon:equipWeaponSlot});
             animate();
             await loadActualMap();

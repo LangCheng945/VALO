@@ -1,1 +1,12 @@
-{"sourceRepository":"https://github.com/unkwsr/open-aim","sourceCommit":"e1e81cf8ea37e5c363d7720c78cb17fedf0edd94","sourceFiles":["site/aim-viewmodel/jett.json","site/aim-viewmodel/jett.bin","site/aim-viewmodel/jett.arms.png"],"credit":"Jett character design and game assets belong to Riot Games. Community-packed asset source: open-aim. The repository MIT license does not grant a Riot asset license.","processing":"Retain wrist-dominant triangles, original skin weights, finger hierarchy and unmodified albedo. Normalize each wrist to existing first-person weapon mounts. Finger release poses are locally authored; original dash/smoke animation clips are not imported in this revision."}
+{
+  "sourceRepository": "https://github.com/unkwsr/open-aim",
+  "sourceCommit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourceFiles": [
+    "site/aim-viewmodel/jett.json",
+    "site/aim-viewmodel/jett.bin",
+    "site/aim-viewmodel/jett.arms.png"
+  ],
+  "credit": "Jett character design and game assets belong to Riot Games. Community-packed asset source: open-aim. The repository MIT license does not grant a Riot asset license.",
+  "processing": "Dedicated Jett hand mesh, 35-joint finger hierarchies, UV/albedo and native forearm mesh retained. Normalized wrist/elbow mounts use the shared canonical first-person rig. Tactical-knife tracks are adapted from the Phoenix-compatible source rig; ability animations remain local implementations.",
+  "forearmsHash": "6a220c4b4c566806f30b9252276d6ec1920ce61316c9cc37fa2d745eadc547d9"
+}

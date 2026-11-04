@@ -6,7 +6,7 @@ Pinned source: [unkwsr/open-aim](https://github.com/unkwsr/open-aim/tree/e1e81cf
 | --- | --- | --- |
 | `killjoy.device.json/bin`, `killjoy.device.df.jpg`, `killjoy.device.mask.png` | 5,059 vertices, 7,050 triangles, metre units, static shell, albedo and emissive mask | Integrated as Lockdown's cosmetic shell. Existing hitbox, HP, countdown and network behavior retained. |
 | `killjoy.detain.json` | Intro/loop/outro first-person detention animation descriptions, named moving/held bones, quantization scales | Needs paired binary decoding, phase playback and rig retargeting. |
-| `knife.json`, `knife.gun.png` | Tactical knife: 992 vertices / 1,274 triangles, hand rig and animation descriptions | A possible selectable alternative. It is not the user's Prime//2.0 karambit; not substituted automatically. |
+| `knife.json`, `knife.gun.png` | Tactical knife: 992 vertices / 1,274 triangles, hand rig and animation descriptions | Integrated as the optional Tactical knife alongside the existing Prime-style karambit, with complete arm rigs and source idle/attack/walk tracks. See `tactical-knife-and-jett-hands.md`. |
 | `melee.knife.b996f03cc9.json` | Knife idle/run additives and named first-person bones | Requires correct additive-reference pose and corresponding binary; metadata alone is not a playable animation. |
 | `viewmodel.equip.json`, `phantom.loco.b0ccd17632.json` | Vandal equip timing/quantized tracks; Phantom idle/run/walk additive clip metadata | Needs full arm/gun rig synchronization and animation time adaptation. |
 | `smoke-jett-enemy.73177dc412.json` | Enemy Cloudburst phase definitions, particle emitters, lifetime/size/color/material distributions | Needs the paired mesh/texture buffers and a matching particle-material renderer. |

@@ -1,4 +1,4 @@
-import {installPhoenixHands,posePhoenixHand,fitKarambitHand} from './phoenix-hands.js?v=grip2';
+import {installPhoenixHands,posePhoenixHand,fitKarambitHand} from './phoenix-hands.js?v=agent2';
 import {FIREARMS,isSidearm} from './multiplayer/firearms.mjs?v=armory1';
 import {KARAMBIT_DRAW_SECONDS} from './karambit-rules.mjs?v=grip2';
 // Authored first-person hands and detachable magazines. No gameplay collision lives here.
@@ -93,7 +93,7 @@ export class FirstPersonHands{
   }
   this.agent=agent;this.setAgent(agent);this.update({});this.ready=installPhoenixHands(this).catch(()=>false);
  }
- setAgent(agent){this.agent=agent;const colors={skin:0x966549,glove:0x2d241e,sleeve:0xe5e1d8,cuff:0xd5a044};for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
+ setAgent(agent){this.agent=agent;const colors=agent==='jett'?{skin:0xb78065,glove:0x10202d,sleeve:0x273c45,cuff:0x448a9b}:{skin:0x966549,glove:0x2d241e,sleeve:0xe5e1d8,cuff:0xd5a044};for(const key of ['skin','glove','sleeve','cuff'])this.materials[key].color.setHex(colors[key]).convertSRGBToLinear();}
  update({reload=0,magazine=null,inspect=0,meleeGrip=null,dt=0}={}){
   this.elapsed+=dt;const p=this.profile;inspect=Math.max(0,Math.min(1,inspect));
   for(const a of this.arms){

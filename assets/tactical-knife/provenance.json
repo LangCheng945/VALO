@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sourceFiles": {
+    "knife.json": "6e0c6874f776d50cec731ebccf945d1f15da9d27c99ef88a551d2affd20a13dc",
+    "knife.bin": "cc8635fa7811f7457725f304f9ab6a36c5f8b4c0916e75ff783976de008a6389",
+    "jett.json": "a3f85bf9bfbe04c0c1046a544b6ea36561e26030d819f603d083725da953c373",
+    "jett.bin": "8df8767ff6117fd31477f95bd7dabf75c5b0fc334b5c868a387d6cd3557869e3",
+    "knife.gun.png": "dacd4ca3ddb9e1f234c3416bf5f30533b01428ec1116f5892b42b6eb07d2ab70"
+  },
+  "processing": "Complete source Phoenix/Jett first-person arm geometry, skin weights, canonical 104-joint bind rigs, original texture mapping, and full sampled knife idle/attack/walk local transforms. Knife attaches to native R_WeaponPoint with source attachment rotation. Source camera/view transform is retained. Draw, inspect and short transition blends remain local adaptations.",
+  "outputHashes": {
+    "albedo.png": "dacd4ca3ddb9e1f234c3416bf5f30533b01428ec1116f5892b42b6eb07d2ab70",
+    "jett.arms.bin": "ea046b9c193e52cc83a261098688c4cf073405b929f6b6714b7646b632721c43",
+    "manifest.json": "443cdcb4a0ae93c6f2d94df1ba7ab3367209b141d18b9e0eab80889e8c33118f",
+    "mesh.bin": "3653d2ba23ca26269a3ddd169b779b52aaf966d1aa4922ec37353ceaad43f650",
+    "phoenix.arms.bin": "6c3ab01bd2dc23a25041e5e5e4fa6d83579b1d2a3df4d5cdb0e8038b5512418c",
+    "poses.bin": "eba5a5e71f64d18fc9e342d6c721ee5530fe4c33e5742211471c9b800c3143fc"
+  }
+}
