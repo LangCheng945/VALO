@@ -23,3 +23,7 @@ All underlying game assets/designs remain Riot Games property. Repository MIT li
 A separate hand-source check confirmed `jett.json/bin/jett.arms.png` and Phoenix arms embedded in multiple weapon packages. No Sage-specific first-person hand package was found in the inspected `aim-viewmodel` directory. Full-body agent meshes are a different asset category and are not a drop-in first-person replacement.
 
 Map lightmap descriptors, SH irradiance textures, PVS and triangle material classifications are present but remain unintegrated. Their instance/triangle identifiers must be matched before changing lighting, culling or penetration. Current batching/collision construction changes those groupings; copying sidecars alone would not validate the mapping.
+
+## Newer collection package
+
+The newer `807f55721e64ca457d763c64a4a1de7b11e5f3eb` snapshot adds nine verified gun skins and six usable melee packages. They are now integrated, along with the older Jett smoke intro/loop/outro body tracks. [Collection details, motion compatibility and controls](weapon-collection.md). The earlier Vandal equip row above is historical; compatible base equip tracks now also drive collection guns when their own equip is absent. Other particle-system and additive-locomotion rows remain unintegrated.

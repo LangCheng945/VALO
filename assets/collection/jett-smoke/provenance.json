@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "e1e81cf8ea37e5c363d7720c78cb17fedf0edd94",
+  "sources": {
+    "valo-found-jett.json": "a3f85bf9bfbe04c0c1046a544b6ea36561e26030d819f603d083725da953c373",
+    "valo-found-jett.bin": "8df8767ff6117fd31477f95bd7dabf75c5b0fc334b5c868a387d6cd3557869e3"
+  },
+  "processing": "Native Jett Cloudburst intro, loop and outro arm tracks; game smoke trajectory and charges stay authoritative."
+}

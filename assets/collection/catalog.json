@@ -1,0 +1,212 @@
+[
+  {
+    "id": "rgx-vandal-yellow",
+    "weapon": "vandal",
+    "label": "RGX \u9ec3",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "gaia-vandal-orange",
+    "weapon": "vandal",
+    "label": "Gaia \u6a59",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "gaia-vandal-white",
+    "weapon": "vandal",
+    "label": "Gaia \u767d",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "blastx-phantom",
+    "weapon": "phantom",
+    "label": "BlastX",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  },
+  {
+    "id": "prime-guardian",
+    "weapon": "guardian",
+    "label": "Prime \u7d2b\u91d1",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  },
+  {
+    "id": "singularity-sheriff",
+    "weapon": "sheriff",
+    "label": "Singularity \u5947\u9ede",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "reload",
+      "ads",
+      "equip"
+    ]
+  },
+  {
+    "id": "smite-ghost",
+    "weapon": "ghost",
+    "label": "Smite \u795e\u7f70",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "araxys-operator",
+    "weapon": "operator",
+    "label": "Araxys",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "rogue-operator",
+    "weapon": "operator",
+    "label": "Rogue",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "reload",
+      "equip"
+    ]
+  },
+  {
+    "id": "blackmarket-butterfly",
+    "weapon": "melee",
+    "label": "\u9ed1\u5e02\u8774\u8776\u5200",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "attack2",
+      "attack3",
+      "heavy",
+      "inspect",
+      "equip"
+    ]
+  },
+  {
+    "id": "orange-butterfly",
+    "weapon": "melee",
+    "label": "\u6a59\u8272\u8774\u8776\u5200",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "attack2",
+      "attack3",
+      "heavy",
+      "inspect",
+      "equip"
+    ]
+  },
+  {
+    "id": "damascus-karambit",
+    "weapon": "melee",
+    "label": "\u5927\u99ac\u58eb\u9769\u722a\u5200",
+    "clips": [
+      "idle",
+      "equip",
+      "attack",
+      "attack2",
+      "heavy",
+      "inspect",
+      "walk"
+    ]
+  },
+  {
+    "id": "prime-axe",
+    "weapon": "melee",
+    "label": "Prime \u7d2b\u91d1\u65a7",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "attack2",
+      "attack3",
+      "heavy",
+      "inspect",
+      "equip"
+    ]
+  },
+  {
+    "id": "prime-axe-crowbar",
+    "weapon": "melee",
+    "label": "\u64ac\u68cd",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "attack2",
+      "attack3",
+      "heavy",
+      "inspect",
+      "equip"
+    ]
+  },
+  {
+    "id": "silkleaf-fan",
+    "weapon": "melee",
+    "label": "Silkleaf \u6247\u5b50",
+    "clips": [
+      "idle",
+      "attack",
+      "walk",
+      "ads",
+      "attack2",
+      "attack3",
+      "attack4",
+      "heavy",
+      "inspect",
+      "equip"
+    ]
+  }
+]

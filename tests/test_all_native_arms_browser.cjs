@@ -4,6 +4,8 @@ await page.route('**/index.html',r=>{let s=fs.readFileSync(path.join(__dirname,'
 await page.goto('http://127.0.0.1:8000/index.html');await page.waitForFunction(()=>window.__fp?.map.ready,null,{timeout:150000});await page.evaluate(()=>{toggleBotsInMatch(false);setTrainerDuration('0');__fp.activate()});
 
 const{FIREARM_KEYS}=await import('../multiplayer/firearms.mjs');
+// This fixture checks baseline gun geometry; collection variants have their own browser suite.
+await page.evaluate(()=>{for(const key of ['vandal','phantom','guardian','sheriff','ghost','operator'])setWeaponSkin(key,'base')});
 for(const agent of ['jett','phoenix']){
  await page.evaluate(agent=>selectAgent(agent),agent);
  for(const key of process.env.VALO_ARM_WEAPONS?process.env.VALO_ARM_WEAPONS.split(','):FIREARM_KEYS){

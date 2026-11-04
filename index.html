@@ -108,7 +108,7 @@
             background:transparent;
         }
         .melee-skin-picker{display:flex;align-items:center;gap:12px;color:#b9c6ce;font-size:11px;margin:14px 0}.melee-skin-picker select{flex:1;min-width:0;background:#15242d;color:#e0e9e9;border:1px solid #617078;padding:9px}
-        .scope-lens{position:relative;width:82vmin;height:82vmin;border-radius:50%;box-shadow:0 0 0 160vmax #030405;border:2px solid #101216;overflow:hidden}.scope-h,.scope-v{position:absolute;background:#161718;left:50%;top:50%;transform:translate(-50%,-50%)}.scope-h{width:100%;height:1px}.scope-v{height:100%;width:1px}.scope-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;background:#f64a44;border-radius:50%;transform:translate(-50%,-50%)}.scope-label{position:absolute;bottom:5vh;color:#d9e0df;background:#000b;padding:4px 8px;font:11px monospace}
+        .skin-collection-panel{border:1px solid #3c555b;padding:10px;margin:12px 0;color:#b9d0cf;font-size:11px}.skin-collection-panel summary{cursor:pointer;color:#8de4cc}.skin-collection-panel .melee-skin-picker{margin:8px 0}.skin-collection-panel select{padding:6px}.scope-lens{position:relative;width:82vmin;height:82vmin;border-radius:50%;box-shadow:0 0 0 160vmax #030405;border:2px solid #101216;overflow:hidden}.scope-h,.scope-v{position:absolute;background:#161718;left:50%;top:50%;transform:translate(-50%,-50%)}.scope-h{width:100%;height:1px}.scope-v{height:100%;width:1px}.scope-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;background:#f64a44;border-radius:50%;transform:translate(-50%,-50%)}.scope-label{position:absolute;bottom:5vh;color:#d9e0df;background:#000b;padding:4px 8px;font:11px monospace}
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
         }
@@ -713,7 +713,7 @@
         import {AGENTS,AGENT_KEYS,AGENT_ROLES,isAgent,agentModelKey,agentLabel,agentSupported} from './multiplayer/agents.mjs?v=recon1';
         import {AscentMapRuntime,MAPS} from './ascent-map.js?v=sites2';
         import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
-        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=fullarms1';
+        import {FirstPersonHands,createViewEnvironment,createMagazine,updateMagazine,weaponMotion,weaponDrawDuration,disposeViewmodel} from './first-person-view.js?v=collection1';
         import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
         import {KARAMBIT_INSPECT_SECONDS} from './karambit-rules.mjs?v=grip2';
         import {makeBladeStorm,updateBladeStorm} from './blade-storm.js?v=blades1';
@@ -721,15 +721,17 @@
         import {AgentPreview} from './agent-preview.js?v=neon2';
         import {FirstPersonBody} from './first-person-body.js?v=body1';
         import {AgentAvatar,preloadAgentAvatars} from './agent-avatar.js?v=neon2';
-        import {SpectatorView} from './spectator-view.js?v=fullarms1-phoenix1';
+        import {SpectatorView} from './spectator-view.js?v=collection1-phoenix1';
         import {spectatorCandidates} from './spectator-rules.mjs';
         import {RenderBudget,SoundGroundCache} from './runtime-performance.mjs?v=perf1';
         import {quoteExchange} from './shop-economy.mjs';
         import {enterGameSession,requestGamePointerLock} from './play-session.mjs?v=immersive1';
         import {SLOW,slowAt,fieldRadius} from './multiplayer/slow-rules.mjs?v=slow1';
         import {spikeGrounded,drapeSlowField} from './ground-effects.js?v=ground1';
-        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=fullarms1';
-        import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=fullarms1';
+        import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=collection1';
+        import {SKINS,DEFAULT_SKINS,selectedSkin,restoreCollection,loadCollectionModel,createCollectionMelee,updateCollectionMelee} from './collection.js?v=collection1';
+        import {JettSmokeCast} from './jett-cast.js?v=collection1';
+        import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=collection1';
         import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
         import {installTrainingPresets,stepTrainingStrafe} from './training-presets.mjs?v=drill1';
         import {loadGaiaMagazine} from './gaia-magazine.js?v=gaia1';
@@ -1190,8 +1192,8 @@
         const trainingData = readTrainingData();
         state.sensitivity = Number.isFinite(trainingData.sensitivity) ? Math.max(.1,Math.min(1,trainingData.sensitivity)) : .35;
         state.trainingDuration = savedGameDuration(trainingData);
-        state.meleeSkin='prime';try{if(localStorage.getItem('valo-melee-v1')==='tactical')state.meleeSkin='tactical';}catch{}
-        WEAPONS.melee.name=state.meleeSkin==='tactical'?'戰術刀 TACTICAL KNIFE':'紫金爪刀 PRIME//2.0 KARAMBIT';
+        state.weaponSkins=restoreCollection();state.meleeSkin='blackmarket-butterfly';try{const old=localStorage.getItem('valo-melee-v1'),known=['prime','tactical',...SKINS.filter(s=>s.weapon==='melee').map(s=>s.id)];if(localStorage.getItem('valo-collection-v1')&&known.includes(old))state.meleeSkin=old;localStorage.setItem('valo-collection-v1',JSON.stringify(state.weaponSkins));localStorage.setItem('valo-melee-v1',state.meleeSkin);}catch{}
+        WEAPONS.melee.name=state.meleeSkin==='tactical'?'戰術刀 TACTICAL KNIFE':SKINS.find(s=>s.id===state.meleeSkin)?.label||'紫金爪刀 PRIME//2.0 KARAMBIT';
         state.training = {shots:0,hits:0,headshots:0,kills:0,elapsed:0,finished:false};
         state.trainingSessions = Number.isInteger(trainingData.sessions) ? Math.max(0,trainingData.sessions) : 0;
         state.trainingBest = Number.isFinite(trainingData.best) ? Math.max(0,trainingData.best) : null;
@@ -1530,8 +1532,9 @@
         const gunGroup = new THREE.Group();gunGroup.position.z=VIEWMODEL_REST_Z;
         const weaponMotionRoot=new THREE.Group();camera.add(weaponMotionRoot);weaponMotionRoot.add(gunGroup);
         let weaponDrawElapsed=1;
-        const abilityCast=new AbilityCastView(camera);
+        const abilityCast=new AbilityCastView(camera);let jettSmokeCast=null;
         const viewEnvironmentTarget=createViewEnvironment(renderer);
+        jettSmokeCast=new JettSmokeCast(camera,viewEnvironmentTarget.texture);
         let firstPersonHands=null;
         const spectatorView=new SpectatorView(scene,{skinTexture:smiteTexture,environment:viewEnvironmentTarget.texture});
         preloadAgentAvatars();
@@ -1557,7 +1560,7 @@
         const WEAPON_LENGTHS={vandal:.79,phantom:.75,classic:.225,operator:1.195,odin:1.21};
         for(const key of FIREARM_KEYS)WEAPON_LENGTHS[key]=FIREARMS[key].modelLength;
         function buildFirstPersonViewmodel() {
-            disposeViewmodel(gunGroup);firstPersonHands=null;
+            jettSmokeCast?.cancel();disposeViewmodel(gunGroup);firstPersonHands=null;
             gunMagazineMesh = null;
             muzzleFlashGroup = null;
             knifeSpinGroup = null;tacticalKnifeRoot=null;nativeWeaponRoot=null;
@@ -1583,7 +1586,8 @@
 
             // Gold/black ring-hilt karambit, authored from the user's reference.
             if (wpnKey === 'melee') {
-                if(state.meleeSkin==='tactical'){tacticalKnifeRoot=createTacticalKnife(firstPersonHands);gunGroup.add(tacticalKnifeRoot);}else{knifeSpinGroup=makeKarambit(viewEnvironmentTarget.texture);gunGroup.add(knifeSpinGroup);tacticalKnifeRoot=createTacticalKnife(firstPersonHands,{karambit:knifeSpinGroup});gunGroup.add(tacticalKnifeRoot);}
+                if(selectedSkin(state,'melee')){tacticalKnifeRoot=createCollectionMelee(firstPersonHands,state.meleeSkin,viewEnvironmentTarget.texture);gunGroup.add(tacticalKnifeRoot);}else if(state.meleeSkin==='tactical'){tacticalKnifeRoot=createTacticalKnife(firstPersonHands);gunGroup.add(tacticalKnifeRoot);}else{knifeSpinGroup=makeKarambit(viewEnvironmentTarget.texture);gunGroup.add(knifeSpinGroup);tacticalKnifeRoot=createTacticalKnife(firstPersonHands,{karambit:knifeSpinGroup});gunGroup.add(tacticalKnifeRoot);}
+                const knife=tacticalKnifeRoot;knife?.ready.then(ok=>{if(ok&&tacticalKnifeRoot===knife)weaponDrawElapsed=0;});
                 for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
                 return;
             }
@@ -1691,13 +1695,15 @@
             gunGroup.add(rig);
             const placeholder=rig.children.filter(child=>child!==muzzleFlashGroup && !child.userData.keepArm);
             const viewHands=firstPersonHands,viewFlash=muzzleFlashGroup;
-            loadWeaponModel(wpnKey,darkMetal).then(mesh=>{
+            const skin=selectedSkin(state,wpnKey);
+            (skin?loadCollectionModel(skin.id,viewEnvironmentTarget.texture):loadWeaponModel(wpnKey,darkMetal)).then(mesh=>{
                 if(!mesh || state.weaponKey!==wpnKey || !gunGroup.children.includes(rig)){if(mesh)disposeViewmodel(mesh);return;}
                 for(const child of placeholder){rig.remove(child);child.geometry?.dispose();if(child.material&&![darkMetal,gunSteel,skinAccent,glowMat].includes(child.material))child.material.dispose();}
-                const originalBox=styleWeaponMesh(mesh,wpnKey,{paint:darkMetal,steel:gunSteel,rubber:rubberMat});
-                if(mesh.geometry.userData.originalSkin){skinAccent.map=darkMetal.map;skinAccent.emissiveMap=null;skinAccent.emissive.setHex(0);skinAccent.needsUpdate=true;}rig.add(mesh);gunMagazineMesh=originalBox||createMagazine(wpnKey,skinAccent,gunSteel);rig.add(gunMagazineMesh);
-                const attachNative=()=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig))return;const controller=createNativeWeaponHands(viewHands,wpnKey,mesh,gunMagazineMesh,viewFlash,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);if(gunMagazineMesh===old)gunMagazineMesh=part;}});nativeWeaponRoot=controller;gunGroup.add(controller);};
-                if(wpnKey==='vandal'){const fallback=gunMagazineMesh;loadGaiaMagazine(darkMetal).then(part=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig)||gunMagazineMesh!==fallback){disposeViewmodel(part);return;}rig.remove(fallback);disposeViewmodel(fallback);gunMagazineMesh=part;rig.add(part);attachNative();}).catch(error=>{console.warn('Gaia magazine fallback',error);attachNative();});}else attachNative();
+                if(mesh.userData.collectionSkin)for(const material of [darkMetal,gunSteel,skinAccent,glowMat,rubberMat])material.dispose();
+                const originalBox=mesh.userData.collectionSkin?null:styleWeaponMesh(mesh,wpnKey,{paint:darkMetal,steel:gunSteel,rubber:rubberMat});
+                if(mesh.geometry.userData.originalSkin){skinAccent.map=darkMetal.map;skinAccent.emissiveMap=null;skinAccent.emissive.setHex(0);skinAccent.needsUpdate=true;}rig.add(mesh);gunMagazineMesh=mesh.userData.collectionSkin?new THREE.Group():originalBox||createMagazine(wpnKey,skinAccent,gunSteel);if(mesh.userData.collectionSkin){gunMagazineMesh.name=wpnKey+'-detachable-magazine';gunMagazineMesh.userData.basePosition=new THREE.Vector3();}rig.add(gunMagazineMesh);
+                const attachNative=()=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig))return;const controller=createNativeWeaponHands(viewHands,wpnKey,mesh,gunMagazineMesh,viewFlash,{onMagazine:(part,old)=>{old.parent?.remove(old);disposeViewmodel(old);if(gunMagazineMesh===old)gunMagazineMesh=part;}});nativeWeaponRoot=controller;gunGroup.add(controller);controller.ready.then(ok=>{if(ok&&nativeWeaponRoot===controller)weaponDrawElapsed=0;});};
+                if(wpnKey==='vandal'&&!skin){const fallback=gunMagazineMesh;loadGaiaMagazine(darkMetal).then(part=>{if(state.weaponKey!==wpnKey||!gunGroup.children.includes(rig)||gunMagazineMesh!==fallback){disposeViewmodel(part);return;}rig.remove(fallback);disposeViewmodel(fallback);gunMagazineMesh=part;rig.add(part);attachNative();}).catch(error=>{console.warn('Gaia magazine fallback',error);attachNative();});}else attachNative();
                 muzzleFlashGroup.position.set(.25,-.21,-.35-WEAPON_LENGTHS[wpnKey]);
             }).catch(error=>console.warn('Weapon model fallback',error));
         }
@@ -2429,9 +2435,10 @@
             try{for(let i=0;i<count;i++){bladeVolleyContext={id,count,index:i,offset:offsets[i]};fireWeapon();}}finally{bladeVolleyContext=null;refreshBladeKnives();returnFromEmptyBlades();}
         }
         let shotgunContext=null;
-        function fireWeapon() {
+        function fireWeapon(attackVariant=null) {
             if (state.inBuyMenu || !state.isLocked || state.isReloading || state.hp <= 0 || state.roundEnding||cloveKit.blocked()||isoKit.blocked()||omenKit.blocked()||brimKit.blocked()||reynaKit.blocked()||sovaKit.blocked()||killjoyKit.blocked()||cypherKit.blocked()||fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()) return;
             if(fadeKit.blocked()||skyeKit.blocked()||razeKit.blocked()||astraKit.blocked()||viperKit.blocked()||breachKit.blocked()||neonKit.blocked()||cypherKit.blocked()||state.holdingSpike||state.spikeAction||state.healingEquipped||state.barrierEquipped||state.slowEquipped)return;
+            if(jettSmokeCast.active){if(jettSmokeCast.age<.25)return;jettSmokeCast.cancel();}
             abilityCast.cancel();gunGroup.visible=true;
             const now = performance.now();
             const wpn = WEAPONS[state.weaponKey];
@@ -2448,9 +2455,9 @@
                 return;
             }
 
-            weaponDrawElapsed=weaponDrawDuration(state.weaponKey);weaponMotionRoot.position.set(0,0,0);weaponMotionRoot.rotation.set(0,0,0);
+            weaponDrawElapsed=currentViewDrawDuration();weaponMotionRoot.position.set(0,0,0);weaponMotionRoot.rotation.set(0,0,0);
             state.hasPlayedThisRound=true;state.lastShotTime = now;
-            if(state.weaponKey==='melee'&&tacticalKnifeRoot)tacticalKnifeRoot.userData.firedAt=now;
+            if(state.weaponKey==='melee'&&tacticalKnifeRoot){tacticalKnifeRoot.userData.firedAt=now;const s=tacticalKnifeRoot.userData;s.attackCount=(s.attackCount||0)+1;const clips=s.data?.meta.clips||{};const combo=['attack','attack2','attack3','attack4'].filter(k=>clips[k]);s.attackVariant=attackVariant==='heavy'&&clips.heavy?'heavy':combo[(s.attackCount-1)%Math.max(1,combo.length)]||'attack';}
             if(nativeWeaponRoot)nativeWeaponRoot.userData.firedAt=now;
             const firedMesh=gunGroup.getObjectByName('detailed-'+state.weaponKey);if(firedMesh)firedMesh.userData.firedAt=now;
             state.consecutiveShots++;
@@ -2942,7 +2949,7 @@
         }
         function throwCloudburst(){
             if(currentRoomId&&!roomSocket.serverFeatures?.includes('guided-smoke')){abilityNotice('連線後端尚待更新煙霧功能');return false;}
-            beginAbilityCast('wind',.25);const p=camera.getWorldPosition(new THREE.Vector3()),d=camera.getWorldDirection(new THREE.Vector3());p.addScaledVector(d,.4);
+            beginAbilityCast('wind',.25);if(jettSmokeCast.play())abilityCast.cancel();const p=camera.getWorldPosition(new THREE.Vector3()),d=camera.getWorldDirection(new THREE.Vector3());p.addScaledVector(d,.4);
             const e={type:'smoke_launch',id:crypto.randomUUID(),x:p.x,y:p.y,z:p.z,dx:d.x,dy:d.y,dz:d.z};createCloudFlight(e);pushMyNetworkState(true);broadcastRoomEvent(e);return true;
         }
         const cypherKit=new CypherKit({...killjoyKit.api,corpses:()=>corpses,dartTargets:()=>sovaKit.api.targets(),stop:()=>{isMouseDown=false;resetMovementInput();playerVelocity.set(0,0,0);},tether:p=>{yawObject.position.x=p.x;yawObject.position.z=p.z;},smoke:(e,mesh)=>{if(smokeSpheres.some(s=>s.id===e.id)){disposeEffect(mesh);return;}mesh.position.set(e.x,e.y+2.3,e.z);scene.add(mesh);const offset=currentRoomId?slowClockOffset:0;smokeSpheres.push({mesh,id:e.id,kind:'cypher',life:7.25,createdAt:e.activeUntil-7250-offset,expiresAt:e.activeUntil-offset});}});
@@ -3007,7 +3014,7 @@
         }
 
         let abilityIconAgent=null,abilityChargeSignature=null;
-        function beginAbilityCast(kind,duration){cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
+        function beginAbilityCast(kind,duration){jettSmokeCast?.cancel();cancelSlowEquip();state.healingEquipped=false;cancelBarrierPlacement();state.holdingSpike=false;cancelSpikeAction();moveState.holdPlant=false;setScope(false);state.isInspecting=false;abilityCast.play(kind,duration);}
         function updateAbilityHUD() {
             const sage=state.agent==='phoenix',enabled=AGENTS[state.agent].abilities;
             const names=state.agent==='fade'?{c:'Prowler · 獵獸',q:'Seize · 束縛',e:'Haunt · 偵測眼',x:'Nightfall · 恐懼波'}:state.agent==='skye'?{c:'Regrowth · 按住治療隊友',q:'Trailblazer · 可操控偵察獸',e:'Guiding Light · 飛鷹閃光／E 引爆',x:'Seekers · 追蹤生物'}:state.agent==='raze'?{c:'Boom Bot · 爆破機器人',q:'Blast Pack · 炸藥包／Q 引爆',e:'Paint Shells · 子母手榴彈',x:'Showstopper · 火箭'}:state.agent==='astra'?{c:'Gravity Well · 引力',q:'Nova Pulse · 震盪',e:'Nebula · 煙霧',x:'Astral Form／Cosmic Divide · 星界'}:state.agent==='viper'?{c:'Snake Bite · 蛇咬',q:'Poison Cloud · 毒霧球／Q 開關',e:'Toxic Screen · 毒幕／E 開關',x:'Viper’s Pit · 毒氣領域'}:state.agent==='breach'?{c:'Aftershock · 穿牆爆破',q:'Flashpoint · 穿牆閃光',e:'Fault Line · 蓄力震盪',x:'Rolling Thunder · 震盪擊飛'}:state.agent==='neon'?{c:'Fast Lane · 雙電牆',q:'Relay Bolt · 震盪彈',e:'High Gear · 疾跑／右鍵滑鏟',x:'Overdrive · 超載'}:state.agent==='cypher'?{c:'Trapwire · 絆線',q:'Cyber Cage · 煙籠',e:'Spycam · 攝影機／E 操作',x:'Neural Theft · 神經竊盜'}:state.agent==='killjoy'?{c:'Nanoswarm · 奈米蟲群',q:'Alarmbot · 警報機器人／Q 召回',e:'Turret · 砲塔／E 召回',x:'Lockdown · 全面封鎖'}:state.agent==='sova'?{c:'Owl Drone · 偵察機',q:'Shock Bolt · 電擊箭',e:'Recon Bolt · 偵察箭',x:"Hunter’s Fury · 獵人之怒"}:state.agent==='reyna'?{c:'Leer · 致盲眼',q:'Devour · 吞噬',e:'Dismiss · 消散',x:'Empress · 女皇'}:state.agent==='brimstone'?{c:'Stim Beacon · 振奮信標',q:'Incendiary · 燃燒彈',e:'Sky Smoke · 煙幕',x:'Orbital Strike · 軌道轟炸'}:state.agent==='omen'?{c:'Shrouded Step · 短距離傳送',q:'Paranoia · 致盲',e:'Dark Cover · 煙霧',x:'From the Shadows · 全圖傳送'}:state.agent==='iso'?{c:'Contingency · 移動擋彈牆',q:'Undercut · 穿牆易傷',e:'Double Tap · 單次傷害護盾',x:'Kill Contract · 獨立決鬥'}:state.agent==='clove'?{c:'Pick-me-up · 暫時生命與加速',q:'Meddle · 減損靈球',e:'Ruse · 死亡後仍可放煙',x:'Not Dead Yet · 限時復活'}:{c:sage?'屏障靈球':'雲爆煙霧',q:sage?'緩速靈球':'氣流竄升',e:sage?'治癒靈球':'逐風衝刺',x:sage?'復活':'暴風刃 · X 切回 · 右鍵全射'};
@@ -3226,10 +3233,11 @@
             updateShopUI();shopFeedback(`已退還 ${receipt.cost} 信用點`);
         };
 
+        window.setWeaponSkin=function(key,id){if(!SKINS.some(s=>s.weapon===key&&key!=='melee'))return;if(id!=='base'&&!SKINS.some(s=>s.weapon===key&&s.id===id))return;state.weaponSkins[key]=id;try{localStorage.setItem('valo-collection-v1',JSON.stringify(state.weaponSkins));}catch{}if(state.weaponKey===key){clearTimeout(state.reloadTimeout);state.reloadTimeout=null;state.isReloading=false;state.isInspecting=false;weaponDrawElapsed=0;buildFirstPersonViewmodel();updateAmmoHUD();}};
         window.setMeleeSkin=function(value){
-            if(!['prime','tactical'].includes(value))return;
+            if(!['prime','tactical',...SKINS.filter(s=>s.weapon==='melee').map(s=>s.id)].includes(value))return;
             state.meleeSkin=value;try{localStorage.setItem('valo-melee-v1',value);}catch{}
-            WEAPONS.melee.name=value==='tactical'?'戰術刀 TACTICAL KNIFE':'紫金爪刀 PRIME//2.0 KARAMBIT';document.getElementById('melee-skin').value=value;
+            WEAPONS.melee.name=value==='tactical'?'戰術刀 TACTICAL KNIFE':SKINS.find(s=>s.id===value)?.label||'紫金爪刀 PRIME//2.0 KARAMBIT';document.getElementById('melee-skin').value=value;
             if(state.weaponKey==='melee'){state.isInspecting=false;state.inspectTimer=0;weaponDrawElapsed=0;buildFirstPersonViewmodel();updateAmmoHUD();}
         };
         window.setGameMode = function(mode) {
@@ -3359,7 +3367,7 @@
 
         function updateAmmoHUD() {
             const wpn=WEAPONS[state.weaponKey],electric=state.agent==='neon'&&state.neon?.equipped&&state.neon.ultUntil>Date.now()+(currentRoomId?slowClockOffset:0);
-            setHudText('hud-weapon-name',electric?'超載 OVERDRIVE':wpn.name);
+            setHudText('hud-weapon-name',electric?'超載 OVERDRIVE':selectedSkin(state,state.weaponKey)?selectedSkin(state,state.weaponKey).label+' · '+state.weaponKey.toUpperCase():wpn.name);
             setHudText('hud-ammo-mag',electric?Math.floor(state.neon.battery):wpn.isMelee?'∞':state.mag);
             setHudText('hud-ammo-res',electric?'40':wpn.isMelee?'∞':state.reserve);
         }
@@ -3637,7 +3645,8 @@
                 isMouseDown = true;
                 fireWeapon();
             } else if (e.button === 2) {
-                if (state.weaponKey === 'bladestorm') {
+                if(state.weaponKey==='melee'&&tacticalKnifeRoot?.userData.data?.meta.clips.heavy){fireWeapon('heavy');
+                } else if (state.weaponKey === 'bladestorm') {
                     fireBladeVolley();
                 } else {
                     const levels = WEAPONS[state.weaponKey].zoomLevels || [];
@@ -3941,11 +3950,14 @@
                 for(let i=1;i<=steps;i++){const d=start+(target-start)*i/steps,point=realMap.ropePosition(attached.rope,d);if(checkPlayerCollision(point))break;attached.distance=d;yawObject.position.copy(point);}playerVelocity.set(0,0,0);canJump=false;}
             const show=active;document.getElementById('rope-hint').textContent=!show?'':attached?'W／S 攀爬 · F／空白鍵離開':realMap.nearestRope(yawObject.position)?'[F] 使用繩索':'';
         }
+        function activeNativeView(){return nativeWeaponRoot||tacticalKnifeRoot;}
+        function currentViewDrawDuration(){return activeNativeView()?.userData.data?.meta.clips.equip?.duration||weaponDrawDuration(state.weaponKey);}
         function updateViewmodelAnimations(dt, isMoving) {
+            const native=activeNativeView(),nativeMeta=native?.userData.data?.meta,drawDuration=currentViewDrawDuration(),inspectDuration=nativeMeta?.clips.inspect?.duration||2.2;
             if(state.isReloading)state.reloadTimer+=dt;
             const reloadProgress=state.isReloading?Math.min(.999,state.reloadTimer/((state.reloadDuration||WEAPONS[state.weaponKey].reloadTimeMs||1350)/1000)):0;
             weaponDrawElapsed+=dt;
-            const motion=weaponMotion(state.weaponKey,{reload:reloadProgress,draw:Math.min(1,weaponDrawElapsed/weaponDrawDuration(state.weaponKey))});
+            const motion=weaponMotion(state.weaponKey,{reload:native?.userData.loaded?0:reloadProgress,draw:native?.userData.loaded&&nativeMeta?.clips.equip?1:Math.min(1,weaponDrawElapsed/drawDuration)});
             weaponMotionRoot.position.fromArray(motion.position);weaponMotionRoot.rotation.set(...motion.rotation);
             if(!gunMagazineMesh?.userData.nativeDriven)updateMagazine(gunMagazineMesh,reloadProgress,state.weaponKey);
 
@@ -3966,11 +3978,11 @@
             } else if (state.isInspecting) {
                 // [Y] Key Weapon / Kunai Spin Inspect Animation
                 state.inspectTimer += dt;
-                if (!knifeSpinGroup) {
+                if (!knifeSpinGroup&&!nativeMeta?.clips.inspect) {
                     const p = Math.sin((state.inspectTimer / 2.2) * Math.PI);
                     gunGroup.rotation.x=-p*.08;gunGroup.rotation.z=p*.20;gunGroup.rotation.y=p*.48;gunGroup.position.x=(state.isScoped?-.25:0)-p*.04;gunGroup.position.y=(state.isScoped?.095:0)+p*.025;
                 }
-                if (state.inspectTimer >= 2.2) {
+                if (state.inspectTimer >= inspectDuration) {
                     state.isInspecting = false;
                     gunGroup.rotation.set(0, 0, 0);
                 }
@@ -3984,8 +3996,9 @@
             const mechanismMesh=gunGroup.getObjectByName('detailed-'+state.weaponKey);
             updateMechanism(mechanismMesh,mechanismMesh?.userData.firedAt===undefined?Infinity:(performance.now()-mechanismMesh.userData.firedAt)/1000,reloadProgress);
             if(tacticalKnifeRoot)tacticalKnifeRoot.position.z=-gunGroup.position.z;
-            updateTacticalKnife(tacticalKnifeRoot,{dt,moving:isMoving,camera,fingerRelease:meleeGrip?.fingerRelease||0,ringRotation:meleeGrip?.gripRotation});
-            if(nativeWeaponRoot){nativeWeaponRoot.position.copy(gunGroup.position).multiplyScalar(-1);updateNativeWeaponHands(nativeWeaponRoot,{dt,moving:isMoving,reload:reloadProgress,scoped:state.isScoped,camera});}
+            const nativeArgs={dt,moving:isMoving,camera,fingerRelease:meleeGrip?.fingerRelease||0,ringRotation:meleeGrip?.gripRotation,inspect:state.isInspecting?state.inspectTimer/inspectDuration:0,draw:Math.min(1,weaponDrawElapsed/drawDuration)};
+            if(tacticalKnifeRoot?.userData.controller)updateCollectionMelee(tacticalKnifeRoot,nativeArgs);else updateTacticalKnife(tacticalKnifeRoot,nativeArgs);
+            if(nativeWeaponRoot){nativeWeaponRoot.position.copy(gunGroup.position).multiplyScalar(-1);updateNativeWeaponHands(nativeWeaponRoot,{dt,moving:isMoving,reload:reloadProgress,scoped:state.isScoped,camera,inspect:nativeArgs.inspect,draw:nativeArgs.draw});}
             if(!tacticalKnifeRoot?.userData.loaded&&!nativeWeaponRoot?.userData.loaded)firstPersonHands?.update({reload:reloadProgress,magazine:gunMagazineMesh,meleeGrip,inspect:state.isInspecting?state.inspectTimer/2.2:0,dt});
             // Floating Blade Storm Daggers hover animation
             updateBladeStorm(bladeStormGroup,performance.now()/1000);
@@ -4002,7 +4015,8 @@
         function updateBotsAndVFX(dt) {
             sourceHeadshots.update(performance.now());
             const playerPos = spectatorView.active?spectatorView.camera.position:yawObject.position;
-            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
+            const nativeSmoke=jettSmokeCast.update(state.agent==='jett'&&state.isLocked&&!state.inBuyMenu&&state.hp>0);if(nativeSmoke)abilityCast.cancel();
+            abilityCast.update(dt,state.isLocked&&!state.inBuyMenu&&state.hp>0&&!omenKit.busy());gunGroup.visible=state.hp>0&&!fadeKit.blocked()&&!skyeKit.blocked()&&!razeKit.blocked()&&!astraKit.blocked()&&!viperKit.blocked()&&!breachKit.blocked()&&!neonKit.blocked()&&!cypherKit.blocked()&&!killjoyKit.blocked()&&!sovaKit.blocked()&&!reynaKit.blocked()&&!brimKit.blocked()&&!omenKit.busy()&&!cloveInvulnerable(state,cloveKit.now())&&!abilityCast.active&&!nativeSmoke&&!(state.isScoped&&FIREARMS[state.weaponKey]?.category==='sniper');
 
             // Update Expanding Smokes
             for (let i = smokeSpheres.length - 1; i >= 0; i--) {
@@ -4475,7 +4489,8 @@
             renderTrainingStats();
             updateShopUI();
             installSettingsImporter({state,setSensitivity:window.setTrainerSensitivity});
-            document.getElementById('melee-skin').value=state.meleeSkin;
+            const meleeSelect=document.getElementById('melee-skin');for(const skin of SKINS.filter(s=>s.weapon==='melee')){const o=document.createElement('option');o.value=skin.id;o.textContent=skin.label;meleeSelect.append(o);}meleeSelect.value=state.meleeSkin;
+            const collectionPanel=document.createElement('details');collectionPanel.className='skin-collection-panel';collectionPanel.open=false;collectionPanel.innerHTML='<summary>槍枝外觀收藏</summary>';for(const key of [...new Set(SKINS.filter(s=>s.weapon!=='melee').map(s=>s.weapon))]){const label=document.createElement('label');label.className='melee-skin-picker';label.textContent=key.toUpperCase();const select=document.createElement('select');select.dataset.skinWeapon=key;for(const skin of [{id:'base',label:key==='vandal'?'Gaia 紅色':'原版'},...SKINS.filter(s=>s.weapon===key)]){const o=document.createElement('option');o.value=skin.id;o.textContent=skin.label;select.append(o);}select.value=state.weaponSkins[key]||'base';select.onchange=()=>setWeaponSkin(key,select.value);label.append(select);collectionPanel.append(label);}meleeSelect.closest('label').after(collectionPanel);
             installTrainingPresets({state,inRoom:()=>!!currentRoomId,notice:abilityNotice,reset:resetRound,mode:window.setGameMode,duration:window.setTrainerDuration,weapon:equipWeaponSlot});
             animate();
             await loadActualMap();

@@ -1,9 +1,9 @@
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
-import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=fullarms1';
+import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=collection1';
 import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
-import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=fullarms1';
-import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=fullarms1';
+import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=collection1';
+import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=collection1';
 import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;

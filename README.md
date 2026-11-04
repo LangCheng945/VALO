@@ -730,3 +730,7 @@ Neon's `neon-props-1` update lets Overdrive destroy Cypher cameras/trap endpoint
 and Killjoy devices using normal lifecycle/cooldown rules. Multiplayer observers
 also see electric rings while Neon sprints, slides or equips Overdrive. These
 visuals clear on death, realm changes and disconnect.
+
+### Weapon skin collection and cast hands
+
+The buy sidebar now offers nine additional gun skins and six additional melee models, with source rigs, equip/reload/attack clips and melee inspect/heavy actions. Jett Cloudburst uses extracted first-person cast gestures. Local cosmetic preferences persist; weapon rules and multiplayer messages are unchanged. [Available skins, controls, source pins and limits](docs/weapon-collection.md).
