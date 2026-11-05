@@ -31,6 +31,8 @@ can affect actual billed rows.
   the checkpoint interval. Deletes cannot resurrect an earlier in-flight write.
 - Skill checkpoint records include map/round epochs. A new object reads legacy
   records and current checkpoints, but ignores records from previous rounds.
+  A nonempty legacy world is tagged immediately on its first read (one migration
+  write), so a crash during the next round transition cannot revive that device.
 - `RoomGameLoop` runs active simulation with ordinary memory timers and maintains
   a durable recovery alarm at about 30-second intervals. Idle and empty rooms
   retain durable scheduling. A native watchdog event does not run a second tick
@@ -68,7 +70,7 @@ Real-world savings vary with rooms, skill use, disconnects and map changes.
   a native 30-second watchdog, late join and reconnect.
 - `node --test lan/tests/*.test.mjs`: original memory-only LAN behavior.
 
-Public `/health` advertises `storage-checkpoints-1` and the checkpoint/recovery
+Public `/health` advertises `storage-checkpoints-1`, persistence policy version 2 and the checkpoint/recovery
 intervals. Once per minute a live room logs a `valo-storage` counter summary,
 without player names, tokens or positions. A room host can request
 `{type:'storage_stats'}` over its existing WebSocket; other members cannot obtain
@@ -94,7 +96,7 @@ reader, rather than blindly restoring the old Worker over live checkpoint data.
 
 ### Recorded validation
 
-- 108 selected rule/storage tests passed, including 12 persistence/recovery tests.
+- 109 selected rule/storage tests passed, including 13 persistence/recovery tests.
 - 11 real Worker room/round/Spike/44-skill checks passed.
 - Five real Worker clients stayed connected across the native watchdog: 1,490
   logical storage requests became 5 backend key writes, with 3 alarm writes over

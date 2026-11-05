@@ -1,5 +1,6 @@
 // Skill worlds are ephemeral simulation state. Keep the latest copy in memory,
 // checkpoint changes together, and fence each record by map/round on recovery.
+export const STORAGE_POLICY_VERSION=2;
 export const CHECKPOINT_MS=10000;
 export const RECOVERY_ALARM_MS=30000;
 const WORLDS=new Set(['agentBatchEffects','sprays','barriers','slow','cloveEffects','isoEffects','omenEffects','brimEffects','reynaEffects','sovaEffects','reconEffects','razeEffects','astraEffects','viperEffects','breachEffects','neonEffects','cypherEffects','killjoyEffects']);
@@ -19,12 +20,16 @@ export class RoomStorage {
   if(Array.isArray(key))return new Map((await Promise.all(key.map(async k=>[k,await this.get(k)]))).filter(([,v])=>v!==undefined));
   if(this.cache.has(key))return copy(this.cache.get(key).value);
   const raw=await this.raw.get(key);let value=raw;
-  if(WORLDS.has(key)&&raw?.__valoCheckpoint===1){const meta=await this.get('meta');value=raw.epoch===epoch(meta)?raw.data:undefined;}
+  if(WORLDS.has(key)){const meta=await this.get('meta');if(raw?.__valoCheckpoint===1)value=raw.epoch===epoch(meta)?raw.data:undefined;}
   const current=this.cache.get(key);if(current)return copy(current.value);
   const entry={value:copy(value),sig:signature(key,value),baseline:signature(key,value),exists:raw!==undefined,epoch:WORLDS.has(key)?epoch(this.cache.get('meta')?.value):null,persistedEpoch:raw?.__valoCheckpoint===1?raw.epoch:undefined,coreBaseline:key==='meta'?metaCore(value):null,rev:++this.revision};
   // An old-epoch checkpoint must eventually be removed, even if its logical value is empty.
   if(WORLDS.has(key)&&raw!==undefined&&value===undefined)entry.baseline='stale';
-  this.cache.set(key,entry);return copy(value);
+  this.cache.set(key,entry);
+  // Fence legacy nonempty worlds before accepting events: a round change must
+  // never expose an unversioned old device after a crash before the next flush.
+  if(WORLDS.has(key)&&raw!==undefined&&raw?.__valoCheckpoint!==1&&!empty(raw)){entry.baseline='legacy';this.dirty.add(key);await this.flushKeys([key]);}
+  return copy(value);
  }
  async put(key,value){
   const values=typeof key==='string'?{[key]:value}:key;this.stats.putRequests++;const immediate=[];

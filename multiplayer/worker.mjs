@@ -1,4 +1,4 @@
-import {optimizedRoomContext,CHECKPOINT_MS,RECOVERY_ALARM_MS} from './room-storage.mjs';
+import {optimizedRoomContext,CHECKPOINT_MS,RECOVERY_ALARM_MS,STORAGE_POLICY_VERSION} from './room-storage.mjs';
 import {resetBatch,batchSuppressed,batchImmobile,batchAttackBlocked,batchShotBlock,interceptBatchLethal,purgeBatchDebuffs,isFreshAbility} from './agent-batch-rules.mjs';
 import {batchEvent,tickBatch,liveBatchEffects,batchPublic} from './agent-batch-events.mjs';
 import {resetVyse,vysePublic,primaryJammed,vyseShotBlock,constrainVyse} from './vyse-rules.mjs';
@@ -51,7 +51,7 @@ const json=(body,status=200,headers={})=>Response.json(body,{status,headers});
 export default {
  async fetch(request,env){
   const url=new URL(request.url),origin=request.headers.get('Origin');
-  if((url.pathname==='/'||url.pathname==='/health')&&request.method==='GET')return json({ok:true,protocol:VERSION,service:'valo-multiplayer',maps:MAP_IDS,features:FEATURES,persistence:{checkpointMs:CHECKPOINT_MS,recoveryAlarmMs:RECOVERY_ALARM_MS,activeTicks:'memory'}});
+  if((url.pathname==='/'||url.pathname==='/health')&&request.method==='GET')return json({ok:true,protocol:VERSION,service:'valo-multiplayer',maps:MAP_IDS,features:FEATURES,persistence:{policyVersion:STORAGE_POLICY_VERSION,checkpointMs:CHECKPOINT_MS,recoveryAlarmMs:RECOVERY_ALARM_MS,activeTicks:'memory'}});
   if(!allowed(request,env))return json({error:'ORIGIN_NOT_ALLOWED'},403);
   const cors={'Access-Control-Allow-Origin':origin,'Vary':'Origin','Access-Control-Allow-Methods':'POST,GET,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Cache-Control':'no-store'};
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
