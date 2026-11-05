@@ -1,0 +1,59 @@
+name: Build Windows LAN download
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: lan-release-v1
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f35905370dd0ab10acdc0db40f05c980c0f2cf60
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.4'
+          cache: npm
+          cache-dependency-path: lan/package-lock.json
+      - name: Install build dependencies
+        run: npm --prefix lan ci --no-audit --no-fund
+      - name: Build portable Windows server and game assets
+        run: npm --prefix lan run build:windows
+        env:
+          VALO_LAN_DIST: ${{ runner.temp }}/ValoNow-LAN-Windows
+          VALO_LAN_BUILD_CACHE: ${{ runner.temp }}/valo-lan-build
+      - name: Package and verify archive
+        shell: python
+        env:
+          LAN_OUTPUT: ${{ runner.temp }}
+        run: |
+          import hashlib, os, zipfile
+          from pathlib import Path
+          output = Path(os.environ['LAN_OUTPUT'])
+          source = output / 'ValoNow-LAN-Windows'
+          exe = (source / 'ValoNow-LAN.exe').read_bytes()
+          assert exe[:2] == b'MZ'
+          assert b'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2:1' in exe
+          archive = output / 'ValoNow-LAN-Windows.zip'
+          with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
+              for item in sorted(source.rglob('*')):
+                  if item.is_file():
+                      z.write(item, 'ValoNow-LAN-Windows/' + item.relative_to(source).as_posix())
+          with zipfile.ZipFile(archive) as z:
+              assert z.testzip() is None
+              assert not any('node_modules/' in name for name in z.namelist())
+          checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+          (output / 'ValoNow-LAN-Windows.zip.sha256').write_text(checksum + '  ValoNow-LAN-Windows.zip\n')
+          print('Verified archive:', archive.stat().st_size, 'bytes; SHA-256', checksum)
+      - name: Upload assets and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          LAN_OUTPUT: ${{ runner.temp }}
+        run: |
+          gh release upload lan-v1.0.0 "$LAN_OUTPUT/ValoNow-LAN-Windows.zip" "$LAN_OUTPUT/ValoNow-LAN-Windows.zip.sha256" lan/README.zh-TW.md --clobber
+          gh release edit lan-v1.0.0 --draft=false
