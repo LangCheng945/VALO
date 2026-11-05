@@ -36,7 +36,7 @@ class LanRoom extends GameRoom{
 export class RoomRuntime{
  constructor(code,stats,onExpired=()=>{}){this.code=code;this.stats=stats;this.sockets=new Set();this.chain=Promise.resolve();this.closed=false;this.onExpired=onExpired;
   this.storage=new MemoryStorage(time=>{clearTimeout(this.timer);this.timer=setTimeout(()=>this.run(async()=>{await this.room.alarm();if(!this.room.meta&&!this.sockets.size)this.onExpired(this.code);}).catch(e=>console.error('LAN alarm:',e.message)),Math.max(1,time-Date.now()));this.timer.unref?.();});
-  const ctx={storage:this.storage,blockConcurrencyWhile:fn=>Promise.resolve().then(fn),acceptWebSocket:ws=>this.sockets.add(ws),getWebSockets:()=>[...this.sockets]};this.room=new LanRoom(ctx,{});
+  const ctx={storage:this.storage,blockConcurrencyWhile:fn=>Promise.resolve().then(fn),acceptWebSocket:ws=>this.sockets.add(ws),getWebSockets:()=>[...this.sockets]};this.room=new LanRoom(ctx,{LAN_MODE:true});
  }
  run(fn){const next=this.chain.then(()=>{if(this.closed)return;return fn();});this.chain=next.catch(()=>{});return next;}
  async create(body){return this.run(()=>this.room.fetch(new Request('http://lan/create',{method:'POST',body:JSON.stringify(body)})));}
