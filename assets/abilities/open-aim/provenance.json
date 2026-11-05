@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/unkwsr/open-aim",
+  "commit": "807f55721e64ca457d763c64a4a1de7b11e5f3eb",
+  "sourceDirectory": "site/aim-viewmodel",
+  "conversion": "Flash JSON and textures unchanged. Smoke binary meshes decoded using source renderer position/tangent/normal/UV/index layout; embedded AVIF converted losslessly to PNG. Renderer in VALO is an adapted Three.js implementation, not a claim of exact game shader parity.",
+  "sourceFlashFiles": [
+    "flashfx.sky.json",
+    "flashfx.rey.json",
+    "flashfx.vys.json",
+    "flashfx.brc.json"
+  ],
+  "sourceSmokeFiles": [
+    "smoke-omen-enemy.44b29d3c54.json",
+    "smoke-jett-enemy.73177dc412.json",
+    "smoke-omen-ally.8d8898e624.json"
+  ]
+}

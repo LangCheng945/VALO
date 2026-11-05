@@ -1,5 +1,5 @@
 import {FirstPersonHands,disposeViewmodel} from './first-person-view.js?v=surface2';
-import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=surface2';
+import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=sourcefx1';
 let payload;
 function source(){return payload||=Promise.all([fetch('./assets/detained/meta.json').then(r=>{if(!r.ok)throw Error('Detained metadata');return r.json()}),fetch('./assets/detained/arms.poses.bin').then(r=>{if(!r.ok)throw Error('Detained animation');return r.arrayBuffer()})]).then(([meta,b])=>({meta,frames:new Float32Array(b)})).catch(e=>{payload=null;throw e});}
 export class DetainedView{

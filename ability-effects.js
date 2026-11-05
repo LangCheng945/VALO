@@ -1,3 +1,4 @@
+import {attachSourceSmoke,updateSourceEffects} from './source-ability-effects.js?v=sourcefx1';
 import {attachSageOrb} from './referenced-props.js?v=props1';
 import {referencedAbilityIcon} from './ability-icons.mjs?v=original1';
 import {FirstPersonHands} from './first-person-view.js?v=surface2';
@@ -12,7 +13,7 @@ export const abilityIcon=referencedAbilityIcon;
 
 export function makeCloudburst(){
  const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*5.+vec3(time*.22,0.,time*.17));float band=pow(max(0.,sin(p.y*18.+atan(p.z,p.x)*2.7+n*3.-time*2.)),18.);float wisps=noise(p*19.+vec3(time*.5,-time*.15,0.));vec3 col=mix(vec3(.38,.52,.61),vec3(.78,.87,.90),n*.7+band*.15);col+=band*.07+wisps*.045;if(!gl_FrontFacing)col=mix(vec3(.34,.43,.50),col,.32);gl_FragColor=vec4(col,fade);}`,{side:T.DoubleSide,depthWrite:true});
- const mesh=new T.Mesh(new T.SphereGeometry(3.8,48,32),material);mesh.name='cloudburst-wind-shell';mesh.userData.smokeRadius=3.8;return mesh;
+ const mesh=new T.Mesh(new T.SphereGeometry(3.8,48,32),material);mesh.name='cloudburst-wind-shell';mesh.userData.smokeRadius=3.8;attachSourceSmoke(mesh,'jett');return mesh;
 }
 export function makeBrimSmoke(){
  const material=shader(`void main(){vec3 p=normalize(vP);float n=noise(p*7.+vec3(time*.13,0.,time*.1));vec3 c=mix(vec3(.22,.19,.14),vec3(.53,.44,.30),n);if(!gl_FrontFacing)c=mix(c,vec3(.24,.20,.15),.55);gl_FragColor=vec4(c,fade);}`,{side:T.DoubleSide,depthWrite:true});
@@ -42,7 +43,7 @@ export function makeSlowField(){
  for(let i=0;i<65;i++){const r=Math.sqrt(rand())*4.7,a=rand()*Math.PI*2,c=new T.Mesh(g,m);c.position.set(Math.cos(a)*r,Math.sin(a)*r,.05);c.scale.set(.5+rand(),.6+rand(),.3+rand());c.rotation.set(rand(),rand(),rand());mesh.add(c);}
  return mesh;
 }
-export function updateEffect(mesh,time,fade=1){mesh.traverse(child=>{const m=child.material;if(m?.uniforms?.time){m.uniforms.time.value=time;m.uniforms.fade.value=fade;}});}
+export function updateEffect(mesh,time,fade=1){updateSourceEffects(mesh,time);mesh.traverse(child=>{const m=child.material;if(m?.uniforms?.time){m.uniforms.time.value=time;m.uniforms.fade.value=fade;}});}
 export function disposeEffect(mesh){const geometries=new Set(),materials=new Set();mesh.traverse(c=>{c.userData.disposed=true;if(c.geometry)geometries.add(c.geometry);if(c.material)for(const m of Array.isArray(c.material)?c.material:[c.material])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());mesh.parent?.remove(mesh);}
 
 // Camera-local, brief equip/cast pose. Its silhouette stays below the crosshair.

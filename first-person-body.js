@@ -1,4 +1,4 @@
-import {AgentAvatar} from './phoenix-avatar.js?v=props1';
+import {AgentAvatar} from './phoenix-avatar.js?v=sourcefx1';
 const T=globalThis.THREE;
 function hull(points){const unique=[...new Map(points.map(p=>[p.x.toFixed(5)+','+p.z.toFixed(5),p])).values()].sort((a,b)=>a.x-b.x||a.z-b.z);if(unique.length<3)return unique;const cross=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x),lower=[],upper=[];for(const p of unique){while(lower.length>1&&cross(lower.at(-2),lower.at(-1),p)<=0)lower.pop();lower.push(p);}for(const p of [...unique].reverse()){while(upper.length>1&&cross(upper.at(-2),upper.at(-1),p)<=0)upper.pop();upper.push(p);}return lower.slice(0,-1).concat(upper.slice(0,-1));}
 // Keep the source clothing/legs intact; clip at a pose-following waist instead of dropping mixed-weight triangles.

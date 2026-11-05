@@ -1,4 +1,4 @@
-import {nativeArmResources,createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=surface2';
+import {nativeArmResources,createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=sourcefx1';
 const T=globalThis.THREE,cache=new Map(),resources=new Map();
 function trimResources(){const idle=[...resources.entries()].filter(([,r])=>r.refs===0).sort((a,b)=>a[1].used-b[1].used);while(idle.length>3){const[id,r]=idle.shift();resources.delete(id);for(const g of r.geometry.values())g.dispose();for(const promise of r.textures.values())promise.then(t=>t.dispose(),()=>{});}}
 function retainResources(id){let r=resources.get(id);if(!r){r={refs:0,used:0,geometry:new Map(),textures:new Map()};resources.set(id,r);}r.refs++;r.used=performance.now();return r;}
@@ -24,13 +24,14 @@ export async function loadCollectionModel(id,environment){const data=await paylo
  primary.userData.ownedTextures=[];primary.userData.releaseResources=release;primary.userData.collectionSkin=true;primary.userData.collectionData={...data,gunBones:bones,partModels,qa:new T.Quaternion(),qb:new T.Quaternion()};return primary;
  }catch(error){release();throw error;}
 }
-export async function collectionArmData(model,hands){const data=model.userData.collectionData;if(!data.meta.captured)return data;
- const variant=hands.agent==='jett'?'jett':'phoenix',meta={...data.meta};let armGeometry,armInfo=structuredClone(meta.arms),trackAliases={};
- if(variant==='phoenix')armGeometry=geometry(data.body,armInfo);else{const base=await nativeArmResources('jett');armGeometry=base.geometry.clone();armGeometry.userData.sharedWeaponGeometry=false;const r=armInfo.skeleton,baseRig=base.info.skeleton,remap=[];
-  for(const name of baseRig.names){const target='phoenix:'+name;let ix=r.names.indexOf(target);if(ix<0){ix=r.names.length;r.names.push(target);r.parents.push(0);r.t.push(0,0,0);r.q.push(0,0,0,1);const parent=baseRig.names[baseRig.parents[baseRig.names.indexOf(name)]];trackAliases[target]='phoenix:'+parent;}remap.push(ix);}
-  const old=armGeometry.attributes.skinIndex,a=new Uint16Array(old.count*4);for(let i=0;i<a.length;i++)a[i]=remap[old.array[i]];armGeometry.setAttribute('skinIndex',new T.Uint16BufferAttribute(a,4));armInfo={...armInfo,verts:base.info.verts,tris:base.info.tris};
- }
- return{...data,meta,armGeometry,armInfo,trackAliases};
+let phoenixArmMap;
+function sourceArmMap(){if(!phoenixArmMap)phoenixArmMap=new T.TextureLoader().loadAsync('./assets/phoenix-hands/albedo.png').then(map=>{map.flipY=false;map.encoding=T.sRGBEncoding;return map});return phoenixArmMap;}
+export async function collectionArmData(model,hands){
+ const data=model.userData.collectionData,armMap=await sourceArmMap();
+ // Collection clips were authored for Phoenix. Never remap a different
+ // character's skin indices onto missing finger bones with zero bind offsets.
+ if(!data.meta.captured)return {...data,armVariant:'phoenix',armMap};
+ return {...data,armVariant:'phoenix',armMap,armGeometry:geometry(data.body,data.meta.arms),armInfo:data.meta.arms};
 }
 export function updateCollectionModel(model,controller){const d=model?.userData.collectionData;if(!d)return;const name=controller.clip||'idle',clip=d.meta.gunClips[name]||d.meta.gunClips.idle,r=d.meta.gunRig;
  for(let i=0;i<d.gunBones.length;i++){d.gunBones[i].position.fromArray(r.t,i*3);d.gunBones[i].quaternion.fromArray(r.q,i*4).normalize();d.gunBones[i].scale.set(1,1,1);}if(!clip||!d.gunFrames)return;

@@ -1,6 +1,6 @@
 import{VIPER as V,viperState,tickViperFuel,viperFlight,inViperGas,poisonViper,viperWallBlocks,resetViper}from'./multiplayer/viper-rules.mjs?v=viper1';
 import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=neon2';import{FirstPersonHands}from'./first-person-view.js?v=phoenix1';
+import{disposeEffect}from'./ability-effects.js?v=sourcefx1';import{FirstPersonHands}from'./first-person-view.js?v=phoenix1';
 const T=globalThis.THREE;
 function gasMaterial(){return new T.ShaderMaterial({transparent:true,side:T.DoubleSide,depthWrite:false,uniforms:{time:{value:0}},vertexShader:'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float time;varying vec3 p;void main(){float w=sin(p.x*3.+p.y*4.-time*1.8)*sin(p.z*2.-time);vec3 c=mix(vec3(.045,.19,.015),vec3(.33,.72,.07),w*.5+.5);gl_FragColor=vec4(c,.96);}'});}
 function wallMesh(path){const a=[];for(let i=1;i<path.length;i++){const p=path[i-1],q=path[i];a.push(p.x,p.y,p.z,q.x,q.y,q.z,p.x,p.y+V.wallHeight,p.z,p.x,p.y+V.wallHeight,p.z,q.x,q.y,q.z,q.x,q.y+V.wallHeight,q.z);}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(a,3));g.computeVertexNormals();return new T.Mesh(g,gasMaterial());}

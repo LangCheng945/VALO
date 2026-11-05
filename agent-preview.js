@@ -1,4 +1,4 @@
-import {AgentAvatar} from './phoenix-avatar.js?v=props1';
+import {AgentAvatar} from './phoenix-avatar.js?v=sourcefx1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE;
 // A separate small preview scene. It only runs while the character picker is open;

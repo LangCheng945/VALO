@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {webcrypto} from 'node:crypto';
+import {vyseEvent,tickVyse} from '../multiplayer/vyse-events.mjs';
+globalThis.crypto ||= webcrypto;
+const now=100000,events=[],errors=[],a={},b={};let alarm;
+const players=new Map([[a,{uid:'a',joined:true,agent:'vyse',team:'attack',hp:100,active:true,x:0,y:2,z:0,yaw:0}],[b,{uid:'b',joined:true,agent:'jett',team:'defend',hp:100,active:true,x:0,y:2,z:-8,yaw:Math.PI}]]);
+const room={rounds:{enabled:true},meta:{round:{phase:'playing'}},sockets:()=>[...players.keys()],data:w=>structuredClone(players.get(w)),save:(w,p)=>players.set(w,structuredClone(p)),send:(w,m)=>errors.push(m),broadcast:m=>events.push(m.event),snapshot(){},ctx:{storage:{setAlarm:async n=>{alarm=n}}}};
+const act=(w,m,n=now)=>vyseEvent(room,w,room.data(w),m,n);
+await act(a,{type:'vyse_place',x:0,y:2,z:-50,nx:0,ny:0,nz:1});assert(!room.data(a).vyseFlower,'reject distant placement');
+await act(b,{type:'vyse_place',x:0,y:2,z:-6,nx:0,ny:0,nz:1});assert(!room.data(b).vyseFlower,'other agents cannot deploy');
+await act(a,{type:'vyse_place',x:0,y:2,z:-6,nx:0,ny:0,nz:1});let f=room.data(a).vyseFlower;assert(f?.hp===125);assert.equal(events.at(-1).type,'vyse_flower');
+await act(a,{type:'vyse_pop'},now+500);assert(!room.data(a).vyseFlower.firesAt,'arming delay enforced');
+await act(a,{type:'vyse_pop'},now+1500);f=room.data(a).vyseFlower;assert.equal(f.firesAt,now+2000);assert(alarm);assert(room.data(a).vyseReadyAt>f.firesAt);
+await act(b,{type:'vyse_seen',id:f.id},f.firesAt-1);assert(!room.data(b).breachFlashUntil,'cannot flash early');
+await act(b,{type:'vyse_seen',id:f.id},f.firesAt);assert(room.data(b).breachFlashUntil>f.firesAt,'enemy receives flash');
+await tickVyse(room,f.expiresAt+1);assert.equal(room.data(a).vyseFlower,null);assert.equal(events.at(-1).type,'vyse_remove');
+await act(a,{type:'vyse_place',x:0,y:2,z:-6,nx:0,ny:0,nz:1},f.expiresAt+2);assert(!room.data(a).vyseFlower,'cooldown enforced');
+const ready=room.data(a).vyseReadyAt;await act(a,{type:'vyse_place',x:0,y:2,z:-6,nx:0,ny:0,nz:1},ready);f=room.data(a).vyseFlower;
+await act(b,{type:'vyse_hit',id:f.id},ready+100);assert.equal(room.data(a).vyseFlower.hp,125,'reject damage without accepted shot');
+for(let i=0;i<4;i++){const n=ready+200+i*200,p=room.data(b);Object.assign(p,{lastShot:n,shotUsed:false,shotEnd:{x:0,y:2,z:-6}});room.save(b,p);await act(b,{type:'vyse_hit',id:f.id},n);}
+assert.equal(room.data(a).vyseFlower,null,'accepted shots destroy rose');
+await act(a,{type:'vyse_place',x:0,y:2,z:-6,nx:0,ny:0,nz:1},ready+30000);assert(room.data(a).vyseFlower);room.meta.round.phase='ending';await tickVyse(room,ready+30100);assert.equal(room.data(a).vyseFlower,null,'round ending removes rose');
+console.log('PASS Vyse placement, arming, activation, flash window, cooldown, accepted-shot damage and round cleanup');

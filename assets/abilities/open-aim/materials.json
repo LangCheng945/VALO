@@ -1,0 +1,348 @@
+{
+  "core": {
+    "shader": "core",
+    "textures": [
+      "PandemicTearAwaySimple_TFX_Grayscale",
+      "FlowMap_1_TEX"
+    ]
+  },
+  "targlide": {
+    "shader": "targlide",
+    "textures": [
+      "Wraith_4Xtile_Grayscale",
+      "FlowMap_1_TEX"
+    ]
+  },
+  "targlideProj": {
+    "shader": "targlideProj",
+    "textures": [
+      "Wraith_4Xtile_Grayscale",
+      "Wraith_4Xtile90_Grayscale"
+    ]
+  },
+  "eyeGlobe": {
+    "shader": "eyeGlobe",
+    "textures": [
+      "PandemicTearAwaySimple_TFX_Grayscale"
+    ]
+  },
+  "eyeTarglide": {
+    "shader": "eyeTarglide",
+    "textures": [
+      "Wraith_4Xtile90_Grayscale",
+      "T_Mask_Gradient_Falloff"
+    ]
+  },
+  "orbEye": {
+    "shader": "orbEye",
+    "textures": [
+      "GlowA01_DIFF"
+    ]
+  },
+  "orbEyeGlow": {
+    "shader": "orbEye",
+    "textures": [
+      "GlowA01_DIFF"
+    ]
+  },
+  "eyeShine": {
+    "shader": "eyeShine",
+    "textures": [
+      "T_Mask_Light_Soft"
+    ]
+  },
+  "glowSphere": {
+    "shader": "glowSphere",
+    "textures": []
+  },
+  "glowSphereFoe": {
+    "shader": "glowSphere",
+    "textures": []
+  },
+  "glowSphereE": {
+    "shader": "glowSphere",
+    "textures": []
+  },
+  "radial": {
+    "shader": "radial",
+    "textures": [
+      "Env_TilingDissolve_1",
+      "T_Mask_Ramp_TopDown_Clamped"
+    ]
+  },
+  "swirl": {
+    "shader": "swirl",
+    "textures": [
+      "Wraith_Strand_falloff_Grayscale",
+      "Wraith_Dissolve_Strip_Grayscale",
+      "vampire_alphaGradientB"
+    ]
+  },
+  "tarRibbon": {
+    "shader": "tarRibbon",
+    "textures": [
+      "GradientDouble_TEX",
+      "T_Wraith_Ribbon_Tile",
+      "ThorneEnergyScroll_B"
+    ]
+  },
+  "tarRibbonFoe": {
+    "shader": "tarRibbon",
+    "textures": [
+      "GradientDouble_TEX",
+      "T_Wraith_Ribbon_Tile",
+      "ThorneEnergyScroll_B"
+    ]
+  },
+  "goo": {
+    "shader": "goo",
+    "textures": [
+      "Wraith_4Xtile90_Grayscale",
+      "Wraith_Body_mask",
+      "GradientDouble_TEX"
+    ]
+  },
+  "smokeRing": {
+    "shader": "smoke",
+    "textures": [
+      "SmokeRadial_4x2_TFX"
+    ]
+  },
+  "smokePoof": {
+    "shader": "smoke",
+    "textures": [
+      "SmokeRadial_4x2_TFX"
+    ]
+  },
+  "suckIn": {
+    "shader": "suckIn",
+    "textures": [
+      "Radianite_Electrity_4x3"
+    ]
+  },
+  "spriteCircle": {
+    "shader": "sprite",
+    "textures": [
+      "T_Mask_Circle"
+    ]
+  },
+  "spriteGlowGrad": {
+    "shader": "sprite",
+    "textures": [
+      "T_Mask_Circle_Gradient"
+    ]
+  },
+  "spriteFlare": {
+    "shader": "sprite",
+    "textures": [
+      "Vampire_Orb_Flare"
+    ]
+  },
+  "spriteSoft": {
+    "shader": "sprite",
+    "textures": [
+      "T_Mask_Light_Soft"
+    ]
+  },
+  "spriteFlareWide": {
+    "shader": "sprite",
+    "textures": [
+      "T_Flare_Wide_01"
+    ]
+  },
+  "spark": {
+    "shader": "sprite",
+    "textures": [
+      "Pandemic_Ember_Grayscale"
+    ]
+  },
+  "brcHot": {
+    "shader": "tex",
+    "textures": [
+      "GodRay5A_TFX"
+    ]
+  },
+  "brcRay": {
+    "shader": "tex",
+    "textures": [
+      "GodRayLayered_TFX"
+    ]
+  },
+  "brcGlowAdd": {
+    "shader": "tex",
+    "textures": [
+      "GlowA01_DIFF"
+    ]
+  },
+  "brcCracks": {
+    "shader": "decal",
+    "textures": [
+      "CrackTile_Inverse_Grayscale"
+    ]
+  },
+  "brcFlashRay": {
+    "shader": "tex",
+    "textures": [
+      "GodRayLayered_TFX"
+    ]
+  },
+  "brcSmallFlare": {
+    "shader": "tex",
+    "textures": [
+      "T_Flare_Wide_01"
+    ]
+  },
+  "brcBallAdd": {
+    "shader": "ball",
+    "textures": []
+  },
+  "skyLeaf": {
+    "shader": "leaf",
+    "textures": [
+      "Leaves24x4"
+    ]
+  },
+  "skyBallAdd": {
+    "shader": "ball",
+    "textures": []
+  },
+  "skyBallTrans": {
+    "shader": "ball",
+    "textures": []
+  },
+  "skyRing": {
+    "shader": "ring",
+    "textures": [
+      "Leaves24x4"
+    ]
+  },
+  "skyRay": {
+    "shader": "tex",
+    "textures": [
+      "GodRayLayered_TFX"
+    ]
+  },
+  "skyGlow": {
+    "shader": "tex",
+    "textures": [
+      "T_Mask_Circle_01"
+    ]
+  },
+  "skyShine": {
+    "shader": "tex",
+    "textures": [
+      "T_Flare_Wide_01"
+    ]
+  },
+  "skyStar": {
+    "shader": "tex",
+    "textures": [
+      "Star_Sparkle_Anim"
+    ]
+  },
+  "skySpark": {
+    "shader": "tex",
+    "textures": [
+      "Sparkles"
+    ]
+  },
+  "skyHawk": {
+    "shader": "hawk",
+    "textures": [
+      "TP_Hawk_S0_DF",
+      "Wraith_4Xtile_Grayscale"
+    ]
+  },
+  "yruGlowAdd": {
+    "shader": "tex",
+    "textures": [
+      "tex_glow_01"
+    ]
+  },
+  "yruGlowTrans": {
+    "shader": "tex",
+    "textures": [
+      "tex_glow_01"
+    ]
+  },
+  "yruTrail": {
+    "shader": "tex",
+    "textures": [
+      "tex_glow_01"
+    ]
+  },
+  "yruDecal": {
+    "shader": "decal",
+    "textures": [
+      "tex_X_crackEquip"
+    ]
+  },
+  "yruFerro": {
+    "shader": "ferro",
+    "textures": []
+  },
+  "yruShaft": {
+    "shader": "shaft",
+    "textures": [
+      "LightShaft_TEX"
+    ]
+  },
+  "yruDot": {
+    "shader": "dot",
+    "textures": [
+      "tex_glow_01"
+    ]
+  },
+  "yruRay": {
+    "shader": "tex",
+    "textures": [
+      "LightShaft_TEX"
+    ]
+  },
+  "yruFlash": {
+    "shader": "tex",
+    "textures": [
+      "FlashLocation_TEX"
+    ]
+  },
+  "yruShard": {
+    "shader": "tex",
+    "textures": [
+      "CrystalShards_TEX"
+    ]
+  },
+  "yruLiquid": {
+    "shader": "liquid",
+    "textures": [
+      "tex_liquid_sheet_03"
+    ]
+  },
+  "vysRay": {
+    "shader": "tex",
+    "textures": [
+      "LightShaft_TEX"
+    ]
+  },
+  "vysShock": {
+    "shader": "radialGlow",
+    "textures": []
+  },
+  "vysSpark": {
+    "shader": "tex",
+    "textures": [
+      "tex_glow_01"
+    ]
+  },
+  "vysDrop": {
+    "shader": "tex",
+    "textures": [
+      "tex_glow_01"
+    ]
+  },
+  "vysRose": {
+    "shader": "rose",
+    "textures": [
+      "AB_Nox_S0_Flower_DF"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 import{createIsoArena,disposeIsoArenaTextures}from'./iso-arena.js?v=neon2';
 import{ISO,isoState,focusActive,isoDamage,resetIso,wallPosition,projectilePosition,pointSegmentDistance,duelSpawn,duelCovers,sameRealm}from'./multiplayer/iso-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=neon2';
+import{disposeEffect}from'./ability-effects.js?v=sourcefx1';
 const T=globalThis.THREE;
 function purple(color=0x9c75f0,opacity=.65){return new T.MeshBasicMaterial({color,transparent:true,opacity,side:T.DoubleSide,depthWrite:false});}
 function wallMesh(){const mesh=new T.Mesh(new T.PlaneGeometry(ISO.wallWidth,ISO.wallHeight),purple(0x8f6ed2,.48));mesh.name='iso-moving-bullet-wall';const edge=new T.LineSegments(new T.EdgesGeometry(mesh.geometry),new T.LineBasicMaterial({color:0xe5ccff}));mesh.add(edge);for(const x of [-2,0,2]){const line=new T.Mesh(new T.PlaneGeometry(.035,ISO.wallHeight),purple(0xe2baff,.9));line.position.set(x,0,.01);mesh.add(line);}return mesh;}

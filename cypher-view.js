@@ -2,7 +2,7 @@ import{CYPHER as C,cypherState,cameraControl,cypherBusy,cypherFlight,wireContact
 import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
 import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';
 import{reveal}from'./multiplayer/sova-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=neon2';
+import{disposeEffect}from'./ability-effects.js?v=sourcefx1';
 import{loadAbilityModel,loadCageGeometry}from'./ability-models.js?v=neon2';
 const T=globalThis.THREE;
 export function makeCypherCage(){const material=new T.ShaderMaterial({transparent:true,side:T.DoubleSide,depthWrite:false,uniforms:{time:{value:0},fade:{value:1}},vertexShader:'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float time;uniform float fade;varying vec3 p;void main(){float band=pow(.5+.5*sin(p.y*10.-time*4.+sin(p.x*2.+p.z)*.5),8.);float dash=step(.85,fract(atan(p.z,p.x)*9.+time*.15))*step(.8,fract(p.y*1.5-time*.5));vec3 color=mix(vec3(.22,.28,.3),vec3(.65,.9,.95),band*.6+dash*.5);gl_FragColor=vec4(color,(.83+band*.15)*fade);}'});const mesh=new T.Mesh(new T.CylinderGeometry(C.cageRadius,C.cageRadius,C.cageHeight,32,1,true),material);mesh.name='cypher-cyber-cage';mesh.userData.smokeRadius=C.cageRadius;loadCageGeometry().then(g=>{if(!mesh.parent){g.dispose();return;}mesh.geometry.dispose();mesh.geometry=g;mesh.userData.abilityAssetReady=true;mesh.userData.assetSource='staticaron/CypherAgent';}).catch(()=>{});return mesh;}

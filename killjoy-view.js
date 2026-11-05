@@ -1,7 +1,7 @@
 import {attachLockdownModel} from './lockdown-model.js?v=lockdown1';
 import{KJ,killjoyState,detained,resetKilljoy,deviceOnline,turretFacing,killjoyFlight}from'./multiplayer/killjoy-rules.mjs?v=neon2';
 import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=neon2';
+import{disposeEffect}from'./ability-effects.js?v=sourcefx1';
 const T=globalThis.THREE;
 export class KilljoyKit{
  constructor(api){this.api=api;this.devices=new Map();this.flights=new Map();this.bursts=[];this.mode=null;this.selected=null;this.yaw=0;this.pendingUntil=0;this.scanAt=0;this.moveSendAt=0;this.wasDetained=false;
