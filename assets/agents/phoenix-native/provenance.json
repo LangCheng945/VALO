@@ -1,0 +1,16 @@
+{
+  "author": "BojanV06",
+  "declaredAssetLicense": "CC-BY-4.0",
+  "source": "https://sketchfab.com/3d-models/phoenix-fighting-stance-bcc9e29d2a044802bf0bcc8e9d68880d",
+  "sourceRepository": "https://github.com/abdullah-nadeem-lodhi/Valorant-3D-Immersive-Guide",
+  "sourceCommit": "0813765657a56d5722760dd0db3a47ac22dc6876",
+  "sourcePath": "public/phoenix/phoenix_animated.glb",
+  "sourceBytes": 5981616,
+  "sourceSha256": "46b84d62a9a723d4cf113dc6f269dae7a8d8828954025e74f1f02b1b007544f2",
+  "runtimeBytes": 3105548,
+  "runtimeSha256": "0529160529ffa0f7954e03c3fff3237f203aa70a575d1ef45cc601a6ac88f7eb",
+  "processing": "Texture ceiling 1024; unused idle clip omitted. Skin retained, existing pinned open-aim motions retargeted. New wire ID phoenix-original preserves Sage ID phoenix.",
+  "motionSource": "../provenance.json",
+  "feature": "agent-phoenix-1",
+  "abilityStatus": "Firearms, melee and Spike available; Phoenix abilities not implemented."
+}

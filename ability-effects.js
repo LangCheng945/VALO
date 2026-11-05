@@ -1,5 +1,6 @@
+import {attachSageOrb} from './referenced-props.js?v=props1';
 import {referencedAbilityIcon} from './ability-icons.mjs?v=original1';
-import {FirstPersonHands} from './first-person-view.js?v=neon2';
+import {FirstPersonHands} from './first-person-view.js?v=surface2';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;
 const vertex=`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -30,8 +31,8 @@ export function makeBarrierPreview(){
 }
 export function makeSlowOrb(){
  const root=new T.Group();root.name='sage-thrown-slow-orb';
- const shell=new T.Mesh(new T.SphereGeometry(.16,20,16),shader(`void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float veins=pow(1.-abs(sin(vP.x*50.+vP.y*35.+noise(vP*20.)*3.)),12.);gl_FragColor=vec4(vec3(.05,.65,.58)+rim*vec3(.25,.35,.3)+veins*.25,.83);}`,{depthWrite:true}));root.add(shell);
- const core=new T.Mesh(new T.IcosahedronGeometry(.08,0),new T.MeshBasicMaterial({color:0xabffe2}));core.rotation.z=.4;root.add(core);return root;
+ const shell=new T.Mesh(new T.SphereGeometry(.16,20,16),shader(`uniform float nativeFade;void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float veins=pow(1.-abs(sin(vP.x*50.+vP.y*35.+noise(vP*20.)*3.)),12.);gl_FragColor=vec4(vec3(.05,.65,.58)+rim*vec3(.25,.35,.3)+veins*.25,.83*nativeFade);}`,{depthWrite:true}));shell.material.uniforms.nativeFade={value:1};root.add(shell);
+ const core=new T.Mesh(new T.IcosahedronGeometry(.08,0),new T.MeshBasicMaterial({color:0xabffe2}));core.rotation.z=.4;root.add(core);root.userData.propReady=attachSageOrb(root,.29).then(model=>{if(model){shell.material.depthWrite=false;shell.material.uniforms.nativeFade.value=.25;core.visible=false;}return !!model;});return root;
 }
 export function makeSlowField(){
  const material=shader(`void main(){vec2 p=vP.xy;float edge=1.-smoothstep(4.35,5.,length(p));vec2 grid=floor(p*2.7),f=fract(p*2.7);float first=10.,second=10.;for(int y=-1;y<=1;y++){for(int x=-1;x<=1;x++){vec2 cell=vec2(float(x),float(y));vec2 jitter=vec2(hash(vec3(grid+cell,1.)),hash(vec3(grid+cell,3.)));float d=length(cell+jitter-f);if(d<first){second=first;first=d;}else{second=min(second,d);}}}float cracks=1.-smoothstep(.012,.065,second-first);float frost=noise(vec3(p*11.,0.));float glint=pow(max(0.,sin(frost*20.+time*.7)),18.);vec3 c=mix(vec3(.035,.28,.29),vec3(.20,.65,.55),noise(vec3(p*2.,1.)));c+=cracks*vec3(.18,.34,.30)+glint*.045;gl_FragColor=vec4(c,edge*.56*fade);}`,{side:T.DoubleSide});
@@ -42,21 +43,22 @@ export function makeSlowField(){
  return mesh;
 }
 export function updateEffect(mesh,time,fade=1){mesh.traverse(child=>{const m=child.material;if(m?.uniforms?.time){m.uniforms.time.value=time;m.uniforms.fade.value=fade;}});}
-export function disposeEffect(mesh){const geometries=new Set(),materials=new Set();mesh.traverse(c=>{if(c.geometry)geometries.add(c.geometry);if(c.material)materials.add(c.material);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());mesh.parent?.remove(mesh);}
+export function disposeEffect(mesh){const geometries=new Set(),materials=new Set();mesh.traverse(c=>{c.userData.disposed=true;if(c.geometry)geometries.add(c.geometry);if(c.material)for(const m of Array.isArray(c.material)?c.material:[c.material])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());mesh.parent?.remove(mesh);}
 
 // Camera-local, brief equip/cast pose. Its silhouette stays below the crosshair.
 export class AbilityCastView {
  constructor(camera){
   this.root=new T.Group();this.root.name='ability-cast-hands';camera.add(this.root);this.root.visible=false;this.remaining=0;this.elapsed=0;this.hands=new T.Group();this.root.add(this.hands);
   this.handsRig=new FirstPersonHands('jett','orb',null);this.root.remove(this.hands);this.hands=this.handsRig.root;this.root.add(this.hands);
-  const orbMat=shader(`uniform float cloveTint;void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);c=mix(c,vec3(.18,.12,.46)*(.55+rim*.55+n*.35),cloveTint);gl_FragColor=vec4(c,.65+rim*.32);}`,{side:T.FrontSide});
+  const orbMat=shader(`uniform float nativeFade;uniform float cloveTint;void main(){float rim=pow(1.-abs(normalize(vN).z),2.);float n=noise(vP*18.+vec3(time*.35));vec3 c=mix(vec3(.04,.38,.36),vec3(.12,1.,.78),rim*.65+n*.5);c=mix(c,vec3(.18,.12,.46)*(.55+rim*.55+n*.35),cloveTint);gl_FragColor=vec4(c,(.65+rim*.32)*nativeFade);}`,{side:T.FrontSide});
   this.orb=new T.Group();this.orb.position.set(.10,-.15,-.75);this.root.add(this.orb);
-  orbMat.uniforms.cloveTint={value:0};this.orb.add(new T.Mesh(new T.SphereGeometry(.145,32,24),orbMat));
+  orbMat.uniforms.nativeFade={value:1};orbMat.uniforms.cloveTint={value:0};this.orb.add(new T.Mesh(new T.SphereGeometry(.145,32,24),orbMat));
   const core=new T.Mesh(new T.IcosahedronGeometry(.043,1),new T.MeshBasicMaterial({color:0x71ffe6}));core.scale.set(.7,1.25,.7);this.orb.add(core);
   for(let i=0;i<3;i++){const ring=new T.Mesh(new T.TorusGeometry(.151,.0035,6,64),new T.MeshBasicMaterial({color:0x40f4d0,transparent:true,opacity:.18}));ring.rotation.set(i*.9,.4+i*.6,0);this.orb.add(ring);}
   this.wind=new T.Group();this.root.add(this.wind);for(let i=0;i<7;i++){const w=new T.Mesh(new T.TorusGeometry(.43+i*.035,.003,4,28,1.4),new T.MeshBasicMaterial({color:0xc8edf4,transparent:true,opacity:.4,depthTest:false}));w.position.z=-.8-i*.06;w.rotation.z=i*2.4;this.wind.add(w);}
  }
- setAgent(agent){this.handsRig.setAgent(agent);const purple=['clove','iso','omen','reyna'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);}
+ setAgent(agent){this.agent=agent;this.handsRig.setAgent(agent);const purple=['clove','iso','omen','reyna'].includes(agent);this.orb.children[0].material.uniforms.cloveTint={value:purple?1:0};this.orb.children[1].material.color.setHex(purple?0xf9b5ff:0x71ffe6);for(const ring of this.orb.children.slice(2))if(ring.material)ring.material.color.setHex(purple?0xc8a1ef:0x40f4d0);if(agent==='phoenix'&&!this.orbPromise)this.orbPromise=attachSageOrb(this.orb,.28).then(model=>{this.referencedOrb=model;this.syncOrb();});this.syncOrb();}
+ syncOrb(){const native=this.agent==='phoenix'&&!!this.referencedOrb;if(this.referencedOrb)this.referencedOrb.visible=native;this.orb.children[0].material.uniforms.nativeFade.value=native?.28:1;this.orb.children[1].visible=!native;}
  get active(){return this.held||this.remaining>0;}
  play(kind,duration=.85){this.held=false;this.kind=kind;this.duration=duration;this.remaining=duration;this.elapsed=0;this.root.visible=true;this.hands.visible=this.orb.visible=kind==='orb';this.wind.visible=kind==='wind';}
  holdOrb(){this.play('orb',1);this.held=true;this.root.position.y=0;}

@@ -15,3 +15,13 @@ The community VALORANT API currently lists five Skirmish maps. This API supplies
 Source: https://valorant-api.com/v1/maps?language=en-US
 
 No matching Skirmish A–E, Duel_1–3, Duel_Heady or Duel_Platform scene assets are present in the recursively inspected unkwsr/open-aim commit 807f55721e64ca457d763c64a4a1de7b11e5f3eb. Existing exported maps are not Skirmish maps and should not be relabelled as such. No complete downloadable 3D level was confirmed in GitHub repository search. These maps have not been added to game selection.
+
+
+## Follow-up search
+
+Rechecked the complete open-aim HEAD tree (still `807f55721e64ca457d763c64a4a1de7b11e5f3eb`), targeted GitHub code searches for `Duel_Heady` / `Skirmish_A` and model-format filenames, and Sketchfab searches for Skirmish A/B/C. Matching code results were metadata/catalog records; no downloadable VALORANT Skirmish level was confirmed. Search absence does not prove a model does not exist elsewhere.
+
+Alternative conversion tools, not ready-made levels:
+
+- [Uiana MapImporter](https://github.com/djhaled/Uiana-MapImporter/tree/1b27bd4639ea038289133f1c8306d2fcd574280b) imports game archives into Unreal Engine, including map geometry/materials/lights. Its inspected `umaps.json` preset list has no Skirmish/Duel maps, so support for these maps is not verified. It requires local game files, UE5 and the documented export/import dependencies.
+- [ValorantPorting](https://github.com/Ka1serM/ValorantPorting/tree/488eadd4f0a77a2d9f1908f5f2a796c28d3ed70c) is an asset-to-Blender workflow. Its inspected export switch handles characters, weapons and gun buddies; it is not evidence of complete Skirmish map export or skill-prop support.

@@ -1,0 +1,25 @@
+{
+  "author": "BojanV06",
+  "declaredAssetLicense": "CC-BY-4.0",
+  "sourceRepository": "https://github.com/abdullah-nadeem-lodhi/Valorant-3D-Immersive-Guide",
+  "sourceCommit": "0813765657a56d5722760dd0db3a47ac22dc6876",
+  "sources": {
+    "sova": "https://sketchfab.com/3d-models/sova-fighting-stance-ff28941ea4b24e5f8736d14d506c15b1",
+    "sage": "https://sketchfab.com/3d-models/sage-fighting-stance-bd892217cebc457ba79b95d301704a43"
+  },
+  "processing": "Static posed mesh extraction, normals and tangents rebuilt; PBR and emission tuned for browser rendering. Sage one sphere selected, atlas cropped to 90x90, UV remapped. Source metres, centred origin. Bow is a folded source prop with trainer-authored draw/string movement.",
+  "files": {
+    "sova-bow.glb": {
+      "bytes": 397820,
+      "sha256": "d45b810f03ecab8c179af905d9624d531abcba27729d9be4cb253b1c52c1c4af"
+    },
+    "sage-orb.glb": {
+      "bytes": 11160,
+      "sha256": "7bb01fd448b631f749e2f05e43184f4264d17bf609e6d98a29187378b21d43fe"
+    },
+    "sova-gauntlet.glb": {
+      "bytes": 160104,
+      "sha256": "d31e82b881e0482e86b88f91191a46552efe5a16daeeebb18c8bbd1ffc19e61d"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import{finite,validPose}from'./protocol.mjs';
-export const FEATURES=Object.freeze(['map-mechanisms-1','sunset-door-1','rounds','resurrection','guided-smoke','ally-heal','sprays','segmented-barrier','thrown-slow','blade-volley','map-change','match-rules','public-random-map','spike','armory','agent-models-4','agent-models-28','clove-kit-1','iso-kit-1','omen-kit-1','brimstone-kit-1','reyna-kit-1','sova-kit-1','killjoy-kit-1','cypher-kit-1','recon-kits-1','raze-kit-1','astra-kit-1','viper-kit-1','breach-kit-1','neon-kit-1','neon-props-1','neon-props-2']);
+export const FEATURES=Object.freeze(['agent-phoenix-1','map-mechanisms-1','sunset-door-1','rounds','resurrection','guided-smoke','ally-heal','sprays','segmented-barrier','thrown-slow','blade-volley','map-change','match-rules','public-random-map','spike','armory','agent-models-4','agent-models-28','clove-kit-1','iso-kit-1','omen-kit-1','brimstone-kit-1','reyna-kit-1','sova-kit-1','killjoy-kit-1','cypher-kit-1','recon-kits-1','raze-kit-1','astra-kit-1','viper-kit-1','breach-kit-1','neon-kit-1','neon-props-1','neon-props-2']);
 const unit=(m,keys)=>keys.every(k=>finite(m[k],-1.1,1.1))&&Math.abs(Math.hypot(...keys.map(k=>m[k]))-1)<.15;
 const point=m=>validPose({...m,yaw:0});
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);

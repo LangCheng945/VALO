@@ -1,6 +1,7 @@
 // Model-backed identities only. The legacy phoenix wire id means Sage.
-// Phoenix artwork exists in the source, but no complete mesh is available.
+// A separate Phoenix identity uses the newly imported complete body.
 const catalog={
+ "phoenix-original":{id:'phoenix-original',short:'PHOENIX',name:'Phoenix',model:'phoenix-real',role:'決鬥者',abilities:false,hands:{skin:0x966549,glove:0x2d241e,sleeve:0xe5e1d8,cuff:0xd5a044}},
  "jett": {
   "id": "jett",
   "short": "JETT",
@@ -407,5 +408,5 @@ export const isAgent=key=>typeof key==='string'&&Object.hasOwn(AGENTS,key);
 export const normalizeAgent=key=>isAgent(key)?key:'jett';
 export const agentModelKey=key=>AGENTS[normalizeAgent(key)].model;
 export const agentLabel=key=>AGENTS[normalizeAgent(key)].short;
-export const agentFeature=key=>['jett','phoenix'].includes(key)?null:['iso','clove'].includes(key)?'agent-models-4':'agent-models-28';
+export const agentFeature=key=>key==='phoenix-original'?'agent-phoenix-1':['jett','phoenix'].includes(key)?null:['iso','clove'].includes(key)?'agent-models-4':'agent-models-28';
 export const agentSupported=(key,features=[])=>isAgent(key)&&(!agentFeature(key)||features.includes(agentFeature(key)));

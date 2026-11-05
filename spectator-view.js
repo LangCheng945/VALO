@@ -1,10 +1,10 @@
-import {NATIVE_WEAPON_KEYS,loadCollectionModel} from './collection.js?v=expansion2';
+import {NATIVE_WEAPON_KEYS,loadCollectionModel} from './collection.js?v=surface2';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 import {makeKarambit,updateKarambit} from './karambit.js?v=grip2';
-import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=collection1';
+import {FirstPersonHands,createMagazine,disposeViewmodel} from './first-person-view.js?v=surface2';
 import {loadWeaponModel,styleWeaponMesh} from './weapon-models.js?v=fullarms1';
-import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=expansion2';
-import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=expansion2';
+import {createTacticalKnife,updateTacticalKnife} from './tactical-knife.js?v=surface2';
+import {createNativeWeaponHands,updateNativeWeaponHands} from './native-weapons.js?v=surface2';
 import {updateMechanism} from './gun-mechanisms.js?v=fullarms1';
 import {pickSpectatorTarget} from './spectator-rules.mjs';
 const T=globalThis.THREE;
