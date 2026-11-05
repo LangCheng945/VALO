@@ -1,6 +1,6 @@
 import {attachSourceProp,attachSourceFlash,updateSourceEffects,spawnSourceBurst} from './source-ability-effects.js?v=sourcefx1';
 import{REYNA,reynaState,resetReyna,reynaDeath,reynaBusy,reynaDismissed,empressActive,beginDevour,tickDevour,gazeAt}from'./multiplayer/reyna-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=sourcefx1';
+import{disposeEffect}from'./ability-effects.js?v=batch1';
 const T=globalThis.THREE;
 export class ReynaKit{
  constructor(api){this.api=api;this.eyes=new Map();this.orbs=new Map();this.held=false;this.pendingUntil=0;this.scanAt=0;this.tetherAt=0;

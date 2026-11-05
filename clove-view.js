@@ -1,5 +1,5 @@
-import{CLOVE,cloveState,cloveDeath,canCloveRevive,smokeAnchor,smokeCharges,cloveInvulnerable,awardTakedown,applyDecay,tickCloveStatuses,resetClove,meddlePosition}from'./multiplayer/clove-rules.mjs?v=neon2';
-import{makeMeddleOrb,makeCloveRevival,disposeEffect}from'./ability-effects.js?v=sourcefx1';
+import{CLOVE,cloveState,cloveDeath,canCloveRevive,smokeAnchor,smokeCharges,cloveInvulnerable,awardTakedown,applyDecay,tickCloveStatuses,resetClove,meddlePosition}from'./multiplayer/clove-rules.mjs?v=batch1';
+import{makeMeddleOrb,makeCloveRevival,disposeEffect}from'./ability-effects.js?v=batch1';
 const T=globalThis.THREE;
 export class CloveKit{
  constructor(api){this.api=api;this.rises=[];this.flights=new Map();this.bursts=[];this.cursor={x:260,y:260};this.points=[];this.targeting=false;this.meddleEquipped=false;this.pendingUntil=0;

@@ -1,3 +1,4 @@
+import {batchUntargetable} from './agent-batch-rules.mjs';
 import {reynaDismissed} from './reyna-rules.mjs';
 // Trainer tuning, deliberately separate from the unverified current official patch numbers.
 export const CLOVE=Object.freeze({smokeRange:55,deadSmokeRange:35,smokeRadius:4.2,smokeMs:13500,smokeRechargeMs:30000,meddleSpeed:22,meddleGravity:10,meddleFuseMs:1400,meddleRadius:6.5,decayAmount:90,decayMs:5000,pickupWindowMs:8000,pickupMs:8000,haste:1.15,reviveWindowMs:8000,riseMs:1500,escapeMs:2000,surviveMs:12000,assistWindowMs:8000});
@@ -5,7 +6,7 @@ export const cloveState=p=>(p.clove ||= {});
 export function smokeCharges(p,now){const c=cloveState(p);c.smokeReady=(c.smokeReady||[]).filter(t=>t>now);return Math.max(0,2-c.smokeReady.length);}
 export function smokeAnchor(p){return p.hp>0?p:(p.clove?.deathPosition||p);}
 export function canCloveRevive(p,now){const c=p.clove;return p.agent==='clove'&&p.hp<=0&&!p.reviveAt&&!p.ultUsed&&c?.reviveWindow>now&&!c.riseAt;}
-export function cloveInvulnerable(p,now){return reynaDismissed(p,now)||p.agent==='clove'&&(p.clove?.escapeUntil||0)>now;}
+export function cloveInvulnerable(p,now){return batchUntargetable(p,now)||reynaDismissed(p,now)||p.agent==='clove'&&(p.clove?.escapeUntil||0)>now;}
 export function cloveDeath(p,now,{allowRevive=true}={}){const c=cloveState(p);Object.assign(c,{deathPosition:{x:p.x,y:p.y,z:p.z},reviveWindow:allowRevive&&!p.ultUsed?now+CLOVE.reviveWindowMs:0,riseAt:0,escapeUntil:0,surviveUntil:0,pickupUntil:0});p.tempHealth=0;p.decayAmount=0;p.decayUntil=0;}
 export function awardTakedown(p,position,now){if(p.agent!=='clove')return;const c=cloveState(p);c.takedown={...position,at:now};if(p.hp>0&&c.surviveUntil>now){c.surviveUntil=0;c.revivedConfirmed=true;}}
 export function applyDecay(p,now){if(p.hp<=0||cloveInvulnerable(p,now))return;const amount=Math.min(CLOVE.decayAmount,Math.max(0,p.hp-1));p.hp-=amount;p.decayAmount=(p.decayAmount||0)+amount;p.decayUntil=now+CLOVE.decayMs;}

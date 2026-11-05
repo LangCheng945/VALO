@@ -43,3 +43,9 @@ Windows 也可以使用 lan\start-windows.cmd。macOS／Linux 可用同樣的 No
 玩家短暫斷線可自動重連，票券約保留 60 秒。伺服器關閉會通知玩家；房主關閉程式或電腦後，所有房間資料消失。沒有房主遷移或跨重啟存檔。
 
 獨立 exe 為跨平台建置，未數位簽章；本次未在實體 Windows 電腦驗證。若學校不允許執行未核准程式，請由管理員確認後使用。不同實體學校電腦之間的連線仍須在現場驗收。
+
+## v1.1.0 角色技能更新
+
+新增 Phoenix、Chamber、Deadlock、Gekko、Harbor、KAY/O、Miks、Tejo、Veto、Waylay、Yoru 的 44 個技能。請房主下載新版完整包並重新啟動，所有同學開啟房主提供的 LAN 網址；不要只更新公開網站。舊伺服器會提示更新，原本模式仍可使用。
+
+操作、測試與還原限制見 `docs/agent-batch-abilities.md`。

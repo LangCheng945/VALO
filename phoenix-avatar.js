@@ -1,5 +1,5 @@
 // Optional, lazy Phoenix body. The legacy `phoenix` wire ID remains Sage.
-import {AgentAvatar as LegacyAvatar,preloadAgentAvatars as preloadLegacy} from './agent-avatar-base.js?v=sourcefx1';
+import {AgentAvatar as LegacyAvatar,preloadAgentAvatars as preloadLegacy} from './agent-avatar-base.js?v=batch1';
 import {disposeActor} from './combat-effects.js?v=avatars1';
 const T=globalThis.THREE;let pending;
 function resources(){return pending||=(Promise.all([new T.GLTFLoader().loadAsync('./assets/agents/phoenix-native/phoenix.glb'),fetch('./assets/agents/rig.json').then(r=>{if(!r.ok)throw Error('Phoenix motion data');return r.json()})]).catch(e=>{pending=null;throw e}));}

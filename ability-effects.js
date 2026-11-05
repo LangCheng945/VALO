@@ -1,6 +1,6 @@
 import {attachSourceSmoke,updateSourceEffects} from './source-ability-effects.js?v=sourcefx1';
 import {attachSageOrb} from './referenced-props.js?v=props1';
-import {referencedAbilityIcon} from './ability-icons.mjs?v=original1';
+import {referencedAbilityIcon} from './ability-icons.mjs?v=batch1';
 import {FirstPersonHands} from './first-person-view.js?v=surface2';
 // Lightweight procedural effects; geometry and shaders are authored for this trainer.
 const T=globalThis.THREE;

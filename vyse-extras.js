@@ -1,6 +1,6 @@
-import {cloveInvulnerable} from './multiplayer/clove-rules.mjs?v=neon2';
+import {cloveInvulnerable} from './multiplayer/clove-rules.mjs?v=batch1';
 import {VYSE as V,vyseFlight,insideVines,insideGarden,insideShear,wallActive,crossedShear,primaryJammed} from './multiplayer/vyse-rules.mjs?v=vyse2';
-import {disposeEffect} from './ability-effects.js?v=vyse2';
+import {disposeEffect} from './ability-effects.js?v=batch1';
 import {supportBelow} from './ground-effects.js';
 const T=globalThis.THREE;
 function release(root){root.traverse(c=>{if(c.isInstancedMesh)c.dispose?.();});disposeEffect(root);}

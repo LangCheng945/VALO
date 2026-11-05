@@ -1,6 +1,6 @@
-import {VyseExtras} from './vyse-extras.js?v=vyse2';
+import {VyseExtras} from './vyse-extras.js?v=batch1';
 import {attachSourceProp,attachSourceFlash,updateSourceEffects,spawnSourceBurst} from './source-ability-effects.js?v=sourcefx1';
-import {disposeEffect} from './ability-effects.js?v=sourcefx1';
+import {disposeEffect} from './ability-effects.js?v=batch1';
 import {flashDuration} from './multiplayer/breach-rules.mjs?v=breach1';
 const T=globalThis.THREE;
 // Arc Rose retains source art; the other skills share trainer rules with the Worker.

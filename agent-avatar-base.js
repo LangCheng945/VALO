@@ -1,5 +1,5 @@
 // Compatibility loader copied from committed avatar runtime; active metadata uses fresh versioned URLs.
-import {agentModelKey} from './multiplayer/agents.mjs?v=sourcefx1';
+import {agentModelKey} from './multiplayer/agents.mjs?v=batch1';
 import {FIREARMS} from './multiplayer/firearms.mjs?v=armory1';
 // Local, pinned character data. Gameplay continues to use the original separate hitboxes.
 import {loadWeaponModel} from './weapon-models.js?v=fullarms1';

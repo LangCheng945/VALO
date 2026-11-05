@@ -1,3 +1,4 @@
+import {batchAbilityImmune,interceptBatchLethal} from './agent-batch-rules.mjs';
 import{SOVA,sovaState,sovaBusy,sovaFlight,reconPulse,reveal}from'./sova-rules.mjs';
 import{finite,WEAPONS,applyDamage}from'./protocol.mjs';
 import{isoDamage,pointSegmentDistance}from'./iso-rules.mjs';
@@ -15,10 +16,11 @@ const playing=room=>!room.rounds.enabled||room.meta.round.phase==='playing';
 export function liveSovaEffects(room,now){const e=sovaEffects(room);return{flights:e.flights.filter(v=>v.createdAt+SOVA.flightMs>now),recons:e.recons.filter(v=>v.expiresAt>now),beams:e.beams.filter(v=>v.firesAt+500>now)};}
 export async function cancelSova(room,ws,p,now){if(!p.sova?.control)return;p.sova.control=null;sovaEffects(room).beams=sovaEffects(room).beams.filter(e=>e.ownerUid!==p.uid);room.save(ws,p);await persist(room);room.broadcast({type:'event',event:{type:'sova_control_end',ownerUid:p.uid}});}
 export async function abilityDamage(room,ws,p,raw,e,now){
- if(p.hp<=0||!p.active||p.realm||p.omen?.channel?.kind==='ultimate'||cloveInvulnerable(p,now))return;
+ if((!e.weaponDamage&&batchAbilityImmune(p,now))||p.hp<=0||!p.active||p.realm||p.omen?.channel?.kind==='ultimate'||cloveInvulnerable(p,now))return;
  const damage=isoDamage(p,raw*(p.team===e.team?.33:1),now,e.id);if(!damage){room.save(ws,p);return;}
  Object.assign(p,applyDamage(p,damage));markArmorDamage(p,now);p.lastDamage=now;p.damageContributors||={};if(p.team!==e.team)p.damageContributors[e.ownerUid]=now;
  if(e.kind==='beam'&&p.team!==e.team)reveal(p,e.team,now,2000);
+ const intercepted=interceptBatchLethal(p,now,e);if(intercepted?.position)room.send(ws,{type:'event',event:{type:'batch_relocate',position:intercepted.position}});if(intercepted)await room.ctx.storage.setAlarm(now+100);
  if(p.hp<=0){const socket=room.sockets().find(s=>room.data(s)?.uid===e.ownerUid),killer=socket&&room.data(socket);if(killer&&killer.uid!==p.uid&&killer.team!==p.team){await awardReynaSouls(room,killer,p,now);await awardIsoOrbs(room,killer,p,now);awardCloveContributors(room,killer,p,now);killer.kills++;room.save(socket,killer);}recordCloveDeath(p,now);p.deaths++;p.shieldReserve=0;p.healRemaining=0;p.active=false;p.respawnAt=room.rounds.enabled?0:now+5000;room.broadcast({type:'event',event:{type:'kill',killerUid:e.ownerUid,killerName:e.ownerName,victimUid:p.uid,victimName:p.name,weaponName:e.weaponName||(e.kind==='beam'?"HUNTER'S FURY":'SHOCK BOLT'),isHead:false}});}
  room.save(ws,p);room.send(ws,{type:'damage',hp:p.hp,shield:p.shield,tempHealth:p.tempHealth||0,attacker:e.ownerName,cause:e.cause||'sova'});if(p.hp<=0)await room.spike.drop(p,now);
 }

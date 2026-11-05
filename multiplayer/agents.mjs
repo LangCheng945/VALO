@@ -1,7 +1,7 @@
 // Model-backed identities only. The legacy phoenix wire id means Sage.
 // A separate Phoenix identity uses the newly imported complete body.
 const catalog={
- "phoenix-original":{id:'phoenix-original',short:'PHOENIX',name:'Phoenix',model:'phoenix-real',role:'決鬥者',abilities:false,hands:{skin:0x966549,glove:0x2d241e,sleeve:0xe5e1d8,cuff:0xd5a044}},
+ "phoenix-original":{id:'phoenix-original',short:'PHOENIX',name:'Phoenix',model:'phoenix-real',role:'決鬥者',abilities:true,hands:{skin:0x966549,glove:0x2d241e,sleeve:0xe5e1d8,cuff:0xd5a044}},
  "jett": {
   "id": "jett",
   "short": "JETT",
@@ -106,7 +106,7 @@ const catalog={
   "name": "Chamber",
   "model": "chamber",
   "role": "守衛者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -134,7 +134,7 @@ const catalog={
   "name": "Deadlock",
   "model": "deadlock",
   "role": "守衛者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -162,7 +162,7 @@ const catalog={
   "name": "Gekko",
   "model": "gekko",
   "role": "先鋒",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -176,7 +176,7 @@ const catalog={
   "name": "Harbor",
   "model": "harbor",
   "role": "控場者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -190,7 +190,7 @@ const catalog={
   "name": "KAY/O",
   "model": "kayo",
   "role": "先鋒",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -218,7 +218,7 @@ const catalog={
   "name": "Miks",
   "model": "miks",
   "role": "控場者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -316,7 +316,7 @@ const catalog={
   "name": "Tejo",
   "model": "tejo",
   "role": "先鋒",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -330,7 +330,7 @@ const catalog={
   "name": "Veto",
   "model": "veto",
   "role": "守衛者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -372,7 +372,7 @@ const catalog={
   "name": "Waylay",
   "model": "waylay",
   "role": "決鬥者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,
@@ -386,7 +386,7 @@ const catalog={
   "name": "Yoru",
   "model": "yoru",
   "role": "決鬥者",
-  "abilities": false,
+  "abilities": true,
   "hands": {
    "skin": 11636085,
    "glove": 2502970,

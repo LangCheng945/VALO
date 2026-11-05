@@ -1,6 +1,7 @@
 // Original transparent ability art, packaged locally; see assets/ui/abilities/provenance.json.
 // The legacy phoenix wire identity is Sage, never Phoenix.
 const catalog = {
+  "phoenix-original": {"model":"phoenix-real","icons":{"c":"phoenix-original-c.png","q":"phoenix-original-q.png","e":"phoenix-original-e.png","x":"phoenix-original-x.png"}},
   "jett": {
     "model": "jett",
     "icons": {

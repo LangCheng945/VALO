@@ -1,6 +1,6 @@
 import {attachSourceProp,attachSourceFlash,updateSourceEffects,spawnSourceBurst} from './source-ability-effects.js?v=sourcefx1';
 import{RECON as H,reconState,reconFlight,reconDecay,markTrail,inNightfall,constrainFade,resetRecon}from'./multiplayer/recon-rules.mjs?v=recon1';
-import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';import{flashDuration}from'./multiplayer/breach-rules.mjs?v=neon2';import{disposeEffect}from'./ability-effects.js?v=sourcefx1';import{FirstPersonHands}from'./first-person-view.js?v=phoenix1';
+import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=batch1';import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';import{flashDuration}from'./multiplayer/breach-rules.mjs?v=neon2';import{disposeEffect}from'./ability-effects.js?v=batch1';import{FirstPersonHands}from'./first-person-view.js?v=phoenix1';
 const T=globalThis.THREE,fadeKinds=['haunt','seize','prowler','nightfall'];
 export class ReconKit{
  constructor(agent,api){this.agent=agent;this.api=api;this.devices=new Map();this.flights=new Map();this.areas=new Map();this.trails=new Map();this.mode=null;this.guiding=false;this.guideId=null;this.healing=false;this.pendingUntil=0;this.keys=new Set();this.camera=new T.PerspectiveCamera(78,innerWidth/innerHeight,.08,24);this.camera.rotation.order='YXZ';this.controlPos=null;this.yaw=0;this.pitch=0;this.vy=0;

@@ -33,7 +33,7 @@ const crypto=require('node:crypto');
    }
    return results;
   });
-  assert.equal(result.length,112);assert(result.every(i=>i.width>0&&new URL(i.url).origin==='http://127.0.0.1:8000'));
+  assert.equal(result.length,116);assert(result.every(i=>i.width>0&&new URL(i.url).origin==='http://127.0.0.1:8000'));
   assert(result.filter(i=>i.agent==='phoenix').every(i=>i.model==='sage'&&i.url.includes('/sage-')));
   await page.screenshot({path:'/workspace/valo-original-ability-icons.png',fullPage:true});
   console.log('PASS 112 original PNG hashes, local image decoding, keyboard mapping and Sage identity; gallery rendered');

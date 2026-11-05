@@ -2,7 +2,7 @@ import {createWeaponArmRig,updateTacticalKnife} from './tactical-knife.js?v=sour
 import {loadReferencedProp,fitReferencedProp,disposeReferencedProp} from './referenced-props.js?v=props1';
 import {FirstPersonHands} from './first-person-view.js?v=surface2';
 import{SOVA,sovaState,sovaBusy,resetSova,sovaFlight,reconPulse,reveal}from'./multiplayer/sova-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=sourcefx1';
+import{disposeEffect}from'./ability-effects.js?v=batch1';
 const T=globalThis.THREE;let armData;
 function fullArmData(){return armData||=(Promise.all([fetch('./assets/weapon-poses/vandal.json').then(r=>r.json()),fetch('./assets/weapon-poses/vandal.poses.bin').then(r=>r.arrayBuffer())]).then(([meta,bytes])=>({meta,frames:new Float32Array(bytes)})).catch(e=>{armData=null;throw e}));}
 export class SovaKit{

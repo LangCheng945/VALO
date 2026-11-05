@@ -1,8 +1,8 @@
 import {attachSourceFlash,updateSourceEffects} from './source-ability-effects.js?v=sourcefx1';
 import{BREACH as B,breachState,resetBreach,inBreachLane,flashDuration}from'./multiplayer/breach-rules.mjs?v=breach1';
-import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
+import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=batch1';
 import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';
-import{disposeEffect}from'./ability-effects.js?v=sourcefx1';
+import{disposeEffect}from'./ability-effects.js?v=batch1';
 import{FirstPersonHands}from'./first-person-view.js?v=phoenix1';
 const T=globalThis.THREE;
 export class BreachKit{

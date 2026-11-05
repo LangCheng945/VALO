@@ -1,8 +1,8 @@
 import{NEON as N,neonState,tickNeonState,overdrive,neonSliding,neonRunning,neonLocked,neonFlight,neonWallBlocks,resetNeon}from'./multiplayer/neon-rules.mjs?v=neon4';
-import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=neon2';
+import{cloveInvulnerable}from'./multiplayer/clove-rules.mjs?v=batch1';
 import{detained}from'./multiplayer/killjoy-rules.mjs?v=neon2';
 import{FirstPersonHands}from'./first-person-view.js?v=phoenix1';
-import{disposeEffect,updateEffect}from'./ability-effects.js?v=sourcefx1';
+import{disposeEffect,updateEffect}from'./ability-effects.js?v=batch1';
 const T=globalThis.THREE;
 export function makeNeonWalls(paths){const p=[],uv=[],indices=[];for(const path of paths)for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],k=p.length/3;p.push(a.x,a.y,a.z,b.x,b.y,b.z,a.x,a.y+N.wallHeight,a.z,b.x,b.y+N.wallHeight,b.z);uv.push(i-1,0,i,0,i-1,1,i,1);indices.push(k,k+1,k+2,k+2,k+1,k+3);}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();const m=new T.ShaderMaterial({transparent:true,side:T.DoubleSide,depthWrite:false,uniforms:{time:{value:0},fade:{value:1}},vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform float time;uniform float fade;varying vec2 v;void main(){float wave=sin(v.x*7.+v.y*8.-time*9.)*.04;float streak=pow(.5+.5*sin(v.y*54.+v.x*4.-time*15.+sin(v.x*12.)*2.),18.);float edge=smoothstep(.8,1.,v.y+wave)+1.-smoothstep(0.,.12,v.y);vec3 c=mix(vec3(.025,.19,.55),vec3(.1,.8,1.),streak*.7+edge*.5);c=mix(c,vec3(.95,1.,.3),edge*.5);gl_FragColor=vec4(c,(.91+streak*.08)*fade);}'});const mesh=new T.Mesh(g,m);mesh.name='neon-fast-lane';return mesh;}
 export class NeonKit{

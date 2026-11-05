@@ -1,0 +1,247 @@
+{
+  "source": "https://valorant-api.com/v1/agents?isPlayableCharacter=true&language=en-US",
+  "agents": {
+    "gekko": {
+      "q": {
+        "name": "Wingman",
+        "description": "EQUIP a destructible Wingman. FIRE to send it forward. Chases the first enemy it sees, concussing on impact. ALT FIRE to have Wingman plant or defuse at a targeted bomb site.\r\n\r\nReverts to a Globule.",
+        "source": "https://media.valorant-api.com/agents/e370fa57-4757-3604-3648-499e1f642d3f/abilities/ability1/displayicon.png"
+      },
+      "e": {
+        "name": "Dizzy",
+        "description": "EQUIP a destructible Dizzy. FIRE to throw. Fires plasma at enemies in line of sight, blinding them.\r\n\r\nReverts to a Globule.",
+        "source": "https://media.valorant-api.com/agents/e370fa57-4757-3604-3648-499e1f642d3f/abilities/ability2/displayicon.png"
+      },
+      "c": {
+        "name": "Mosh Pit",
+        "description": "EQUIP Mosh. FIRE to throw. ALT FIRE to lob. On landing, create a zone that deals low damage over time before exploding, dealing high damage to all players.\r\n\r\nReverts to a Globule.",
+        "source": "https://media.valorant-api.com/agents/e370fa57-4757-3604-3648-499e1f642d3f/abilities/grenade/displayicon.png"
+      },
+      "x": {
+        "name": "Thrash",
+        "description": "EQUIP a destructible Thrash. FIRE to take control. FIRE again to lunge and explode, detaining all players. FIRE while lunging to explode early.\r\n\r\nReverts to a Globule only once.",
+        "source": "https://media.valorant-api.com/agents/e370fa57-4757-3604-3648-499e1f642d3f/abilities/ultimate/displayicon.png"
+      }
+    },
+    "deadlock": {
+      "q": {
+        "name": "Sonic Sensor",
+        "description": "EQUIP a destructible Sonic Sensor. FIRE to place. Triggers on nearby detected enemy noise, creating a zone that concusses all players. Sonic Sensor stealths after placement.\r\n\r\nCan be picked up.",
+        "source": "https://media.valorant-api.com/agents/cc8b64c8-4b25-4ff9-6e7f-37b4da43d235/abilities/ability1/displayicon.png"
+      },
+      "c": {
+        "name": "Barrier Mesh",
+        "description": "EQUIP Barrier Mesh. FIRE to throw. On landing, create destructible markers that fortify after a delay. These markers form barriers that block player movement.",
+        "source": "https://media.valorant-api.com/agents/cc8b64c8-4b25-4ff9-6e7f-37b4da43d235/abilities/grenade/displayicon.png"
+      },
+      "e": {
+        "name": "GravNet",
+        "description": "EQUIP GravNet. FIRE to throw. ALT FIRE to lob. Explodes on landing, forcing all players to crouch and move slowly until they remove the net.",
+        "source": "https://media.valorant-api.com/agents/cc8b64c8-4b25-4ff9-6e7f-37b4da43d235/abilities/ability2/displayicon.png"
+      },
+      "x": {
+        "name": "Annihilation",
+        "description": "EQUIP Annihilation. FIRE to launch a zone, forcing the first enemy caught into a destructible cocoon that pulls them along a path for lethal damage unless the cocoon is destroyed.",
+        "source": "https://media.valorant-api.com/agents/cc8b64c8-4b25-4ff9-6e7f-37b4da43d235/abilities/ultimate/displayicon.png"
+      }
+    },
+    "tejo": {
+      "e": {
+        "name": "Guided Salvo",
+        "description": "EQUIP a tactical map. FIRE to set locations. ALT FIRE to launch missiles that travel to and repeatedly pulse, dealing damage to all players.",
+        "source": "https://media.valorant-api.com/agents/b444168c-4e35-8076-db47-ef9bf368f384/abilities/ability2/displayicon.png"
+      },
+      "q": {
+        "name": "Special Delivery",
+        "description": "EQUIP Special Delivery. FIRE to launch. ALT FIRE to launch with a bounce. Explodes on any surface, concussing and damaging all players.",
+        "source": "https://media.valorant-api.com/agents/b444168c-4e35-8076-db47-ef9bf368f384/abilities/ability1/displayicon.png"
+      },
+      "x": {
+        "name": "Armageddon",
+        "description": "EQUIP a tactical map. FIRE to set, pivot and FIRE again to cast a wave that deals high damage to all players. ALT FIRE to cancel targeting.",
+        "source": "https://media.valorant-api.com/agents/b444168c-4e35-8076-db47-ef9bf368f384/abilities/ultimate/displayicon.png"
+      },
+      "c": {
+        "name": "Stealth Drone",
+        "description": "EQUIP a destructible Stealth Drone. FIRE to take control. FIRE again to reveal and suppress nearby enemies in range and line of sight.",
+        "source": "https://media.valorant-api.com/agents/b444168c-4e35-8076-db47-ef9bf368f384/abilities/grenade/displayicon.png"
+      }
+    },
+    "chamber": {
+      "e": {
+        "name": "Rendezvous",
+        "description": "EQUIP a destructible Rendezvous. FIRE to place. While in range, REACTIVATE to instantly teleport to it.\r\n\r\nCan be recalled.",
+        "source": "https://media.valorant-api.com/agents/22697a3d-45bf-8dd7-4fec-84a9e28c69d7/abilities/ability2/displayicon.png"
+      },
+      "c": {
+        "name": "Trademark",
+        "description": "EQUIP a destructible Trademark. FIRE to place. Triggers on nearby visible enemies in range, creating a zone that slows all players.\r\n\r\nCan be recalled.",
+        "source": "https://media.valorant-api.com/agents/22697a3d-45bf-8dd7-4fec-84a9e28c69d7/abilities/grenade/displayicon.png"
+      },
+      "q": {
+        "name": "Headhunter",
+        "description": "EQUIP Headhunter. FIRE to shoot. ALT FIRE to aim down sights.",
+        "source": "https://media.valorant-api.com/agents/22697a3d-45bf-8dd7-4fec-84a9e28c69d7/abilities/ability1/displayicon.png"
+      },
+      "x": {
+        "name": "Tour De Force",
+        "description": "ACTIVATE to access a sniper rifle that deals lethal damage with direct hits to the upper body.\r\n\r\nFIRE to shoot. ALT FIRE to aim down sights. On kills, create a zone that slows all players.",
+        "source": "https://media.valorant-api.com/agents/22697a3d-45bf-8dd7-4fec-84a9e28c69d7/abilities/ultimate/displayicon.png"
+      }
+    },
+    "kayo": {
+      "c": {
+        "name": "FRAG/ment",
+        "description": "EQUIP FRAG/ment. FIRE to throw. ALT FIRE to lob. Explodes on landing, repeatedly dealing pulses of damage to all players.",
+        "source": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/abilities/grenade/displayicon.png"
+      },
+      "q": {
+        "name": "FLASH/drive",
+        "description": "EQUIP a FLASH/drive. FIRE to throw. ALT FIRE to lob. After a delay, explode, flashing all players looking at it.",
+        "source": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/abilities/ability1/displayicon.png"
+      },
+      "e": {
+        "name": "ZERO/point",
+        "description": "EQUIP a destructible ZERO/point. FIRE to throw. Pulses on any surface, suppressing enemies within range.",
+        "source": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/abilities/ability2/displayicon.png"
+      },
+      "x": {
+        "name": "NULL/cmd",
+        "description": "INSTANTLY gain overloaded and repeatedly send out a pulse that suppresses enemies within range.\r\n\r\nOverloaded grants combat stim. Upon taking lethal damage, KAY/O is downed and can be re-stabilized.",
+        "source": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/abilities/ultimate/displayicon.png"
+      }
+    },
+    "miks": {
+      "c": {
+        "name": "M-pulse",
+        "description": "EQUIP a destructible M-Pulse. ALT FIRE to toggle between concuss or heal. FIRE to throw. Repeatedly pulses on landing, applying the selected effect on all players within range.",
+        "source": "https://media.valorant-api.com/agents/7c8a4701-4de6-9355-b254-e09bc2a34b72/abilities/grenade/displayicon.png"
+      },
+      "e": {
+        "name": "Waveform",
+        "description": "EQUIP a tactical map. FIRE to set smoke locations. ALT FIRE to cast smokes.",
+        "source": "https://media.valorant-api.com/agents/7c8a4701-4de6-9355-b254-e09bc2a34b72/abilities/ability2/displayicon.png"
+      },
+      "q": {
+        "name": "Harmonize",
+        "description": "EQUIP Harmonize. FIRE on a targeted ally to grant combat stim and haste to them and yourself. On kills while active, refresh the buff if both Harmonized players are still alive. ALT FIRE to self-cast with no refresh.",
+        "source": "https://media.valorant-api.com/agents/7c8a4701-4de6-9355-b254-e09bc2a34b72/abilities/ability1/displayicon.png"
+      },
+      "x": {
+        "name": "Bassquake",
+        "description": "EQUIP Bassquake. FIRE to send forward a zone that deafens, knocks back, and slows all players.",
+        "source": "https://media.valorant-api.com/agents/7c8a4701-4de6-9355-b254-e09bc2a34b72/abilities/ultimate/displayicon.png"
+      }
+    },
+    "harbor": {
+      "q": {
+        "name": "High Tide",
+        "description": "EQUIP High Tide. FIRE to send forward a vision-blocking wall that slows all players who come in contact. HOLD FIRE to steer towards your crosshair. ALT FIRE to stop early.",
+        "source": "https://media.valorant-api.com/agents/95b78ed7-4637-86d9-7e41-71ba8c293152/abilities/ability1/displayicon.png"
+      },
+      "c": {
+        "name": "Storm Surge",
+        "description": "EQUIP Storm Surge. FIRE to throw. Explodes on landing, nearsighting and slowing all players.",
+        "source": "https://media.valorant-api.com/agents/95b78ed7-4637-86d9-7e41-71ba8c293152/abilities/grenade/displayicon.png"
+      },
+      "e": {
+        "name": "Cove",
+        "description": "ENTER The Deep. REACTIVATE to cast a smoke. HOLD FIRE/ALT FIRE to adjust distance. RELOAD to toggle view. After casting, REACTIVATE to transform the smoke into a destructible shield.",
+        "source": "https://media.valorant-api.com/agents/95b78ed7-4637-86d9-7e41-71ba8c293152/abilities/ability2/displayicon.png"
+      },
+      "x": {
+        "name": "Reckoning",
+        "description": "EQUIP Reckoning. FIRE to push forward a vision-blocking wall that nearsights and slows all players who come in contact. REACTIVATE to stop the wall early.",
+        "source": "https://media.valorant-api.com/agents/95b78ed7-4637-86d9-7e41-71ba8c293152/abilities/ultimate/displayicon.png"
+      }
+    },
+    "phoenix-original": {
+      "c": {
+        "name": "Blaze",
+        "description": "EQUIP Blaze. FIRE to send forward a vision-blocking fire wall that deals damage to all players. HOLD FIRE to steer towards your crosshair.",
+        "source": "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f7921d69/abilities/grenade/displayicon.png"
+      },
+      "q": {
+        "name": "Hot Hands",
+        "description": "EQUIP Hot Hands. FIRE to throw. ALT FIRE to lob. On landing, create a fire zone that deals damage to all players.",
+        "source": "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f7921d69/abilities/ability1/displayicon.png"
+      },
+      "e": {
+        "name": "Curveball",
+        "description": "EQUIP a Curveball. FIRE to curve left, ALT FIRE to curve right. After a delay, explode, flashing all players looking at it.\r\n\r\nResets every two kills.",
+        "source": "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f7921d69/abilities/ability2/displayicon.png"
+      },
+      "x": {
+        "name": "Run it Back",
+        "description": "INSTANTLY place a marker at your location. Upon taking lethal damage or when Run it Back expires, return to the marker with full health and the amount of armor you had when the ability was activated.",
+        "source": "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f7921d69/abilities/ultimate/displayicon.png"
+      }
+    },
+    "veto": {
+      "e": {
+        "name": "Interceptor",
+        "description": "EQUIP a destructible Interceptor. FIRE to place. REACTIVATE to activate. While active, destroy any enemy utility that can be shot or would bounce off players in range and line of sight.\r\n\r\nCan be recalled.",
+        "source": "https://media.valorant-api.com/agents/92eeef5d-43b5-1d4a-8d03-b3927a09034b/abilities/ability2/displayicon.png"
+      },
+      "c": {
+        "name": "Crosscut",
+        "description": "EQUIP a destructible Crosscut. FIRE to place. While in range, INTERACT to teleport to it.\r\n\r\nCan be recalled during BUY PHASE.",
+        "source": "https://media.valorant-api.com/agents/92eeef5d-43b5-1d4a-8d03-b3927a09034b/abilities/grenade/displayicon.png"
+      },
+      "x": {
+        "name": "Evolution",
+        "description": "INSTANTLY gain evolution.\r\n\r\nEvolution grants combat stim, continuous healing, and immunity to all debuffs and damage, except weapons.",
+        "source": "https://media.valorant-api.com/agents/92eeef5d-43b5-1d4a-8d03-b3927a09034b/abilities/ultimate/displayicon.png"
+      },
+      "q": {
+        "name": "Chokehold",
+        "description": "EQUIP a destructible Chokehold. FIRE to throw. Chokehold stealths after landing. Triggers on nearby visible enemies in range, deafening, decaying, and tethering enemies.\r\n\r\nCan be recalled during BUY PHASE.",
+        "source": "https://media.valorant-api.com/agents/92eeef5d-43b5-1d4a-8d03-b3927a09034b/abilities/ability1/displayicon.png"
+      }
+    },
+    "yoru": {
+      "c": {
+        "name": "FAKEOUT",
+        "description": "EQUIP Fakeout. FIRE to send a destructible clone forward. ALT FIRE to place a marker at your location. INTERACT to transform the marker into a clone.\r\n\r\nClones continuously walk forward and will turn toward the first enemy that shoots it, flashing all players looking at it.",
+        "source": "https://media.valorant-api.com/agents/7f94d92c-4234-0a36-9646-3a87eb8b5c89/abilities/grenade/displayicon.png"
+      },
+      "q": {
+        "name": "BLINDSIDE",
+        "description": "EQUIP Blindside. FIRE to throw. After bouncing off a surface, explode, flashing all players looking at it.",
+        "source": "https://media.valorant-api.com/agents/7f94d92c-4234-0a36-9646-3a87eb8b5c89/abilities/ability1/displayicon.png"
+      },
+      "e": {
+        "name": "GATECRASH",
+        "description": "EQUIP Gatecrash. FIRE to send it forward. ALT FIRE to place. REACTIVATE to teleport to it. INTERACT to fake a teleport.\r\n\r\nResets every two kills.",
+        "source": "https://media.valorant-api.com/agents/7f94d92c-4234-0a36-9646-3a87eb8b5c89/abilities/ability2/displayicon.png"
+      },
+      "x": {
+        "name": "DIMENSIONAL DRIFT",
+        "description": "EQUIP Dimensional Drift. FIRE to become intangible and invisible. Gatecrash is accessible during this state. REACTIVATE to exit early.",
+        "source": "https://media.valorant-api.com/agents/7f94d92c-4234-0a36-9646-3a87eb8b5c89/abilities/ultimate/displayicon.png"
+      }
+    },
+    "waylay": {
+      "e": {
+        "name": "Refract",
+        "description": "INSTANTLY place a marker at your location. REACTIVATE to travel to it. While traveling, Waylay is immune but cannot see enemies.\r\n\r\nResets every two kills.",
+        "source": "https://media.valorant-api.com/agents/df1cb487-4902-002e-5c17-d28e83e78588/abilities/ability2/displayicon.png"
+      },
+      "c": {
+        "name": "Saturate",
+        "description": "EQUIP Saturate. FIRE to throw. Explodes on landing, hindering all players.",
+        "source": "https://media.valorant-api.com/agents/df1cb487-4902-002e-5c17-d28e83e78588/abilities/grenade/displayicon.png"
+      },
+      "q": {
+        "name": "Lightspeed",
+        "description": "EQUIP Lightspeed. FIRE to dash forward twice. ALT FIRE to dash forward once.\r\n\r\nOnly the first dash can launch upward.",
+        "source": "https://media.valorant-api.com/agents/df1cb487-4902-002e-5c17-d28e83e78588/abilities/ability1/displayicon.png"
+      },
+      "x": {
+        "name": "Convergent Paths",
+        "description": "EQUIP Convergent Paths. FIRE to gain haste and send forward a zone that hinders all players.",
+        "source": "https://media.valorant-api.com/agents/df1cb487-4902-002e-5c17-d28e83e78588/abilities/ultimate/displayicon.png"
+      }
+    }
+  }
+}
