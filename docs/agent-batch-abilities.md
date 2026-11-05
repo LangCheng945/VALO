@@ -83,3 +83,5 @@ local tests cover multiple clients on the same host, HTTP/WS and trusted HTTPS/W
 - Existing `tests/test_controls.cjs` sniper spread assertion still fails. Its
   extracted control helpers are byte-for-byte identical to HEAD before this update;
   this unrelated pre-existing assertion was not changed to make the run green.
+
+Patch v1.1.1 additionally verifies wall bounces for ground projectiles and preserves flash fuses through collisions.

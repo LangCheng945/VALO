@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {BATCH_KITS,batchCharges,batchSuppressed,batchAbilityImmune,batchMoveRate,batchShotBlock,batchCollision,interceptBatchLethal} from '../multiplayer/agent-batch-rules.mjs';
+import {BATCH_KITS,batchPoint,batchCharges,batchSuppressed,batchAbilityImmune,batchMoveRate,batchShotBlock,batchCollision,interceptBatchLethal} from '../multiplayer/agent-batch-rules.mjs';
 import {AgentBatchEngine} from '../multiplayer/agent-batch-engine.mjs';
 import {batchEvent,tickBatch} from '../multiplayer/agent-batch-events.mjs';
 const base=100000;
@@ -23,6 +23,10 @@ for(const agent of Object.keys(BATCH_KITS))for(const key of ['c','q','e','x']){c
 }
 {
  const{p,engine}=fixture('gekko');engine.cast(p,msg('x'));const e=engine.world.effects[0];assert(p.agentBatch.controlId);engine.control(p,{dx:0,dy:0,dz:-1,stationary:true});assert.equal(e.vz,0);engine.remove(e,{globule:true});const g=engine.world.effects[0];g.x=p.x;g.y=p.y;g.z=p.z;assert(engine.interact(p,{id:g.id}));assert.equal(p.ultUsed,false);assert.equal(batchCharges(p,'x',base),0);engine.now=base+8001;engine.cast(p,msg('x'));engine.remove(engine.world.effects[0],{globule:true});assert.equal(engine.world.effects.length,0,'Thrash can only be reclaimed once');
+}
+// Side walls bounce ground abilities instead of leaving the owner waiting forever.
+for(const [agent,key]of [['deadlock','e'],['gekko','c'],['phoenix-original','e']]){
+ const{p,engine}=fixture(agent);engine.cast(p,msg(key));const e=engine.world.effects[0],fuse=e.fuseAt;engine.now=base+100;e.waiting=true;const hit=batchPoint(e,engine.now);assert(engine.contact(p,{id:e.id,at:engine.now,...hit,nx:0,ny:0,nz:1}));assert(e.vz>0);assert.equal(e.waiting,false);assert.equal(e.phase,'flight');assert.equal(e.fuseAt,fuse||0);engine.now+=200;if(agent!=='phoenix-original'){const floor=batchPoint(e,engine.now);assert(engine.contact(p,{id:e.id,at:engine.now,...floor,nx:0,ny:1,nz:0}));assert.equal(e.phase,'active');}
 }
 // Authoritative event bridge: no direct HP edits, finite gun ammunition, real kill credit,
 // lethal rewind, reconnect-visible effects and end-of-round cleanup.

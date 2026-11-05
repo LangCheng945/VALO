@@ -1,5 +1,5 @@
 import {BATCH_KITS,purgeBatchDebuffs,batchState,batchCharges,batchSuppressed,batchUntargetable,batchAttackBlocked,batchMoveRate,batchFireRate,batchBlocksVision,batchCollision,batchPoint,batchDistance,interceptBatchLethal} from './multiplayer/agent-batch-rules.mjs?v=batch1';
-import {AgentBatchEngine} from './multiplayer/agent-batch-engine.mjs?v=batch1';
+import {AgentBatchEngine} from './multiplayer/agent-batch-engine.mjs?v=batch2';
 import {AgentAvatar} from './phoenix-avatar.js?v=batch1';
 import {disposeEffect} from './ability-effects.js?v=batch1';
 import {flashDuration} from './multiplayer/breach-rules.mjs';
