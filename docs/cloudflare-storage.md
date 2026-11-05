@@ -96,7 +96,7 @@ reader, rather than blindly restoring the old Worker over live checkpoint data.
 
 ### Recorded validation
 
-- 109 selected rule/storage tests passed, including 13 persistence/recovery tests.
+- 137 selected rule/storage tests passed, including 13 persistence/recovery tests.
 - 11 real Worker room/round/Spike/44-skill checks passed.
 - Five real Worker clients stayed connected across the native watchdog: 1,490
   logical storage requests became 5 backend key writes, with 3 alarm writes over
