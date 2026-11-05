@@ -178,7 +178,7 @@
         .trainer-footer{padding:0 4vw}.trainer-start{background:#a5ccba;color:#102b27;border:0;letter-spacing:2px}.trainer-start:hover{background:#c6e4d4}.trainer-start:disabled{opacity:.4}
 
     </style>
-    <link rel="stylesheet" href="./shop.css?v=neon2">
+    <link rel="stylesheet" href="./shop.css?v=lan-downloads1">
 </head>
 <body class="relative select-none">
 
@@ -563,7 +563,17 @@
                         </div>
                     </section>
                     <details class="trainer-network" id="network-panel"><summary>好友房間與連線設定 <span>＋</span></summary>        <!-- MULTIPLAYER LOBBY & ROOM BAR -->
-        <div class="network-server"><label for="network-mode">多人連線模式</label><select id="network-mode"><option value="online">線上多人（Cloudflare）</option><option value="lan">區域網路多人（LAN）</option></select><div id="lan-help" hidden><p>房主啟動 LAN Server 後，同學開啟房主的區網網址，再建立或加入房間。請使用房主提供的 HTTP／HTTPS 網址，勿從線上網站直接連接 WS。</p><a id="lan-open-link" class="val-card" hidden>開啟 LAN 遊戲網頁 ↗</a></div><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://valonow.langcheng.uk" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房隨機選圖；先到 13 勝，12:12 後須領先 2 局。Spike 按 4 裝備、按住 4／F 安拆，G 丟下，隊友靠近或按 F 撿取。</small></div>
+        <div class="network-server"><label for="network-mode">多人連線模式</label><select id="network-mode"><option value="online">線上多人（Cloudflare）</option><option value="lan">區域網路多人（LAN）</option></select><section class="lan-downloads" aria-label="LAN 伺服器下載">
+            <h3>Windows LAN 伺服器下載</h3>
+            <p>同一個區域網路遊玩時，只需房主下載並啟動，其他同學用瀏覽器加入。</p>
+            <div class="lan-download-links">
+                <a id="download-lan-slim" class="lan-download-primary" href="https://github.com/LangCheng945/VALO/releases/download/lan-v1.1.1/ValoNow-LAN-Windows-Slim.zip" target="_blank" rel="noopener noreferrer">下載精簡包 · 約 242 MB <span>建議下載</span></a>
+                <a id="download-lan-full" href="https://github.com/LangCheng945/VALO/releases/download/lan-v1.1.1/ValoNow-LAN-Windows.zip" target="_blank" rel="noopener noreferrer">完整包 · 約 275 MB</a>
+            </div>
+            <p>Windows 10／11 · 精簡包保留全部地圖與造型；完整包另含備用 Node 啟動方式。</p>
+            <p>解壓縮整個資料夾，執行 <code>ValoNow-LAN.exe</code>，將視窗顯示的區網網址分享給同學，再加入同一房間。</p>
+            <a class="lan-release-link" href="https://github.com/LangCheng945/VALO/releases/latest" target="_blank" rel="noopener noreferrer">版本與使用說明 ↗</a>
+        </section><div id="lan-help" hidden><p>房主啟動 LAN Server 後，同學開啟房主的區網網址，再建立或加入房間。請使用房主提供的 HTTP／HTTPS 網址，勿從線上網站直接連接 WS。</p><a id="lan-open-link" class="val-card" hidden>開啟 LAN 遊戲網頁 ↗</a></div><label for="input-server-url">連線伺服器</label><div><input id="input-server-url" type="url" placeholder="https://valonow.langcheng.uk" autocomplete="off"><button id="btn-save-server">套用網址</button></div><p id="network-feedback" role="status">尚未設定連線伺服器</p><a class="network-deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/LangCheng945/VALO/tree/main/multiplayer" target="_blank" rel="noopener noreferrer">首次設定：部署自己的連線伺服器 ↗</a><small>好友使用同一個伺服器和房號。最多 10 人。新好友房採回合殲滅：死亡後等待 Sage 復活或下一回合。雙方進入地圖後開戰；公開房隨機選圖；先到 13 勝，12:12 後須領先 2 局。Spike 按 4 裝備、按住 4／F 安拆，G 丟下，隊友靠近或按 F 撿取。</small></div>
         <div class="bg-[#142230]/95 border border-[#00F5D4]/40 p-3.5 val-clip-sm my-2 shadow-xl">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
                 <!-- Player Callsign & UID -->
