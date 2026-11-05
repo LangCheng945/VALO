@@ -49,3 +49,9 @@ Windows 也可以使用 lan\start-windows.cmd。macOS／Linux 可用同樣的 No
 新增 Phoenix、Chamber、Deadlock、Gekko、Harbor、KAY/O、Miks、Tejo、Veto、Waylay、Yoru 的 44 個技能。請房主下載新版完整包並重新啟動，所有同學開啟房主提供的 LAN 網址；不要只更新公開網站。舊伺服器會提示更新，原本模式仍可使用。
 
 操作、測試與還原限制見 `docs/agent-batch-abilities.md`。
+
+## 精簡下載包
+
+`ValoNow-LAN-Windows-Slim.zip` 保留全部遊戲地圖、角色、槍皮與 LAN 功能，使用 ZIP 最高壓縮等級；只移除備用的 `node.exe`、`server.cjs` 與 `Start-LAN-Portable-Node.cmd`。解壓至新資料夾後，執行 `ValoNow-LAN.exe` 或 `Start-LAN.cmd`。精簡版沒有備用 Node 啟動方式，若電腦無法執行 EXE，請改用原本的完整包。
+
+壓縮降低的是下載容量；解壓後 EXE 本體仍包含 Node 引擎，約 84 MiB。

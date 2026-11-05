@@ -10,6 +10,10 @@ on:
         description: Existing draft release tag
         required: true
         default: lan-v1.1.1
+      slim_only:
+        description: Publish only the smaller ZIP without the backup Node runtime
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -35,10 +39,11 @@ jobs:
         env:
           VALO_LAN_DIST: ${{ runner.temp }}/ValoNow-LAN-Windows
           VALO_LAN_BUILD_CACHE: ${{ runner.temp }}/valo-lan-build
-      - name: Package and verify archive
+      - name: Package and verify archives
         shell: python
         env:
           LAN_OUTPUT: ${{ runner.temp }}
+          SLIM_ONLY: ${{ inputs.slim_only }}
         run: |
           import hashlib, os, zipfile
           from pathlib import Path
@@ -47,23 +52,45 @@ jobs:
           exe = (source / 'ValoNow-LAN.exe').read_bytes()
           assert exe[:2] == b'MZ'
           assert b'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2:1' in exe
-          archive = output / 'ValoNow-LAN-Windows.zip'
-          with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-              for item in sorted(source.rglob('*')):
-                  if item.is_file():
-                      z.write(item, 'ValoNow-LAN-Windows/' + item.relative_to(source).as_posix())
-          with zipfile.ZipFile(archive) as z:
-              assert z.testzip() is None
-              assert not any('node_modules/' in name for name in z.namelist())
-          checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
-          (output / 'ValoNow-LAN-Windows.zip.sha256').write_text(checksum + '  ValoNow-LAN-Windows.zip\n')
-          print('Verified archive:', archive.stat().st_size, 'bytes; SHA-256', checksum)
+          fallback = {'node.exe', 'server.cjs', 'Start-LAN-Portable-Node.cmd'}
+          variants = [('ValoNow-LAN-Windows-Slim.zip', 9, fallback)]
+          if os.environ.get('SLIM_ONLY') != 'true':
+              variants.append(('ValoNow-LAN-Windows.zip', 6, set()))
+          for name, level, omit in variants:
+              archive = output / name
+              included = [item for item in sorted(source.rglob('*')) if item.is_file() and item.relative_to(source).as_posix() not in omit]
+              with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=level) as z:
+                  for item in included:
+                      relative = item.relative_to(source).as_posix()
+                      target = 'ValoNow-LAN-Windows/' + relative
+                      if omit and relative == 'README.zh-TW.md':
+                          note = '> 精簡包：執行 ValoNow-LAN.exe 或 Start-LAN.cmd。本包不含備用 node.exe／Portable Node 啟動方式；全部遊戲素材皆保留。\n\n'
+                          z.writestr(target, note + item.read_text())
+                      else:
+                          z.write(item, target)
+              with zipfile.ZipFile(archive) as z:
+                  assert z.testzip() is None
+                  assert len(z.infolist()) == len(included)
+                  assert not any('node_modules/' in item for item in z.namelist())
+                  prefix = 'ValoNow-LAN-Windows/'
+                  assert prefix + 'game/index.html' in z.namelist()
+                  assert z.read(prefix + 'ValoNow-LAN.exe') == exe
+                  assert all(prefix + item not in z.namelist() for item in omit)
+                  expected_assets = {prefix + item.relative_to(source).as_posix() for item in source.joinpath('game').rglob('*') if item.is_file()}
+                  assert expected_assets <= set(z.namelist()), 'A game asset was omitted'
+              checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+              archive.with_suffix(archive.suffix + '.sha256').write_text(checksum + '  ' + name + '\n')
+              print('Verified', name, archive.stat().st_size, 'bytes; SHA-256', checksum)
       - name: Upload assets and publish release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           LAN_OUTPUT: ${{ runner.temp }}
           RELEASE_TAG: ${{ inputs.release_tag }}
+          SLIM_ONLY: ${{ inputs.slim_only }}
         run: |
-          gh release upload "$RELEASE_TAG" "$LAN_OUTPUT/ValoNow-LAN-Windows.zip" "$LAN_OUTPUT/ValoNow-LAN-Windows.zip.sha256" lan/README.zh-TW.md --clobber
+          gh release upload "$RELEASE_TAG" "$LAN_OUTPUT/ValoNow-LAN-Windows-Slim.zip" "$LAN_OUTPUT/ValoNow-LAN-Windows-Slim.zip.sha256" --clobber
+          if [ "$SLIM_ONLY" != "true" ]; then
+            gh release upload "$RELEASE_TAG" "$LAN_OUTPUT/ValoNow-LAN-Windows.zip" "$LAN_OUTPUT/ValoNow-LAN-Windows.zip.sha256" lan/README.zh-TW.md --clobber
+          fi
           gh release edit "$RELEASE_TAG" --draft=false
