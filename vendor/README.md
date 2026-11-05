@@ -9,3 +9,5 @@
 All loader and decoder files are served locally so the model does not depend on the availability of a separate asset website. TLS verification was retained when obtaining these packages.
 
 The Ascent map assets are separate from these libraries. Their source and hashes are recorded in `assets/ascent/provenance.json`; these MIT library licenses do not grant rights to Riot Games' map assets.
+
+Tailwind CSS 3.4.17 browser runtime is vendored as tailwindcss.js for LAN/offline hosting. Source: https://cdn.tailwindcss.com/3.4.17 ; license: TAILWIND-LICENSE.txt (MIT).

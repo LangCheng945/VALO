@@ -8,7 +8,7 @@ Source: open-aim commit `807f55721e64ca457d763c64a4a1de7b11e5f3eb`. Conversion p
 - Reyna: source eye/shell geometry and birth/projectile/removal systems; existing collider and sight checks remain in place.
 - Breach: projectile, telegraph and activation systems on Flashpoint events.
 - Jett/Omen: source smoke meshes and embedded masks, adapted materials; Omen selects allied/enemy tint. Existing smoke radius, duration and vision rules remain unchanged.
-- Vyse: source flower, windup, flash and removal. **E Arc Rose only**: left-click surface deployment, 1.2-second arming, E activation, 0.5-second warning, 20-second cooldown, F recall while aiming at own flower, and shot destruction. C/Q/X are unavailable and labelled accordingly.
+- Vyse: source flower, windup, flash and removal. The initial E-only integration has now been extended to all four skills; see [vyse-abilities.md](vyse-abilities.md). Arc Rose: left-click surface deployment, 1.2-second arming, E activation, 0.5-second warning, 20-second cooldown, F recall while aiming at own flower, and shot destruction. C/Q/X now have trainer implementations.
 
 The new Worker feature `vyse-flash-1` owns placement limits, arming, activation, cooldown, accepted-shot damage and flash windows. Player snapshots include flower/cooldown state for peers and late joins. Exposure reports use client line-of-sight observations, following the existing Breach architecture.
 

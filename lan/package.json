@@ -1,0 +1,1 @@
+{"name":"valonow-lan","version":"1.0.0","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"start":"node cli.mjs","test":"node --test tests/*.test.mjs","build:windows":"node build-windows.mjs"},"dependencies":{"ws":"8.18.3"},"devDependencies":{"esbuild":"0.25.12","postject":"1.0.0-alpha.6"}}

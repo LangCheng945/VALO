@@ -1,7 +1,7 @@
 import{test}from'node:test';import assert from'node:assert/strict';import WebSocket from'ws';
 const base=process.env.VALO_TEST_SERVER||'http://127.0.0.1:8790',origin='http://127.0.0.1:8000',delay=ms=>new Promise(r=>setTimeout(r,ms));
 function peer(code,agent,resumeToken){const ws=new WebSocket(base.replace('http','ws')+'/rooms/'+code,{headers:{Origin:origin}}),messages=[];const p={ws,messages,send:m=>ws.send(JSON.stringify(m)),wait:async(f,mark=0)=>{const end=Date.now()+7000;while(Date.now()<end){const m=messages.slice(mark).find(f);if(m)return m;await delay(15);}throw Error('timeout '+f)}};ws.on('open',()=>p.send({type:'join',agent,resumeToken,name:agent,mapVersion:1,roundRules:1,armoryVersion:1,isoRules:1}));ws.on('message',b=>messages.push(JSON.parse(String(b))));return p;}
-async function roomCode(){const r=await fetch(base+'/rooms',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...(new URL(base).hostname==='127.0.0.1'?{'CF-Connecting-IP':'192.0.2.96'}:{})},body:'{"map":"ascent","mode":"practice"}'});assert.equal(r.status,201);return(await r.json()).code;}
+async function roomCode(){const r=await fetch(base+'/rooms',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',...(new URL(base).hostname==='127.0.0.1'?{'CF-Connecting-IP':'192.0.2.108'}:{})},body:'{"map":"ascent","mode":"practice"}'});assert.equal(r.status,201);return(await r.json()).code;}
 async function activate(p,agent,z=0,x=0){p.pose={x,y:4.8667,z,yaw:0,active:true,agent,weapon:'operator'};p.send({type:'state',...p.pose});await delay(70);}
 const players=(uid,predicate)=>m=>m.type==='players'&&m.players.some(p=>p.uid===uid&&predicate(p));
 
